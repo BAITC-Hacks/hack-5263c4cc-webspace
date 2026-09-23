@@ -36,6 +36,9 @@ The required files are `nodes_roles.csv`, `clusters.csv` and `top_nodes.csv`, wi
 | Portable evidence dossier | Hand off facts, testable hypotheses and concrete missing-data requests | Downloaded Markdown can accompany the exact CSV bundle; generated private artifacts remain ignored by Git |
 | Cohort-to-collector paths | Answer “who receives money from these accounts?” with traversable proof | All selected accounts must reach a candidate within the bounded directed path limit; twenty candidate maximum; reachability is not fund attribution |
 | Safe degraded mode | Continue investigation without network, paid models or API credentials | Deterministic pipeline, graph, optional signals, exports and dossiers all work locally; provider failure returns labeled local evidence |
+| Compact investigation brief | Read observations, hypotheses, signal examples and prioritized evidence requests in one bounded tool call | Eighth read tool; sample limits disclosed; cannot alter the graph or required exports |
+| Scoped conversation continuity | Follow up within the same account, cohort and evidence version | Six messages/12,000 characters; 24-hour expiry; optional private SQLite; branch resets, deletion and concurrency tests |
+| Local request safeguards | Bound memory and provider usage during repeated or malformed requests | Rate, origin, framing and raw-body limits; no multi-user authentication or distributed quota claim |
 
 ## Scoring rubric and remaining human verification
 

@@ -13,7 +13,7 @@ Source: [Freedom Finance brief](https://docs.google.com/document/d/1JPLU-G6R25Ge
 | Runtime under five minutes | Measure supplied-data CLI analysis including exports; report machine/runtime and input sizes |
 | Clean launch | Locked dependencies and one startup script; synthetic mode requires no organizer data or API account |
 | README and architecture | Setup, data path, algorithm thresholds, limitations, diagram, scaling decisions and demo plan |
-| Optional AI adds value safely | Seven bounded read tools, visible trace and evidence references; local fallback; no role changes or side effects |
+| Optional AI adds value safely | Eight bounded read tools, scoped expiring conversation context, visible trace and evidence receipts; local fallback; no model changes to roles or financial records |
 
 ## What this evidence cannot establish
 

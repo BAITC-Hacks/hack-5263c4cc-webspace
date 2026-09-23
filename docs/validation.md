@@ -1,8 +1,23 @@
 # Verified validation results
 
-Verified on 23 September 2026 against the local Freedom Finance implementation. Only aggregate statistics are recorded here. Organizer records, generated CSVs, credentials and live response artifacts remain outside Git.
+Verified on 23 September 2026 against the local Freedom Finance implementation. Only aggregate statistics are recorded here. Organizer records, generated CSVs, credentials and live response artifacts remain outside Git. The hardening verification immediately below is current; later sections retain earlier measurements and their original scope.
 
-## Backend and clean-process export
+
+## Architecture and agent hardening verification
+
+The integrated backend passed **130 tests in 3.74 seconds** with `uv run --frozen pytest -q`. Eight browser-helper regression tests passed with `node --test web/tests/assistant-session.test.cjs`; these are now included in `scripts/check.sh`. The frontend production build passed TypeScript and Vite in **3.19 seconds**, with no chunk-size warning in that run. A Starlette TestClient transport deprecation remains the sole backend warning. Parallel UI work can change bundle sizes without changing these backend measurements.
+
+A fresh independent process, launched from a temporary working directory with external AI disabled, exported the official data in **0.9401 seconds**. It retained 2,248 nodes, 3,119 directed edges, 4,840 transactions, 81 seeds, 91 communities, 35 weak components and all 19 isolates. The required CSVs contain 2,248, 91 and 100 rows respectively. All 444 depth-four boundaries remained `boundary_unknown`; the longest node evidence was 105 characters. Temporary exports were removed after verification. This is a clean-process measurement with dependencies already installed, not a new clean-machine installation.
+
+New regression coverage includes strict input types and absolute aggregation tolerance; disabled/replayed/unknown tools; provider-output context accounting; cooperative deadline and timeout budgets; blank or invented-citation answers; memory scope/version, private SQLite restart, TTL, capacity, overlapping sessions and late-completion deletion; empty-session handshakes; foreign origins, spoofed forwarding headers, oversized/chunked bodies, private validation errors and atomic rate budgets. An independent concurrent HTTP check held a remembered question in flight, observed a second question rejected with 409, deleted the session with 204, and confirmed the late reply could not restore it; reuse returned 404.
+
+Chromium against an isolated offline synthetic backend verified a scope-only session handshake, two-turn token reuse, no client-supplied history, fresh context on retry, removal of tokens from exported conversation JSON, and server deletion when deleting a conversation. No browser errors were reported in those checks. Helper tests additionally cover cancellation, deletion during the handshake, stale scope, failed-deletion retries and 429/204 handling. These checks validate the memory integration; the separate UI task owns the broader visual review.
+
+All seven offline synthetic evaluation scenarios passed, including run/evidence-version receipts. **No fresh paid-provider or live-model evaluation was performed in this hardening pass.** Earlier live results below do not validate the new loop semantically. Eight bounded read tools are now implemented. Scores and CSV contracts remain deterministic and independent of remembered conversations.
+
+The 45-second run deadline is cooperative: it checks elapsed time around work and shortens provider timeouts, but cannot forcibly interrupt synchronous calls or promise end-to-end cancellation. Memory expires logically after 24 hours; physical SQLite pruning occurs on startup or subsequent operations. Local per-peer/process request budgets, origin/body controls and scoped capabilities are implemented; authentication, distributed quotas, calibrated claim correctness and production security remain unverified. LangGraph, LangChain, Mem0 and Chroma were researched, not installed or presented as implemented features.
+
+## Earlier backend and clean-process export
 
 The final backend run completed **38 tests successfully in 2.57 seconds** using `uv run --frozen pytest -q`. The only warning was Starlette's deprecation notice for its current `httpx` TestClient transport; no test failed. `bash -n scripts/dev.sh scripts/check.sh` also passed, and both scripts are executable.
 
