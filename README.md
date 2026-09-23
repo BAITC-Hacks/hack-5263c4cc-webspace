@@ -100,7 +100,7 @@ Keep this terminal open; unattended operation requires a service manager. Open *
 In another terminal, verify readiness:
 
 ```bash
-curl -fsS http://127.0.0.1:8000/api/health
+curl --retry 10 --retry-connrefused --retry-delay 1 -fsS http://127.0.0.1:8000/api/health
 curl -fsS http://127.0.0.1:8000/api/copilot/status
 curl -fsS http://127.0.0.1:8000/ | grep -qi '<!doctype html'
 ```
@@ -167,6 +167,69 @@ systemctl --user stop aqsha-lens.service
 ```
 
 The server's health check uses `http://127.0.0.1:8000/api/health`; the equivalent check through your tunnel uses local port 18000. Test a local assistant action after setting `MONEYGRAPH_MEMORY_PATH`, because health alone does not initialize conversation storage. This service template and tunnel syntax are provided for Linux administration; no remote server was provisioned or SSH deployment performed as part of the submission.
+
+### Update or roll back a deployment
+
+Use a maintenance window. Stop the running service before replacing its code or assets; old browser tabs may reference removed JavaScript chunks. Save any evidence packets you need before reloading, because browser conversations do not survive refresh. Preserve `.env`, organizer data, exports, and any private SQLite file separately from the code checkout. Back up SQLite only while the application is stopped.
+
+For the Linux service above, first confirm `git status --short` is empty. Resolve local source edits before continuing; these instructions do not discard them. Record the current revision and update from `main`:
+
+```bash
+cd "$HOME/apps/aqsha-lens"
+git status --short
+AQSHA_PREVIOUS_REV=$(git rev-parse HEAD)
+printf '%s\n' "$AQSHA_PREVIOUS_REV"
+(
+  set -e
+  test -z "$(git status --porcelain)" || { echo "Resolve local source changes first." >&2; exit 1; }
+  git fetch origin main
+  systemctl --user stop aqsha-lens.service
+  git switch --detach origin/main
+  uv sync --frozen --no-dev
+  npm --prefix web ci --include=dev --no-audit --no-fund
+  npm --prefix web run build
+  systemctl --user start aqsha-lens.service
+)
+```
+
+Keep the printed revision for rollback; the shell variable lasts only for this terminal session. A detached checkout pins the deployed revision without rewriting repository history. `set -e` stops the update on the first failure. If installation or build fails after the service is stopped, keep it stopped until the previous revision is rebuilt successfully.
+
+After startup, repeat the health, HTML, and UI checks above, then reload existing browser tabs. A new analysis version invalidates old conversation scopes. If you need to return to the recorded revision in the same terminal:
+
+```bash
+(
+  set -e
+  : "${AQSHA_PREVIOUS_REV:?Set this to the revision recorded before updating}"
+  test -z "$(git status --porcelain)" || { echo "Resolve local source changes first." >&2; exit 1; }
+  systemctl --user stop aqsha-lens.service
+  git switch --detach "$AQSHA_PREVIOUS_REV"
+  uv sync --frozen --no-dev
+  npm --prefix web ci --include=dev --no-audit --no-fund
+  npm --prefix web run build
+  systemctl --user start aqsha-lens.service
+)
+```
+
+Rollback changes application code and dependencies; it does not restore changed datasets, configuration, or conversation storage. Retain matching backups if those change. For a foreground deployment, use the same fetch/build sequence with **Ctrl+C** and the `moneygraph serve` command in place of `systemctl`.
+
+### Deployment troubleshooting
+
+| Symptom | Check and recovery |
+|---|---|
+| `uv` / `npm` not found, or unsupported Node version | Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and [Node.js 22.12+](https://nodejs.org/en/download). Reopen the shell; check `uv --version`, `node --version`, and `npm --version`. |
+| Health works, but `/` returns API-ready JSON | Build `web/dist` from the same checkout, then restart Python. Static assets are registered at application startup. |
+| Blank or stale page after rebuilding | Reload the tab after the backend and frontend are updated together. The recovery screen offers **Reload workspace**; this clears browser conversations. |
+| Port already in use | Stop the previous instance or use `--port` with the CLI. For SSH, change the local forwarded port; keep the remote destination aligned with the server. |
+| `400 Invalid host header` | Open the documented localhost URL or SSH tunnel. Public DNS hosts are not enabled by a configuration variable. |
+| Copilot/session request returns `403` | Use the same application origin. For development, the supported Vite origins use port 5173 and its proxy targets backend port 8000. |
+| Wrong or synthetic dataset | Check the absolute `MONEYGRAPH_DATA_DIR`, service-user permissions, and whether a shell/service variable overrides `.env`; restart after correction. |
+| Invalid dataset prevents startup | Fix the named schema/aggregation validation problem. The application does not fall back silently to synthetic data. |
+| Assistant stays offline or returns fallback | Both AI flags and the server-side key are required. `/api/copilot/status` reports configuration only; inspect the sanitized fallback reason for provider/validation failure. Local actions remain available. |
+| Session creation returns `503` | Check the private SQLite parent directory, ownership, write permissions and absence of a database symlink; restart after correcting configuration. |
+| `429 Too Many Requests` | Respect `Retry-After`. Budgets are per process; adding workers is not a supported workaround. |
+| User service stops on logout or does not start after reboot | Check user lingering and `systemctl --user status`; enabling lingering requires the server administrator's policy. |
+
+**Verification scope:** the repository's frozen CLI was smoke-tested on a separate loopback port with synthetic data and AI disabled: health, expected dataset counts, compiled HTML, all 14 entry assets, and a local assistant action passed. Missing-build behavior and the CLI port rules were checked separately. The latest full application gate is recorded under [Verify the submission](#verify-the-submission). All Bash examples passed syntax checks, and the service unit passed `systemd-analyze --user verify` with the local checkout path substituted. Systemd supervision, SSH connectivity, and a remote host were not exercised by that smoke test.
 
 ## Required outputs
 
