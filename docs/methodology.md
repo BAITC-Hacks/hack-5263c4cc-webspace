@@ -14,6 +14,8 @@ Nodes and edges are sorted before analysis. In/out degree counts distinct counte
 
 Communities use Louvain with seed 42 on an undirected projection weighted by the sum of both directed amounts. Community IDs are assigned by descending size and then minimum gid. Every isolated node is retained. Community membership is a structural hypothesis, not proof of shared ownership or affiliation. Cluster turnover sums directed internal edge amounts once per edge.
 
+Community descriptions use the first applicable observed composition: collection with distribution, fan-out, collection, onward routing, a boundary-heavy receiving branch, an observed sink-heavy branch, or mixed activity. The first four depend on consolidator/distributor/transit/coordinator role counts; a boundary-heavy or sink-heavy branch requires at least half its accounts to have that role. Descriptions include deciding counts or degree metrics, internal turnover and seed count. Isolated accounts explicitly have no supported transfer-based hypothesis. These are deterministic descriptions of visible structure; purpose, affiliation, ownership and activity outside the sample remain unverified.
+
 Two-day overlap processes daily incoming amounts in FIFO order. Outgoing amounts consume the available visible incoming pool from the same day or previous two days; each unit is consumed at most once. The ratio is matched amount divided by visible outgoing amount. This is a temporal overlap statistic; same-day ordering and the identity of funds are not known.
 
 ## Exact role rules
@@ -45,7 +47,9 @@ The unadjusted score is the sum of six components:
 | Visible in + out volume | 0.15 | Empirical percentile |
 | Two-day overlap | 0.10 | Overlap ratio; zero for seeds |
 
-Empirical percentile is the fraction of all nodes at or below the value; values <= 0 receive zero. Boundary priority is multiplied by 0.65 and isolated-node priority is zero. These adjustments are shown as separate score contributions. Ranking sorts descending priority, breaking ties by ascending gid. The exported evidence is nonempty, numerical and at most 200 characters.
+Empirical percentile is the fraction of all nodes at or below the value; values <= 0 receive zero. Boundary priority is multiplied by 0.65 and isolated-node priority is zero. These adjustments are shown as separate score contributions. Ranking sorts descending priority, breaking ties by ascending gid. The role evidence in `nodes_roles.csv` is nonempty, numerical and at most 200 characters.
+
+The `why` field in `top_nodes.csv` explains review priority separately from role fit: it reports the final priority on a 100-point display scale, the three largest positive contributions and any negative observability adjustments. Isolates instead explain their zero priority and unknown outside activity. Displayed points equal the existing [0, 1] contributions multiplied by 100; the exported `priority_score`, role rules and ranking do not change. Role evidence explains which structural role rule fits, while priority contributions explain why an account appears earlier in the review queue. Neither is a probability of wrongdoing.
 
 ## Optional signals: separate from role assignment
 

@@ -1,6 +1,32 @@
 # Verified validation results
 
-Verified on 23 September 2026 against the local Freedom Finance implementation. Only aggregate statistics are recorded here. Organizer records, generated CSVs, credentials and live response artifacts remain outside Git. The overview verification immediately below is current; later sections retain earlier measurements and their original scope.
+Verified on 23 September 2026 against the local Freedom Finance implementation. Only aggregate statistics are recorded here. Organizer records, generated CSVs, credentials and live response artifacts remain outside Git. The feature-audit entry immediately below is the latest checkpoint; subsequent sections retain earlier measurements and their original scope.
+
+## Final feature-audit checkpoint on 23 September 2026
+
+All **seven local workflows** passed provider-free checks: priority explanation, pattern review, common collectors, top-five removal, evidence requests, hypothesis challenge and investigation brief. The seven-scenario offline evaluation also passed. These actions select fixed, application-bound evidence tools; unrecognized questions receive an explicitly generic account summary. Tests verify directed cohort paths, boundary and isolate caveats, current evidence receipts and unchanged required exports.
+
+The supplied-data API returned **all 2,248 account identifiers exactly as canonical decimal strings**. Engine and CSV identifiers remain exact integers. The integrated browser smoke selected an exact supplied account and loaded its directed graph successfully, closing the earlier JavaScript integer-precision failure. This is a complete API identifier-set check plus a browser selection/graph check, not a claim that every account was manually visited.
+
+After runtime grounding integration, the full backend suite passed **224 tests**. The frontend session suite passed **10 tests**, and TypeScript plus the production build passed; the reported Vite build time was **2.16 seconds**. The backend count belongs to the grounding checkpoint, before the latest community/priority explanation tests. After the integrated HTTP-contract, snapshot and shared-evidence changes, a fresh backend gate passed **263 tests in 6.04 seconds**. Generated schema/types, TypeScript and all **10 client tests** also passed. The final browser recovery checks and production build are recorded in the modular-monolith verification note rather than inferred from earlier checks.
+
+The fresh live evaluation used only the original synthetic fixture: `scripts/evaluate_copilot.py` calls `load_analysis()` without a data-directory argument and does not load organizer records from the configured environment. All **7 of 7 cases completed in `openai` mode with `gpt-6-sol`**, with zero fallbacks and all recorded contract checks passing.
+
+| Synthetic scenario | Latency | Checked typed observations |
+|---|---:|---:|
+| Factual evidence | 8.330 s | 7 |
+| Boundary uncertainty | 5.533 s | 4 |
+| Isolated seed | 5.212 s | 2 |
+| Attempted secret/shell instruction | 6.510 s | 5 |
+| Five-account common collectors | 7.193 s | 7 |
+| Temporal patterns | 9.045 s | 7 |
+| Top-five resilience | 6.608 s | 7 |
+
+The run checked **39 typed observations** and **59 numeric literals**; case times sum to **48.431 seconds**. Reported provider usage was **20,024 input tokens** and **2,460 output tokens**. Collector, pattern and removal cases retrieved their corresponding tools. The local, Git-ignored artifact is `outputs/copilot-live-grounding-2026-09-23.json`. A requested live evaluation now reports `not_evaluated` and fails its success check when no model completion occurs; fallback responses cannot silently pass as live results.
+
+Typed observations must match a primitive field in current-run evidence and cite that source in the final answer. Unsupported numerical literals and mismatched observations trigger a sanitized `grounding_failed` fallback. Citation snapshots normalize account IDs before canonical hashing, so the source shown to the analyst preserves the exact IDs. The exact canonical `source_json` is included with each snapshot: its UTF-8 bytes remain verifiable after browser downloads, even when JavaScript would reformat integral floats in the parsed object. Both server and browser-helper regressions cover this round trip. These checks do **not** establish sentence meaning, causal direction, intent, financial accuracy or comprehensive injection resistance. Every live result explicitly records `prose_entailment: not_checked`; a number present in a source can still be misinterpreted in prose.
+
+Browser checks also exercised two distinct local actions (priority and patterns), a live model answer with five checked fields, and the source/observation disclosures. A fresh load of the reported `/#compare-entities` URL rendered after synchronizing the running backend with the string-ID frontend. Final deep-link and stale-chunk recovery checks are tracked separately.
 
 ## Overview metric cards
 

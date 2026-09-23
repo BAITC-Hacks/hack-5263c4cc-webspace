@@ -2,43 +2,59 @@
 name: "Aqsha Lens"
 description: "A clear, factual workspace for inspecting recorded money flows."
 colors:
-  background: "#f1f3f0"
-  foreground: "#20231f"
+  background: "#f3f6f4"
+  foreground: "#202923"
   card: "#ffffff"
-  card-foreground: "#20231f"
+  card-foreground: "#202923"
   popover: "#ffffff"
-  popover-foreground: "#20231f"
+  popover-foreground: "#202923"
   primary: "#8ce85f"
   primary-foreground: "#14320d"
-  secondary: "#f0f3ee"
-  secondary-foreground: "#363e32"
-  muted: "#f2f4f1"
-  muted-foreground: "#626b5e"
-  accent: "#edf4e8"
-  accent-foreground: "#24321e"
+  secondary: "#edf2ee"
+  secondary-foreground: "#344b3d"
+  muted: "#f1f5f2"
+  muted-foreground: "#5c6b62"
+  accent: "#eaf3ed"
+  accent-foreground: "#244b32"
   destructive: "#b13d37"
-  border: "#e2e7df"
-  input: "#d9e0d5"
-  ring: "#238832"
-  chart-1: "#098830"
-  chart-2: "#1f6226"
-  chart-3: "#718d66"
-  chart-4: "#667787"
-  chart-5: "#b28b4d"
-  sidebar: "#ffffff"
-  sidebar-foreground: "#535c4f"
-  sidebar-primary: "#1d1f20"
-  sidebar-primary-foreground: "#ffffff"
-  sidebar-accent: "#20231f"
-  sidebar-accent-foreground: "#ffffff"
-  sidebar-border: "#e2e7df"
-  sidebar-ring: "#238832"
-  brand: "#098830"
-  graph-ink: "#20251f"
-  graph-incoming: "#098830"
-  graph-outgoing: "#677b92"
-  graph-related: "#c0c9bb"
+  border: "#dde5df"
+  input: "#83958a"
+  ring: "#247344"
+  brand: "#247344"
+  flow-incoming: "#247344"
+  flow-outgoing: "#586e94"
+  flow-related: "#7b897e"
+  graph-ink: "#263b2d"
   graph-surface: "#ffffff"
+  graph-grid: "#dce5df"
+  chart-1: "#247344"
+  chart-2: "#586e94"
+  chart-3: "#397d7f"
+  chart-4: "#7c6d96"
+  chart-5: "#946d36"
+  role-consolidator: "#247344"
+  role-transit: "#586e94"
+  role-distributor: "#946d36"
+  role-terminal: "#7c6d96"
+  role-coordinator: "#263b2d"
+  role-peripheral: "#758470"
+  role-boundary: "#617f4c"
+  community-1: "#247344"
+  community-2: "#586e94"
+  community-3: "#7c6d96"
+  community-4: "#397d7f"
+  community-5: "#946d36"
+  community-6: "#697e51"
+  community-7: "#967168"
+  community-8: "#4c6057"
+  sidebar: "#ffffff"
+  sidebar-foreground: "#526259"
+  sidebar-primary: "#202923"
+  sidebar-primary-foreground: "#ffffff"
+  sidebar-accent: "#edf3ef"
+  sidebar-accent-foreground: "#244b32"
+  sidebar-border: "#dde5df"
+  sidebar-ring: "#247344"
 typography:
   headline:
     fontFamily: "Inter Variable, Inter, sans-serif"
@@ -78,12 +94,13 @@ typography:
     fontSize: "1rem"
     lineHeight: 1.7
 rounded:
-  sm: "0.6rem"
-  md: "0.8rem"
-  lg: "1rem"
-  xl: "1.4rem"
-  2xl: "1.8rem"
-  4xl: "2.6rem"
+  sm: "0.45rem"
+  md: "0.6rem"
+  lg: "0.75rem"
+  xl: "1.05rem"
+  2xl: "1.35rem"
+  4xl: "1.95rem"
+  card: "1rem"
 spacing:
   1: "4px"
   2: "8px"
@@ -114,11 +131,11 @@ components:
   input:
     textColor: "{colors.foreground}"
     rounded: "{rounded.lg}"
-    height: "32px"
+    height: "40px"
     padding: "4px 10px"
   navigation-active:
-    backgroundColor: "{colors.sidebar-accent}"
-    textColor: "{colors.sidebar-accent-foreground}"
+    backgroundColor: "{colors.sidebar-primary}"
+    textColor: "{colors.sidebar-primary-foreground}"
     rounded: "{rounded.md}"
     height: "32px"
     padding: "8px"
@@ -131,7 +148,7 @@ components:
   card:
     backgroundColor: "{colors.card}"
     textColor: "{colors.card-foreground}"
-    rounded: "{rounded.xl}"
+    rounded: "{rounded.card}"
     padding: "16px"
   graph-account:
     backgroundColor: "{colors.graph-ink}"
@@ -165,7 +182,7 @@ White and pale cool gray-green surfaces carry most of the interface. The YAML fr
 
 ### Primary
 
-Bright lime (`primary`) carries principal actions and the header's assistant entry, with dark-green foreground text. Dark green (`brand` and `ring`) supports analytical emphasis and keyboard focus. The charcoal sidebar accent supplies selected and hovered rows, keeping navigation distinct from actions.
+Bright lime (`primary`) carries principal actions and the header's assistant entry, with dark-green foreground text. Dark green (`brand` and `ring`) supports analytical emphasis and keyboard focus. The charcoal sidebar primary supplies the selected destination. Pale sidebar accent supplies hover feedback, keeping the active page distinct from other destinations.
 
 ### Neutral
 
@@ -173,7 +190,7 @@ The cool canvas (`background`) sits behind white cards, popovers and sidebar. Pa
 
 ### Analytical and status colors
 
-The five chart tokens provide dark green, forest green, sage, slate and ochre series. They communicate categories, not decoration. Graph incoming edges use dark green, outgoing edges slate-blue, and related edges pale gray-green. Direction, labels and legend remain essential. Destructive red is reserved for errors and destructive state.
+The five chart tokens provide forest green, slate blue, muted teal, plum and ochre series. Shared flow tokens use forest green for incoming, slate blue for outgoing, and a darker gray-green for related edges. The timeline and graph use the same directional semantics. Role and community tokens reference this shared palette; the eight community colors repeat while visible IDs retain exact identity. Direction, labels and legends remain essential. Destructive red is reserved for errors and destructive state.
 
 **The Evidence Color Rule.** Color supports a labeled category or interaction state; it never carries a finding alone.
 
@@ -181,7 +198,7 @@ The five chart tokens provide dark green, forest green, sage, slate and ochre se
 
 **Display and body:** self-hosted Inter Variable, loaded through `@fontsource-variable/inter`, with Inter and sans-serif fallbacks. Optical sizing and the `cv02`, `cv03`, `cv04` and `cv11` character variants are enabled. There is no separate display family. Monospaced account IDs in the graph use the existing utility mono stack; numerical quantities use tabular figures.
 
-Page headings use the headline role. All card titles use the title role. The body and assistant response roles are 16px; compact explanatory text remains 14px. Buttons use the 15px control role, and table records are also 15px. Table headings use 13px text, while compact metadata and badges use the 12px label role. Metric numerals use the metric role at wider widths and reduce to 1.65rem below the small breakpoint. Assistant prose uses 1.7 line height, increasing to 1.75 in containers at least 540px wide. Graph account IDs are 16px semibold, role labels 13px/18px and supplemental boundary/seed text 11px/16px.
+Page headings use the headline role. All card titles use the title role. The body and assistant response roles are 16px; compact explanatory text remains 14px. Buttons use the 15px control role, and table records are also 15px. Table headings use 13px text, while compact metadata and badges use the 12px label role. Metric numerals use the metric role at wider widths and reduce to 1.65rem below the small breakpoint. Assistant prose uses 1.7 line height, increasing to 1.75 in containers at least 540px wide. Graph account IDs are 16px semibold, reducing to 14px when longer than 12 characters. Role labels use 13px/18px and supplemental boundary/seed text uses 13px/16px.
 
 **The Record First Rule.** Account IDs, amounts and evidence remain readable before decorative or summary content receives more space.
 
@@ -189,15 +206,15 @@ Page headings use the headline role. All card titles use the title role. The bod
 
 The viewport contains a persistent application shell, a wrapping header at least 64px high, and an independently scrolling workspace. The standard desktop sidebar is 16rem wide and collapses to a 3rem icon rail; its state is restored from the `sidebar_state` cookie. At widths below 768px navigation uses an 18rem Sheet. Workspace padding is 16px, increasing to 28px at 1024px. Repeated content uses a 4px spacing rhythm, with 20px and 24px section gaps.
 
-Overview metrics form two columns and expand to four at 1280px. At the same breakpoint the analytical overview uses a 1.45fr/1fr composition with a 340px minimum secondary column. Tables retain meaningful column widths and scroll within their containers. The header search wraps to a full row below 640px.
+Overview metrics form two columns and expand to four at 1280px. The review queue follows the metrics before the community and role composition cards. At the same breakpoint those analytical cards use a 1.45fr/1fr composition with a 340px minimum secondary column. Tables retain meaningful column widths and scroll within their containers. The header search wraps to a full row below 640px.
 
-On wide investigation screens the evidence inspector occupies a 320px column. Hiding it keeps the component mounted so local working state survives. Narrow screens use a full-width Sheet capped at 440px. The graph uses 124px by 136px account cells and a 520px canvas from 640px upward; its narrow canvas is 410px high. Below 640px the default graph mode is the transfer table. The flow canvas remains available on demand.
+On wide investigation screens the evidence inspector occupies a 320px column. Hiding it keeps the component mounted so local working state survives. Narrow screens use a full-width Sheet capped at 440px. The graph uses 176px by 136px account cells and a 520px canvas from 640px upward; its narrow canvas is 410px high. Below 640px the default graph mode is the transfer table. The flow canvas remains available on demand.
 
 The global assistant docks on the right at 460px wide from 768px upward. Expanded mode uses a Sheet up to 1,100px wide with 16px viewport insets; below 768px it fills the available viewport. Conversation history occupies a 240px side column in expanded desktop mode and replaces the message view in the dock or on mobile. The thread owns vertical scrolling; its composer stays in the footer with safe-area padding. Message content is capped at 46rem, with denser spacing in narrow containers.
 
 ## Elevation & Depth
 
-Depth is primarily tonal and structural: white cards, a cool canvas, fine boundaries and lightly tinted supporting states. Cards use a one-pixel border-colored ring. Active segmented tabs have the small library shadow; Sheets use the larger library shadow and a 10% black backdrop. The assistant dock has a diffuse shadow (`0 16px 64px -16px #27272440`) to distinguish it from the workspace beneath. Focus uses the dark-green ring, generally 3px at 50% opacity on form controls.
+Depth is primarily tonal and structural: white cards, a cool canvas, fine boundaries and lightly tinted supporting states. Cards use a one-pixel border-colored ring. Active segmented tabs have the small library shadow; Sheets use the larger library shadow and a 10% black backdrop. The assistant dock has a diffuse shadow (`0 16px 64px -16px #27272440`) to distinguish it from the workspace beneath. Focus uses the dark-green ring, generally 3px at 50% opacity plus a solid border on form controls. Input groups add a solid 2px outline with a 2px offset; keyboard-focused chart elements receive a 2px solid inset outline. A visible skip link provides direct access to the workspace.
 
 **The Quiet Surface Rule.** Use restrained surface separation; reserve lifted overlays for actual temporary interaction layers.
 
@@ -205,29 +222,29 @@ A single workspace entrance uses 180ms with the source ease-out curve and a 6px 
 
 ## Shapes
 
-Controls use rounded corners from the radius scale above. The source base radius is 1rem; medium corners are 0.8rem and card corners 1.4rem. Header buttons use fully rounded pills; small button variants cap their radius at 10px or 12px. Badges use the large 2.6rem radius to form compact pills. Cards and graph containers have continuous rounded boundaries. Selected account glyphs are 68px in diameter and neighboring glyphs 54px, each with a two-pixel boundary. Observation-boundary accounts use dashed circles as well as text.
+Controls use rounded corners from the radius scale above. The source base radius is 0.75rem; medium corners are 0.6rem and cards use an explicit 1rem radius. Header buttons use fully rounded pills; small button variants cap their radius at 10px or 12px. Badges use the large 1.95rem radius to form compact pills. Cards and graph containers have continuous rounded boundaries. Selected account glyphs are 68px in diameter and neighboring glyphs 54px, each with a two-pixel boundary. Observation-boundary accounts use dashed circles as well as text.
 
 ## Components
 
 ### Buttons and fields
 
-Base UI action buttons have 40px default height, 15px medium-weight text, 16px horizontal padding and a 16px corner radius. Small buttons are 36px and large buttons 44px high. Coarse pointers receive a minimum 44px action-button target. Bright green fills identify primary actions; outline and ghost variants support contextual actions. Default hover reduces the green fill to 80%; outline and ghost hover use the muted surface. Keyboard focus uses the dark-green border and ring. Disabled controls lower opacity and stop pointer interaction. Pointer press uses a subtle scale treatment only for fine pointers; the library also supplies a one-pixel press translation where appropriate.
+Base UI action buttons have 40px default height, 15px medium-weight text, 16px horizontal padding and a 12px corner radius. Small buttons are 36px and large buttons 44px high. Coarse pointers receive a minimum 44px action-button target. Bright green fills identify primary actions; outline and ghost variants support contextual actions. Default hover reduces the green fill to 80%; outline and ghost hover use the muted surface. Keyboard focus uses the dark-green border and ring. Disabled controls lower opacity and stop pointer interaction. Pointer press uses a subtle scale treatment only for fine pointers; the library also supplies a one-pixel press translation where appropriate.
 
-Inputs are 32px high, transparent, softly bordered and rounded like buttons. Their text is 16px on narrow screens and 14px from 768px; placeholders use the muted foreground. Focus uses the same dark-green ring, and invalid state uses destructive red. Labels stay programmatically associated even where the compact layout visually hides them.
+Inputs are 40px high, transparent, clearly bordered and rounded like buttons. Their text is 16px on narrow screens and 15px from 768px; placeholders use the muted foreground. Focus uses the same dark-green ring, and invalid state uses destructive red. Labels stay programmatically associated even where the compact layout visually hides them.
 
 ### Navigation and tabs
 
-The white sidebar retains the standard Base UI geometry: 32px navigation rows, 8px padding and 14px labels. Active and hovered rows use charcoal and white; the active destination also has a filled icon. The dedicated assistant row uses an outline treatment; the header's assistant action uses green. The brand row is 48px high and pairs the generated A mark with a product wordmark. The sidebar contains the assistant and workspace destinations without a footer; collapse remains available through the header trigger and sidebar rail. Segmented tabs sit on a muted track; the active tab takes the background surface and small shadow. The line variant uses an underline instead.
+The white sidebar retains the standard Base UI geometry: 32px navigation rows, 8px padding and 14px labels. The active destination uses charcoal and white with a filled icon; hover on other rows uses a pale green-gray surface and dark green text. The active destination retains its charcoal treatment during hover. Mobile navigation rows have a minimum height of 44px, 12px horizontal padding and 4px gaps. The dedicated assistant row uses an outline treatment; the header's assistant action uses green. The brand row is 48px high and pairs the generated A mark with a product wordmark. The sidebar contains the assistant and workspace destinations without a footer; collapse remains available through the header trigger and sidebar rail. Segmented tabs sit on a muted track; the active tab takes the background surface and small shadow. The line variant uses an underline instead.
 
 ### Cards, records and badges
 
 Cards are white and ringed, with 16px default internal spacing and a 12px compact variant. Several overview cards explicitly use 20px horizontal padding. Card footers stay transparent. Tables use muted 13px medium headers, 15px records, 12px vertical cell padding and tabular, right-aligned quantities. Badges are compact 20px pills; secondary badges use the pale secondary surface and its foreground. Metric hierarchy is label, large figure and concise supporting context.
 
-The four overview metric cards compose the existing shadcn Card and Chart components. They add a seed-share bar, recorded-transfer columns, a turnover area chart and community-size columns beneath the totals. Each chart occupies a 76px region; quiet footers show the actual observation period or count scope. Activity charts show at most 32 chronological calendar buckets and say “Grouped” when a bucket spans multiple dates. Tooltips expose exact dates and values through pointer or keyboard navigation. Community bars preserve the full chart's category colors and disclose the number shown. Empty activity and unavailable community data remain explicit. These are observed distributions and transaction histories, never invented growth comparisons.
+The four overview metric cards compose the existing shadcn Card and Chart components. They add a seed-share bar, recorded-transfer columns, a turnover area chart and community-size columns beneath the totals. Each chart occupies a 56px region below 640px and a 76px region from 640px upward; quiet footers show the actual observation period or count scope. Activity charts show at most 32 chronological calendar buckets and say “Grouped” when a bucket spans multiple dates. Tooltips expose exact dates and values through pointer or keyboard navigation. Community bars preserve the full chart's category colors and disclose the number shown. Empty activity and unavailable community data remain explicit. These are observed distributions and transaction histories, never invented growth comparisons.
 
 ### Transfer neighborhoods
 
-Circular glyphs encode role hypotheses with Phosphor symbols. The selected account has a dark filled circle, other accounts white interiors and subdued role or community strokes. Account IDs, roles and boundary/seed status sit below each glyph. Curved directed paths retain return transfers and self-transfers. Incoming, outgoing and related paths have distinct subdued strokes; labels show recorded amounts. Controls expose fit, center, zoom, flow/table mode and export using the same button system.
+Circular glyphs encode role hypotheses with Phosphor symbols. The selected account has a dark filled circle, other accounts white interiors and subdued role or community strokes. Account IDs, roles and boundary/seed status sit below each glyph. Curved directed paths retain return transfers and self-transfers. Incoming, outgoing and related paths have distinct subdued strokes; labels show recorded amounts. Controls expose fit, center, zoom, flow/table mode and export using the same button system. Initial fitting keeps labels at a readable scale; explicit Fit or an expanded graph can fit down to 0.25×. Center restores the selected account at 1× zoom. The canvas permits zoom from 0.25× to 1.8×.
 
 ### Evidence and assistant
 
@@ -235,7 +252,7 @@ The evidence inspector separates observed facts, role hypotheses and missing evi
 
 The header's “Ask Aqsha” action, sidebar entry and Cmd/Ctrl+J shortcut open the same assistant workspace. Its persistent runtime owns conversations, drafts and branches while presentation changes between closed, docked and expanded. The visible scope identifies the conversation's account even after the workspace selection changes. History supports search, new conversation, rename and confirmed deletion; the conversation menu exports JSON. Questions support edit and resend; answers support copy, retry and branch navigation.
 
-The assistant uses a white message canvas and muted composer. Markdown inherits dashboard colors, uses restrained code backgrounds and thin quotation/table borders, and wraps long content. Completed replies expose collapsible evidence references, evidence checks, limitations and execution details. Account references navigate back to the workspace. Request-level working and stop controls reflect the actual request; completed tool traces are not presented as live execution. Mode labels distinguish AI, local summaries and fallback. Visible chats last until refresh; bounded server context has its own expiry and deletion behavior, documented in [architecture.md](docs/architecture.md).
+The assistant uses a white message canvas and muted composer. A disabled Send button does not dim the editable composer: input-group disabled styling follows the actual text control, not any disabled descendant. The composer retains a visible outline while focused. Markdown inherits dashboard colors, uses restrained code backgrounds and thin quotation/table borders, and wraps long content. Completed replies expose collapsible evidence references, evidence checks, limitations and execution details. Account references navigate back to the workspace. Request-level working and stop controls reflect the actual request; completed tool traces are not presented as live execution. Mode labels distinguish AI, local summaries and fallback. Visible chats last until refresh; bounded server context has its own expiry and deletion behavior, documented in [architecture.md](docs/architecture.md).
 
 ### Identity asset
 

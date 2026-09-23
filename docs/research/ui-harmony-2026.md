@@ -1,0 +1,50 @@
+# UI harmony and interaction review
+
+Researched on 23 September 2026 against commit `ea2e149`. Scope: refine Aqsha Lens while preserving the selected Freedom Finance direction, Base UI/shadcn components, Phosphor icons, and the existing investigation workflow.
+
+Exa returned 20 search candidates across four workstreams: the original brand reference, data visualization, accessibility, and component guidance. Duplicate Carbon and shadcn variants were consolidated; recommendations below rely on primary sources. `DESIGN.md`, actual styles and components, and the current `artifacts/metric-cards-desktop.png` and `artifacts/metric-cards-mobile.png` captures were inspected. The older `freedom-overview-desktop.png` predates the metric charts and was excluded from current layout judgments. This document records recommendations, not a claim that every change has shipped or passed an accessibility audit.
+
+## Direction
+
+Keep a white content surface, a faint cool gray-green canvas, charcoal navigation selection, self-hosted Inter, and a scarce lime primary action. Strengthen the hierarchy and consistency of this existing system. Renua identifies accessibility, hierarchy, and speed as goals for its [Freedom Finance product](https://renua.one/work/freedom-finance). The desktop investigation layout is our adaptation; the case study does not demonstrate that layout. Exact reference colors and inspected gallery assets remain documented in [the earlier reference review](freedom-ui-reference.md).
+
+The highest-value change is assigning every color a stable meaning. Harmonization does not require all financial series to become green. Category colors identify groups; incoming/outgoing colors identify direction; lime identifies an action. These roles should stay distinct. [Carbon's palette guidance](https://carbondesignsystem.com/data-visualization/color-palettes/) separates categorical data from ordered, sequential scales and reserves alert colors for status.
+
+## Eight actionable improvements
+
+| Priority | Change | Current evidence and implementation target | Reason and verification |
+| --- | --- | --- | --- |
+| 1 | Use one semantic flow palette throughout the product. | `DailyTimeline.tsx` renders outgoing values with the dark-green `--chart-2`, while `NetworkGraph.tsx` uses slate `#677b92`. Define shared incoming, outgoing, related, and selected tokens, and apply them to traces, arrows, legends, tooltips, and timeline bars. | A direction should remain recognizable when switching views. [IBM's chart guidance](https://www.ibm.com/design/language/data-visualization/design/basics/) recommends consistent colors for recurring metrics. Verify both representations using the same selected account; retain explicit direction labels. |
+| 2 | Increase contrast of meaningful graph strokes and muted role glyphs. | Related edges are `#c0c9bb`, and peripheral glyphs use `#97a394`. Both are too faint against white when the stroke/icon is needed to identify the relationship or role. Suitable palette-compatible candidates are `#879180` for related edges and `#758470` for peripheral marks. | [WCAG non-text contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html) calls for 3:1 for meaningful graphics against adjacent colors. Keep thin graph strokes comfortably above that minimum, and verify default, hovered, selected, and exported states. |
+| 3 | Separate navigation hover from the active destination. | `sidebar-accent` supplies the same charcoal fill and white text for hover and `data-active`. Hovering another destination therefore gives it the same weight as the current page. | Give hover a pale neutral or pale green surface with dark text; preserve charcoal and the filled Phosphor icon for the active destination. Retain `aria-current`, standard collapse geometry, and tooltips. This follows the reference's hierarchy and [Base UI's interaction guidance](https://base-ui.com/react/overview/accessibility); it is a product recommendation, not a mandated color rule. |
+| 4 | Give keyboard-focused charts a visible outline. | The shared `ChartContainer` suppresses outlines on Recharts surfaces, layers, and sectors. `accessibilityLayer` enables keyboard interaction, but does not by itself supply a visible custom focus treatment. | Add a clear focus-visible outline or parent focus-within ring without clipping tooltips. [shadcn chart documentation](https://ui.shadcn.com/docs/components/base/chart) supports `accessibilityLayer`; [WCAG Focus Visible](https://www.w3.org/WAI/WCAG22/Understanding/focus-visible.html) requires a persistent visual indication while focused. Check Tab entry and arrow-key traversal on both chart families. |
+| 5 | Make the surface and control system coherent. | `styles.css` uses several very similar green-tinted neutrals, while buttons, header pills, input borders, graph whites, and assistant styles draw from separate values. Graph colors and some labels also embed hex literals. | Consolidate surface, border, hover, selection, and focus values; keep white cards and a restrained canvas tint. Use stronger borders for fields whose boundary is necessary to recognize the input, without darkening every decorative card separator. [Base UI](https://base-ui.com/react/overview/accessibility) supplies interaction behavior but leaves contrast and visible focus to application styling. Verify actual computed colors after alpha blending. |
+| 6 | Keep categorical colors stable and reinforce them with visible labels. | `api.ts` already shares `communityColor(id)` across charts, but its eight-color palette repeats on the ninth community; some neighboring entries are similar greens. Role legends already include names and exact counts. | Preserve stable identity across views, maintain the existing restrained slate/plum/ochre companions, and keep direct group labels and exact-value tables. For more than eight groups, color must never be the unique identifier. [Carbon](https://carbondesignsystem.com/data-visualization/color-palettes/) distinguishes categorical from sequential palettes; [WCAG Use of Color](https://www.w3.org/WAI/WCAG22/Understanding/use-of-color.html) requires visible alternatives to hue alone. |
+| 7 | Improve metric-card rhythm without inventing new data. | The new charts correctly use raw transaction buckets, explicit dates, and actual community sizes. On narrow screens, repeated captions and wrapping cause variable vertical rhythm. `OverviewMetrics.tsx` contains the affected composition. | Align label, value, short scope, chart, and footer regions; retain units and the observation period. Reduce repeated words only where the meaning remains explicit. Keep the 32-bucket bound, zero baselines, exact tooltips, and disclosed grouping. [IBM](https://www.ibm.com/design/language/data-visualization/design/basics/) recommends legible scale, restrained chart furniture, and important facts visible before interaction. |
+| 8 | Verify interaction hierarchy at desktop and touch widths. | The global assistant already has header, sidebar, and keyboard access; evidence and full-screen presentations share a runtime. Preserve those paths while refining controls. The sidebar's official 48px collapsed geometry must remain intact. | Keep “Ask Aqsha” as the strongest global action, use quiet contextual actions, and preserve visible account scope. Check 320–390px layouts, 200% zoom, focus return, Escape behavior, and pointer targets. WCAG's [minimum target size](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) is 24×24 CSS px subject to exceptions; 44px primary touch targets remain a useful stronger design target. |
+
+## Contrast measurements
+
+Computed from the baseline source hex values using WCAG relative luminance; ratios below are rounded for reporting, not threshold decisions. These measurements cover the named solid-color pairs, not the whole interface or translucent states.
+
+| Foreground / background | Ratio | Implication |
+| --- | ---: | --- |
+| Main text `#20231f` / canvas `#f1f3f0` | 14.24:1 | Strong existing text contrast. |
+| Muted text `#626b5e` / white | 5.55:1 | Preserve this readability when tuning neutrals. |
+| Action label `#14320d` / lime `#8ce85f` | 9.27:1 | Existing primary-button pairing works. |
+| Lime `#8ce85f` / white | 1.52:1 | Do not use lime alone for small text or a meaningful thin stroke. |
+| Incoming `#098830` / white | 4.59:1 | Suitable for graph strokes and marks. |
+| Outgoing `#677b92` / white | 4.35:1 | Suitable for marks; use normal text color for small labels. |
+| Related edge `#c0c9bb` / white | 1.71:1 | Increase meaningful edge contrast. |
+| Peripheral glyph `#97a394` / white | 2.63:1 | Increase meaningful icon/stroke contrast. |
+| Proposed related edge `#879180` / white | 3.29:1 | Passes the solid-color non-text threshold. |
+| Proposed peripheral glyph `#758470` / white | 3.97:1 | Adds margin above the non-text threshold. |
+| Focus green `#238832` / white | 4.53:1 | Suitable solid focus color; translucent rings need separate checking. |
+
+[WCAG text contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html) requires 4.5:1 for normal text and 3:1 for qualifying large text. A pale decorative card border does not automatically fail non-text contrast; apply the requirement to information necessary to identify controls, their states, and meaningful graphics.
+
+## Scope and acceptance
+
+Use the installed Base UI/shadcn/Recharts stack. A new chart dependency, ornamental 3D scene, new brand, and an additional color framework would add migration work without resolving the observed problems. Keep the generated logo, existing numerical evidence, labeled uncertainty, real activity charts, and exact export contracts.
+
+Validate one batched desktop/mobile pass, then one confirmation pass after corrections: overview, investigation, assistant, selected and empty states, keyboard navigation, reduced motion, and chart detail access. Check appearance in grayscale as well as color. Record any remaining limitations rather than describing a few contrast checks as complete WCAG compliance.

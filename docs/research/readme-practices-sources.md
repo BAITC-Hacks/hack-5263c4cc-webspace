@@ -4,6 +4,12 @@ Reviewed 23 September 2026 for the Freedom Finance Money Graph submission. Exa s
 
 The requested command, `npx skills use "https://github.com/github/awesome-copilot" --skill "create-readme"`, completed successfully. Its complete output was captured to a temporary file and read before writing. This invocation returned inline skill instructions and no supporting-files directory or relative supporting paths. The resulting README uses the existing project logo, GFM tables and two alerts, with extended reference material kept in documentation files.
 
+## Integration refresh
+
+The same exact skill command was rerun for the final README update. All 1,474 bytes of its output and all four raw reference files were read completely again. It still returned inline instructions without a supporting-files directory. GitHub's README guidance and alert announcement were reopened; the organizer's Google Doc and event page could not be fetched through the web tool on this pass, so their earlier source audit is retained rather than presented as newly verified.
+
+The implementation audit compared current setup scripts, dependencies, HTTP contracts, exports, snapshot/evidence modules, assistant runtime, local workflows, grounding checks, and browser UI against each README claim. An independent read-only audit flagged stale offline behavior, missing int64 transport details, outdated test totals, and overbroad descriptions of citation validation. The revision now explains seven local actions, exact source snapshots and numerical checks without claiming semantic entailment; it separates historical clean-checkout proof from [fresh integration measurements](../readme-current-verification.md). The new synthetic preview is stored separately to preserve historical screenshot provenance.
+
 ## Recommended approach
 
 Lead with the analyst's task, the concrete output and the local demo path. Keep exact commands, prerequisites and expected results visible. Link deeper methodology, architecture, acceptance and validation material using relative paths. GitHub describes the README as the entry point for explaining purpose, usefulness, getting started, help and maintainers; it recommends relative links for repository files and keeping extended documentation elsewhere. Source quality: first-party platform documentation. [GitHub: About READMEs](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes).

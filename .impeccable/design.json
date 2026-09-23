@@ -1,37 +1,37 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-23T12:01:53.275936+00:00",
+  "generatedAt": "2026-09-23T12:36:08.457177+00:00",
   "title": "Design System: Aqsha Lens",
   "extensions": {
     "colorMeta": {
       "background": {
         "role": "neutral",
         "displayName": "Cool Canvas",
-        "canonical": "#f1f3f0",
+        "canonical": "#f3f6f4",
         "tonalRamp": [
-          "oklch(0.150 0.0045 134.85)",
-          "oklch(0.264 0.0045 134.85)",
-          "oklch(0.379 0.0045 134.85)",
-          "oklch(0.493 0.0045 134.85)",
-          "oklch(0.607 0.0045 134.85)",
-          "oklch(0.721 0.0045 134.85)",
-          "oklch(0.836 0.0045 134.85)",
-          "oklch(0.950 0.0045 134.85)"
+          "oklch(0.150 0.0041 157.18)",
+          "oklch(0.264 0.0041 157.18)",
+          "oklch(0.379 0.0041 157.18)",
+          "oklch(0.493 0.0041 157.18)",
+          "oklch(0.607 0.0041 157.18)",
+          "oklch(0.721 0.0041 157.18)",
+          "oklch(0.836 0.0041 157.18)",
+          "oklch(0.950 0.0041 157.18)"
         ]
       },
       "foreground": {
         "role": "neutral",
-        "displayName": "Foreground",
-        "canonical": "#20231f",
+        "displayName": "Charcoal Text",
+        "canonical": "#202923",
         "tonalRamp": [
-          "oklch(0.150 0.0086 137.82)",
-          "oklch(0.264 0.0086 137.82)",
-          "oklch(0.379 0.0086 137.82)",
-          "oklch(0.493 0.0086 137.82)",
-          "oklch(0.607 0.0086 137.82)",
-          "oklch(0.721 0.0086 137.82)",
-          "oklch(0.836 0.0086 137.82)",
-          "oklch(0.950 0.0086 137.82)"
+          "oklch(0.150 0.0168 155.93)",
+          "oklch(0.264 0.0168 155.93)",
+          "oklch(0.379 0.0168 155.93)",
+          "oklch(0.493 0.0168 155.93)",
+          "oklch(0.607 0.0168 155.93)",
+          "oklch(0.721 0.0168 155.93)",
+          "oklch(0.836 0.0168 155.93)",
+          "oklch(0.950 0.0168 155.93)"
         ]
       },
       "card": {
@@ -39,29 +39,29 @@
         "displayName": "Card",
         "canonical": "#ffffff",
         "tonalRamp": [
-          "oklch(0.150 0.0000 89.88)",
-          "oklch(0.264 0.0000 89.88)",
-          "oklch(0.379 0.0000 89.88)",
-          "oklch(0.493 0.0000 89.88)",
-          "oklch(0.607 0.0000 89.88)",
-          "oklch(0.721 0.0000 89.88)",
-          "oklch(0.836 0.0000 89.88)",
-          "oklch(0.950 0.0000 89.88)"
+          "oklch(0.150 0.0000 0.00)",
+          "oklch(0.264 0.0000 0.00)",
+          "oklch(0.379 0.0000 0.00)",
+          "oklch(0.493 0.0000 0.00)",
+          "oklch(0.607 0.0000 0.00)",
+          "oklch(0.721 0.0000 0.00)",
+          "oklch(0.836 0.0000 0.00)",
+          "oklch(0.950 0.0000 0.00)"
         ]
       },
       "card-foreground": {
         "role": "neutral",
         "displayName": "Card Foreground",
-        "canonical": "#20231f",
+        "canonical": "#202923",
         "tonalRamp": [
-          "oklch(0.150 0.0086 137.82)",
-          "oklch(0.264 0.0086 137.82)",
-          "oklch(0.379 0.0086 137.82)",
-          "oklch(0.493 0.0086 137.82)",
-          "oklch(0.607 0.0086 137.82)",
-          "oklch(0.721 0.0086 137.82)",
-          "oklch(0.836 0.0086 137.82)",
-          "oklch(0.950 0.0086 137.82)"
+          "oklch(0.150 0.0168 155.93)",
+          "oklch(0.264 0.0168 155.93)",
+          "oklch(0.379 0.0168 155.93)",
+          "oklch(0.493 0.0168 155.93)",
+          "oklch(0.607 0.0168 155.93)",
+          "oklch(0.721 0.0168 155.93)",
+          "oklch(0.836 0.0168 155.93)",
+          "oklch(0.950 0.0168 155.93)"
         ]
       },
       "popover": {
@@ -69,29 +69,29 @@
         "displayName": "Popover",
         "canonical": "#ffffff",
         "tonalRamp": [
-          "oklch(0.150 0.0000 89.88)",
-          "oklch(0.264 0.0000 89.88)",
-          "oklch(0.379 0.0000 89.88)",
-          "oklch(0.493 0.0000 89.88)",
-          "oklch(0.607 0.0000 89.88)",
-          "oklch(0.721 0.0000 89.88)",
-          "oklch(0.836 0.0000 89.88)",
-          "oklch(0.950 0.0000 89.88)"
+          "oklch(0.150 0.0000 0.00)",
+          "oklch(0.264 0.0000 0.00)",
+          "oklch(0.379 0.0000 0.00)",
+          "oklch(0.493 0.0000 0.00)",
+          "oklch(0.607 0.0000 0.00)",
+          "oklch(0.721 0.0000 0.00)",
+          "oklch(0.836 0.0000 0.00)",
+          "oklch(0.950 0.0000 0.00)"
         ]
       },
       "popover-foreground": {
         "role": "neutral",
         "displayName": "Popover Foreground",
-        "canonical": "#20231f",
+        "canonical": "#202923",
         "tonalRamp": [
-          "oklch(0.150 0.0086 137.82)",
-          "oklch(0.264 0.0086 137.82)",
-          "oklch(0.379 0.0086 137.82)",
-          "oklch(0.493 0.0086 137.82)",
-          "oklch(0.607 0.0086 137.82)",
-          "oklch(0.721 0.0086 137.82)",
-          "oklch(0.836 0.0086 137.82)",
-          "oklch(0.950 0.0086 137.82)"
+          "oklch(0.150 0.0168 155.93)",
+          "oklch(0.264 0.0168 155.93)",
+          "oklch(0.379 0.0168 155.93)",
+          "oklch(0.493 0.0168 155.93)",
+          "oklch(0.607 0.0168 155.93)",
+          "oklch(0.721 0.0168 155.93)",
+          "oklch(0.836 0.0168 155.93)",
+          "oklch(0.950 0.0168 155.93)"
         ]
       },
       "primary": {
@@ -110,7 +110,7 @@
         ]
       },
       "primary-foreground": {
-        "role": "neutral",
+        "role": "primary",
         "displayName": "Primary Foreground",
         "canonical": "#14320d",
         "tonalRamp": [
@@ -127,91 +127,91 @@
       "secondary": {
         "role": "neutral",
         "displayName": "Secondary",
-        "canonical": "#f0f3ee",
+        "canonical": "#edf2ee",
         "tonalRamp": [
-          "oklch(0.150 0.0073 132.42)",
-          "oklch(0.264 0.0073 132.42)",
-          "oklch(0.379 0.0073 132.42)",
-          "oklch(0.493 0.0073 132.42)",
-          "oklch(0.607 0.0073 132.42)",
-          "oklch(0.721 0.0073 132.42)",
-          "oklch(0.836 0.0073 132.42)",
-          "oklch(0.950 0.0073 132.42)"
+          "oklch(0.150 0.0075 151.89)",
+          "oklch(0.264 0.0075 151.89)",
+          "oklch(0.379 0.0075 151.89)",
+          "oklch(0.493 0.0075 151.89)",
+          "oklch(0.607 0.0075 151.89)",
+          "oklch(0.721 0.0075 151.89)",
+          "oklch(0.836 0.0075 151.89)",
+          "oklch(0.950 0.0075 151.89)"
         ]
       },
       "secondary-foreground": {
         "role": "neutral",
         "displayName": "Secondary Foreground",
-        "canonical": "#363e32",
+        "canonical": "#344b3d",
         "tonalRamp": [
-          "oklch(0.150 0.0230 135.17)",
-          "oklch(0.264 0.0230 135.17)",
-          "oklch(0.379 0.0230 135.17)",
-          "oklch(0.493 0.0230 135.17)",
-          "oklch(0.607 0.0230 135.17)",
-          "oklch(0.721 0.0230 135.17)",
-          "oklch(0.836 0.0230 135.17)",
-          "oklch(0.950 0.0230 135.17)"
+          "oklch(0.150 0.0371 157.45)",
+          "oklch(0.264 0.0371 157.45)",
+          "oklch(0.379 0.0371 157.45)",
+          "oklch(0.493 0.0371 157.45)",
+          "oklch(0.607 0.0371 157.45)",
+          "oklch(0.721 0.0371 157.45)",
+          "oklch(0.836 0.0371 157.45)",
+          "oklch(0.950 0.0371 157.45)"
         ]
       },
       "muted": {
         "role": "neutral",
         "displayName": "Muted",
-        "canonical": "#f2f4f1",
+        "canonical": "#f1f5f2",
         "tonalRamp": [
-          "oklch(0.150 0.0045 134.85)",
-          "oklch(0.264 0.0045 134.85)",
-          "oklch(0.379 0.0045 134.85)",
-          "oklch(0.493 0.0045 134.85)",
-          "oklch(0.607 0.0045 134.85)",
-          "oklch(0.721 0.0045 134.85)",
-          "oklch(0.836 0.0045 134.85)",
-          "oklch(0.950 0.0045 134.85)"
+          "oklch(0.150 0.0058 153.78)",
+          "oklch(0.264 0.0058 153.78)",
+          "oklch(0.379 0.0058 153.78)",
+          "oklch(0.493 0.0058 153.78)",
+          "oklch(0.607 0.0058 153.78)",
+          "oklch(0.721 0.0058 153.78)",
+          "oklch(0.836 0.0058 153.78)",
+          "oklch(0.950 0.0058 153.78)"
         ]
       },
       "muted-foreground": {
         "role": "neutral",
         "displayName": "Muted Foreground",
-        "canonical": "#626b5e",
+        "canonical": "#5c6b62",
         "tonalRamp": [
-          "oklch(0.150 0.0229 135.93)",
-          "oklch(0.264 0.0229 135.93)",
-          "oklch(0.379 0.0229 135.93)",
-          "oklch(0.493 0.0229 135.93)",
-          "oklch(0.607 0.0229 135.93)",
-          "oklch(0.721 0.0229 135.93)",
-          "oklch(0.836 0.0229 135.93)",
-          "oklch(0.950 0.0229 135.93)"
+          "oklch(0.150 0.0230 159.16)",
+          "oklch(0.264 0.0230 159.16)",
+          "oklch(0.379 0.0230 159.16)",
+          "oklch(0.493 0.0230 159.16)",
+          "oklch(0.607 0.0230 159.16)",
+          "oklch(0.721 0.0230 159.16)",
+          "oklch(0.836 0.0230 159.16)",
+          "oklch(0.950 0.0230 159.16)"
         ]
       },
       "accent": {
         "role": "neutral",
         "displayName": "Accent",
-        "canonical": "#edf4e8",
+        "canonical": "#eaf3ed",
         "tonalRamp": [
-          "oklch(0.150 0.0175 131.87)",
-          "oklch(0.264 0.0175 131.87)",
-          "oklch(0.379 0.0175 131.87)",
-          "oklch(0.493 0.0175 131.87)",
-          "oklch(0.607 0.0175 131.87)",
-          "oklch(0.721 0.0175 131.87)",
-          "oklch(0.836 0.0175 131.87)",
-          "oklch(0.950 0.0175 131.87)"
+          "oklch(0.150 0.0124 157.00)",
+          "oklch(0.264 0.0124 157.00)",
+          "oklch(0.379 0.0124 157.00)",
+          "oklch(0.493 0.0124 157.00)",
+          "oklch(0.607 0.0124 157.00)",
+          "oklch(0.721 0.0124 157.00)",
+          "oklch(0.836 0.0124 157.00)",
+          "oklch(0.950 0.0124 157.00)"
         ]
       },
       "accent-foreground": {
         "role": "neutral",
         "displayName": "Accent Foreground",
-        "canonical": "#24321e",
+        "canonical": "#244b32",
         "tonalRamp": [
-          "oklch(0.150 0.0396 136.60)",
-          "oklch(0.264 0.0396 136.60)",
-          "oklch(0.379 0.0396 136.60)",
-          "oklch(0.493 0.0396 136.60)",
-          "oklch(0.607 0.0396 136.60)",
-          "oklch(0.721 0.0396 136.60)",
-          "oklch(0.836 0.0396 136.60)",
-          "oklch(0.950 0.0396 136.60)"
+          "oklch(0.150 0.0622 154.05)",
+          "oklch(0.264 0.0622 154.05)",
+          "oklch(0.379 0.0622 154.05)",
+          "oklch(0.493 0.0622 154.05)",
+          "oklch(0.607 0.0622 154.05)",
+          "oklch(0.721 0.0622 154.05)",
+          "oklch(0.836 0.0622 154.05)",
+          "oklch(0.950 0.0622 154.05)"
         ]
       },
       "destructive": {
@@ -232,121 +232,451 @@
       "border": {
         "role": "neutral",
         "displayName": "Border",
-        "canonical": "#e2e7df",
+        "canonical": "#dde5df",
         "tonalRamp": [
-          "oklch(0.150 0.0119 133.38)",
-          "oklch(0.264 0.0119 133.38)",
-          "oklch(0.379 0.0119 133.38)",
-          "oklch(0.493 0.0119 133.38)",
-          "oklch(0.607 0.0119 133.38)",
-          "oklch(0.721 0.0119 133.38)",
-          "oklch(0.836 0.0119 133.38)",
-          "oklch(0.950 0.0119 133.38)"
+          "oklch(0.150 0.0117 153.66)",
+          "oklch(0.264 0.0117 153.66)",
+          "oklch(0.379 0.0117 153.66)",
+          "oklch(0.493 0.0117 153.66)",
+          "oklch(0.607 0.0117 153.66)",
+          "oklch(0.721 0.0117 153.66)",
+          "oklch(0.836 0.0117 153.66)",
+          "oklch(0.950 0.0117 153.66)"
         ]
       },
       "input": {
         "role": "neutral",
         "displayName": "Input",
-        "canonical": "#d9e0d5",
+        "canonical": "#83958a",
         "tonalRamp": [
-          "oklch(0.150 0.0166 133.83)",
-          "oklch(0.264 0.0166 133.83)",
-          "oklch(0.379 0.0166 133.83)",
-          "oklch(0.493 0.0166 133.83)",
-          "oklch(0.607 0.0166 133.83)",
-          "oklch(0.721 0.0166 133.83)",
-          "oklch(0.836 0.0166 133.83)",
-          "oklch(0.950 0.0166 133.83)"
+          "oklch(0.150 0.0262 158.79)",
+          "oklch(0.264 0.0262 158.79)",
+          "oklch(0.379 0.0262 158.79)",
+          "oklch(0.493 0.0262 158.79)",
+          "oklch(0.607 0.0262 158.79)",
+          "oklch(0.721 0.0262 158.79)",
+          "oklch(0.836 0.0262 158.79)",
+          "oklch(0.950 0.0262 158.79)"
         ]
       },
       "ring": {
         "role": "primary",
-        "displayName": "Green Focus",
-        "canonical": "#238832",
+        "displayName": "Focus Green",
+        "canonical": "#247344",
         "tonalRamp": [
-          "oklch(0.150 0.1534 145.31)",
-          "oklch(0.264 0.1534 145.31)",
-          "oklch(0.379 0.1534 145.31)",
-          "oklch(0.493 0.1534 145.31)",
-          "oklch(0.607 0.1534 145.31)",
-          "oklch(0.721 0.1534 145.31)",
-          "oklch(0.836 0.1534 145.31)",
-          "oklch(0.950 0.1534 145.31)"
+          "oklch(0.150 0.1070 153.43)",
+          "oklch(0.264 0.1070 153.43)",
+          "oklch(0.379 0.1070 153.43)",
+          "oklch(0.493 0.1070 153.43)",
+          "oklch(0.607 0.1070 153.43)",
+          "oklch(0.721 0.1070 153.43)",
+          "oklch(0.836 0.1070 153.43)",
+          "oklch(0.950 0.1070 153.43)"
+        ]
+      },
+      "brand": {
+        "role": "primary",
+        "displayName": "Forest Green",
+        "canonical": "#247344",
+        "tonalRamp": [
+          "oklch(0.150 0.1070 153.43)",
+          "oklch(0.264 0.1070 153.43)",
+          "oklch(0.379 0.1070 153.43)",
+          "oklch(0.493 0.1070 153.43)",
+          "oklch(0.607 0.1070 153.43)",
+          "oklch(0.721 0.1070 153.43)",
+          "oklch(0.836 0.1070 153.43)",
+          "oklch(0.950 0.1070 153.43)"
+        ]
+      },
+      "flow-incoming": {
+        "role": "secondary",
+        "displayName": "Incoming Forest",
+        "canonical": "#247344",
+        "tonalRamp": [
+          "oklch(0.150 0.1070 153.43)",
+          "oklch(0.264 0.1070 153.43)",
+          "oklch(0.379 0.1070 153.43)",
+          "oklch(0.493 0.1070 153.43)",
+          "oklch(0.607 0.1070 153.43)",
+          "oklch(0.721 0.1070 153.43)",
+          "oklch(0.836 0.1070 153.43)",
+          "oklch(0.950 0.1070 153.43)"
+        ]
+      },
+      "flow-outgoing": {
+        "role": "secondary",
+        "displayName": "Outgoing Slate",
+        "canonical": "#586e94",
+        "tonalRamp": [
+          "oklch(0.150 0.0656 261.11)",
+          "oklch(0.264 0.0656 261.11)",
+          "oklch(0.379 0.0656 261.11)",
+          "oklch(0.493 0.0656 261.11)",
+          "oklch(0.607 0.0656 261.11)",
+          "oklch(0.721 0.0656 261.11)",
+          "oklch(0.836 0.0656 261.11)",
+          "oklch(0.950 0.0656 261.11)"
+        ]
+      },
+      "flow-related": {
+        "role": "secondary",
+        "displayName": "Related Gray Green",
+        "canonical": "#7b897e",
+        "tonalRamp": [
+          "oklch(0.150 0.0231 151.93)",
+          "oklch(0.264 0.0231 151.93)",
+          "oklch(0.379 0.0231 151.93)",
+          "oklch(0.493 0.0231 151.93)",
+          "oklch(0.607 0.0231 151.93)",
+          "oklch(0.721 0.0231 151.93)",
+          "oklch(0.836 0.0231 151.93)",
+          "oklch(0.950 0.0231 151.93)"
+        ]
+      },
+      "graph-ink": {
+        "role": "neutral",
+        "displayName": "Selected Account Charcoal",
+        "canonical": "#263b2d",
+        "tonalRamp": [
+          "oklch(0.150 0.0365 154.75)",
+          "oklch(0.264 0.0365 154.75)",
+          "oklch(0.379 0.0365 154.75)",
+          "oklch(0.493 0.0365 154.75)",
+          "oklch(0.607 0.0365 154.75)",
+          "oklch(0.721 0.0365 154.75)",
+          "oklch(0.836 0.0365 154.75)",
+          "oklch(0.950 0.0365 154.75)"
+        ]
+      },
+      "graph-surface": {
+        "role": "neutral",
+        "displayName": "Graph Surface",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "oklch(0.150 0.0000 0.00)",
+          "oklch(0.264 0.0000 0.00)",
+          "oklch(0.379 0.0000 0.00)",
+          "oklch(0.493 0.0000 0.00)",
+          "oklch(0.607 0.0000 0.00)",
+          "oklch(0.721 0.0000 0.00)",
+          "oklch(0.836 0.0000 0.00)",
+          "oklch(0.950 0.0000 0.00)"
+        ]
+      },
+      "graph-grid": {
+        "role": "neutral",
+        "displayName": "Graph Grid",
+        "canonical": "#dce5df",
+        "tonalRamp": [
+          "oklch(0.150 0.0125 156.98)",
+          "oklch(0.264 0.0125 156.98)",
+          "oklch(0.379 0.0125 156.98)",
+          "oklch(0.493 0.0125 156.98)",
+          "oklch(0.607 0.0125 156.98)",
+          "oklch(0.721 0.0125 156.98)",
+          "oklch(0.836 0.0125 156.98)",
+          "oklch(0.950 0.0125 156.98)"
         ]
       },
       "chart-1": {
-        "role": "analytical",
+        "role": "secondary",
         "displayName": "Chart 1",
-        "canonical": "#098830",
+        "canonical": "#247344",
         "tonalRamp": [
-          "oklch(0.150 0.1606 146.76)",
-          "oklch(0.264 0.1606 146.76)",
-          "oklch(0.379 0.1606 146.76)",
-          "oklch(0.493 0.1606 146.76)",
-          "oklch(0.607 0.1606 146.76)",
-          "oklch(0.721 0.1606 146.76)",
-          "oklch(0.836 0.1606 146.76)",
-          "oklch(0.950 0.1606 146.76)"
+          "oklch(0.150 0.1070 153.43)",
+          "oklch(0.264 0.1070 153.43)",
+          "oklch(0.379 0.1070 153.43)",
+          "oklch(0.493 0.1070 153.43)",
+          "oklch(0.607 0.1070 153.43)",
+          "oklch(0.721 0.1070 153.43)",
+          "oklch(0.836 0.1070 153.43)",
+          "oklch(0.950 0.1070 153.43)"
         ]
       },
       "chart-2": {
-        "role": "analytical",
+        "role": "secondary",
         "displayName": "Chart 2",
-        "canonical": "#1f6226",
+        "canonical": "#586e94",
         "tonalRamp": [
-          "oklch(0.150 0.1144 145.02)",
-          "oklch(0.264 0.1144 145.02)",
-          "oklch(0.379 0.1144 145.02)",
-          "oklch(0.493 0.1144 145.02)",
-          "oklch(0.607 0.1144 145.02)",
-          "oklch(0.721 0.1144 145.02)",
-          "oklch(0.836 0.1144 145.02)",
-          "oklch(0.950 0.1144 145.02)"
+          "oklch(0.150 0.0656 261.11)",
+          "oklch(0.264 0.0656 261.11)",
+          "oklch(0.379 0.0656 261.11)",
+          "oklch(0.493 0.0656 261.11)",
+          "oklch(0.607 0.0656 261.11)",
+          "oklch(0.721 0.0656 261.11)",
+          "oklch(0.836 0.0656 261.11)",
+          "oklch(0.950 0.0656 261.11)"
         ]
       },
       "chart-3": {
-        "role": "analytical",
+        "role": "secondary",
         "displayName": "Chart 3",
-        "canonical": "#718d66",
+        "canonical": "#397d7f",
         "tonalRamp": [
-          "oklch(0.150 0.0656 137.02)",
-          "oklch(0.264 0.0656 137.02)",
-          "oklch(0.379 0.0656 137.02)",
-          "oklch(0.493 0.0656 137.02)",
-          "oklch(0.607 0.0656 137.02)",
-          "oklch(0.721 0.0656 137.02)",
-          "oklch(0.836 0.0656 137.02)",
-          "oklch(0.950 0.0656 137.02)"
+          "oklch(0.150 0.0685 197.93)",
+          "oklch(0.264 0.0685 197.93)",
+          "oklch(0.379 0.0685 197.93)",
+          "oklch(0.493 0.0685 197.93)",
+          "oklch(0.607 0.0685 197.93)",
+          "oklch(0.721 0.0685 197.93)",
+          "oklch(0.836 0.0685 197.93)",
+          "oklch(0.950 0.0685 197.93)"
         ]
       },
       "chart-4": {
-        "role": "analytical",
+        "role": "secondary",
         "displayName": "Chart 4",
-        "canonical": "#667787",
+        "canonical": "#7c6d96",
         "tonalRamp": [
-          "oklch(0.150 0.0320 246.78)",
-          "oklch(0.264 0.0320 246.78)",
-          "oklch(0.379 0.0320 246.78)",
-          "oklch(0.493 0.0320 246.78)",
-          "oklch(0.607 0.0320 246.78)",
-          "oklch(0.721 0.0320 246.78)",
-          "oklch(0.836 0.0320 246.78)",
-          "oklch(0.950 0.0320 246.78)"
+          "oklch(0.150 0.0645 301.12)",
+          "oklch(0.264 0.0645 301.12)",
+          "oklch(0.379 0.0645 301.12)",
+          "oklch(0.493 0.0645 301.12)",
+          "oklch(0.607 0.0645 301.12)",
+          "oklch(0.721 0.0645 301.12)",
+          "oklch(0.836 0.0645 301.12)",
+          "oklch(0.950 0.0645 301.12)"
         ]
       },
       "chart-5": {
-        "role": "analytical",
+        "role": "secondary",
         "displayName": "Chart 5",
-        "canonical": "#b28b4d",
+        "canonical": "#946d36",
         "tonalRamp": [
-          "oklch(0.150 0.0930 77.61)",
-          "oklch(0.264 0.0930 77.61)",
-          "oklch(0.379 0.0930 77.61)",
-          "oklch(0.493 0.0930 77.61)",
-          "oklch(0.607 0.0930 77.61)",
-          "oklch(0.721 0.0930 77.61)",
-          "oklch(0.836 0.0930 77.61)",
-          "oklch(0.950 0.0930 77.61)"
+          "oklch(0.150 0.0874 73.76)",
+          "oklch(0.264 0.0874 73.76)",
+          "oklch(0.379 0.0874 73.76)",
+          "oklch(0.493 0.0874 73.76)",
+          "oklch(0.607 0.0874 73.76)",
+          "oklch(0.721 0.0874 73.76)",
+          "oklch(0.836 0.0874 73.76)",
+          "oklch(0.950 0.0874 73.76)"
+        ]
+      },
+      "role-consolidator": {
+        "role": "secondary",
+        "displayName": "Role Consolidator",
+        "canonical": "#247344",
+        "tonalRamp": [
+          "oklch(0.150 0.1070 153.43)",
+          "oklch(0.264 0.1070 153.43)",
+          "oklch(0.379 0.1070 153.43)",
+          "oklch(0.493 0.1070 153.43)",
+          "oklch(0.607 0.1070 153.43)",
+          "oklch(0.721 0.1070 153.43)",
+          "oklch(0.836 0.1070 153.43)",
+          "oklch(0.950 0.1070 153.43)"
+        ]
+      },
+      "role-transit": {
+        "role": "secondary",
+        "displayName": "Role Transit",
+        "canonical": "#586e94",
+        "tonalRamp": [
+          "oklch(0.150 0.0656 261.11)",
+          "oklch(0.264 0.0656 261.11)",
+          "oklch(0.379 0.0656 261.11)",
+          "oklch(0.493 0.0656 261.11)",
+          "oklch(0.607 0.0656 261.11)",
+          "oklch(0.721 0.0656 261.11)",
+          "oklch(0.836 0.0656 261.11)",
+          "oklch(0.950 0.0656 261.11)"
+        ]
+      },
+      "role-distributor": {
+        "role": "secondary",
+        "displayName": "Role Distributor",
+        "canonical": "#946d36",
+        "tonalRamp": [
+          "oklch(0.150 0.0874 73.76)",
+          "oklch(0.264 0.0874 73.76)",
+          "oklch(0.379 0.0874 73.76)",
+          "oklch(0.493 0.0874 73.76)",
+          "oklch(0.607 0.0874 73.76)",
+          "oklch(0.721 0.0874 73.76)",
+          "oklch(0.836 0.0874 73.76)",
+          "oklch(0.950 0.0874 73.76)"
+        ]
+      },
+      "role-terminal": {
+        "role": "secondary",
+        "displayName": "Role Terminal",
+        "canonical": "#7c6d96",
+        "tonalRamp": [
+          "oklch(0.150 0.0645 301.12)",
+          "oklch(0.264 0.0645 301.12)",
+          "oklch(0.379 0.0645 301.12)",
+          "oklch(0.493 0.0645 301.12)",
+          "oklch(0.607 0.0645 301.12)",
+          "oklch(0.721 0.0645 301.12)",
+          "oklch(0.836 0.0645 301.12)",
+          "oklch(0.950 0.0645 301.12)"
+        ]
+      },
+      "role-coordinator": {
+        "role": "secondary",
+        "displayName": "Role Coordinator",
+        "canonical": "#263b2d",
+        "tonalRamp": [
+          "oklch(0.150 0.0365 154.75)",
+          "oklch(0.264 0.0365 154.75)",
+          "oklch(0.379 0.0365 154.75)",
+          "oklch(0.493 0.0365 154.75)",
+          "oklch(0.607 0.0365 154.75)",
+          "oklch(0.721 0.0365 154.75)",
+          "oklch(0.836 0.0365 154.75)",
+          "oklch(0.950 0.0365 154.75)"
+        ]
+      },
+      "role-peripheral": {
+        "role": "secondary",
+        "displayName": "Peripheral Sage",
+        "canonical": "#758470",
+        "tonalRamp": [
+          "oklch(0.150 0.0346 137.87)",
+          "oklch(0.264 0.0346 137.87)",
+          "oklch(0.379 0.0346 137.87)",
+          "oklch(0.493 0.0346 137.87)",
+          "oklch(0.607 0.0346 137.87)",
+          "oklch(0.721 0.0346 137.87)",
+          "oklch(0.836 0.0346 137.87)",
+          "oklch(0.950 0.0346 137.87)"
+        ]
+      },
+      "role-boundary": {
+        "role": "secondary",
+        "displayName": "Observation Boundary Green",
+        "canonical": "#617f4c",
+        "tonalRamp": [
+          "oklch(0.150 0.0824 133.27)",
+          "oklch(0.264 0.0824 133.27)",
+          "oklch(0.379 0.0824 133.27)",
+          "oklch(0.493 0.0824 133.27)",
+          "oklch(0.607 0.0824 133.27)",
+          "oklch(0.721 0.0824 133.27)",
+          "oklch(0.836 0.0824 133.27)",
+          "oklch(0.950 0.0824 133.27)"
+        ]
+      },
+      "community-1": {
+        "role": "secondary",
+        "displayName": "Community 1",
+        "canonical": "#247344",
+        "tonalRamp": [
+          "oklch(0.150 0.1070 153.43)",
+          "oklch(0.264 0.1070 153.43)",
+          "oklch(0.379 0.1070 153.43)",
+          "oklch(0.493 0.1070 153.43)",
+          "oklch(0.607 0.1070 153.43)",
+          "oklch(0.721 0.1070 153.43)",
+          "oklch(0.836 0.1070 153.43)",
+          "oklch(0.950 0.1070 153.43)"
+        ]
+      },
+      "community-2": {
+        "role": "secondary",
+        "displayName": "Community 2",
+        "canonical": "#586e94",
+        "tonalRamp": [
+          "oklch(0.150 0.0656 261.11)",
+          "oklch(0.264 0.0656 261.11)",
+          "oklch(0.379 0.0656 261.11)",
+          "oklch(0.493 0.0656 261.11)",
+          "oklch(0.607 0.0656 261.11)",
+          "oklch(0.721 0.0656 261.11)",
+          "oklch(0.836 0.0656 261.11)",
+          "oklch(0.950 0.0656 261.11)"
+        ]
+      },
+      "community-3": {
+        "role": "secondary",
+        "displayName": "Community 3",
+        "canonical": "#7c6d96",
+        "tonalRamp": [
+          "oklch(0.150 0.0645 301.12)",
+          "oklch(0.264 0.0645 301.12)",
+          "oklch(0.379 0.0645 301.12)",
+          "oklch(0.493 0.0645 301.12)",
+          "oklch(0.607 0.0645 301.12)",
+          "oklch(0.721 0.0645 301.12)",
+          "oklch(0.836 0.0645 301.12)",
+          "oklch(0.950 0.0645 301.12)"
+        ]
+      },
+      "community-4": {
+        "role": "secondary",
+        "displayName": "Community 4",
+        "canonical": "#397d7f",
+        "tonalRamp": [
+          "oklch(0.150 0.0685 197.93)",
+          "oklch(0.264 0.0685 197.93)",
+          "oklch(0.379 0.0685 197.93)",
+          "oklch(0.493 0.0685 197.93)",
+          "oklch(0.607 0.0685 197.93)",
+          "oklch(0.721 0.0685 197.93)",
+          "oklch(0.836 0.0685 197.93)",
+          "oklch(0.950 0.0685 197.93)"
+        ]
+      },
+      "community-5": {
+        "role": "secondary",
+        "displayName": "Community 5",
+        "canonical": "#946d36",
+        "tonalRamp": [
+          "oklch(0.150 0.0874 73.76)",
+          "oklch(0.264 0.0874 73.76)",
+          "oklch(0.379 0.0874 73.76)",
+          "oklch(0.493 0.0874 73.76)",
+          "oklch(0.607 0.0874 73.76)",
+          "oklch(0.721 0.0874 73.76)",
+          "oklch(0.836 0.0874 73.76)",
+          "oklch(0.950 0.0874 73.76)"
+        ]
+      },
+      "community-6": {
+        "role": "secondary",
+        "displayName": "Community 6",
+        "canonical": "#697e51",
+        "tonalRamp": [
+          "oklch(0.150 0.0703 128.79)",
+          "oklch(0.264 0.0703 128.79)",
+          "oklch(0.379 0.0703 128.79)",
+          "oklch(0.493 0.0703 128.79)",
+          "oklch(0.607 0.0703 128.79)",
+          "oklch(0.721 0.0703 128.79)",
+          "oklch(0.836 0.0703 128.79)",
+          "oklch(0.950 0.0703 128.79)"
+        ]
+      },
+      "community-7": {
+        "role": "secondary",
+        "displayName": "Community 7",
+        "canonical": "#967168",
+        "tonalRamp": [
+          "oklch(0.150 0.0492 34.05)",
+          "oklch(0.264 0.0492 34.05)",
+          "oklch(0.379 0.0492 34.05)",
+          "oklch(0.493 0.0492 34.05)",
+          "oklch(0.607 0.0492 34.05)",
+          "oklch(0.721 0.0492 34.05)",
+          "oklch(0.836 0.0492 34.05)",
+          "oklch(0.950 0.0492 34.05)"
+        ]
+      },
+      "community-8": {
+        "role": "secondary",
+        "displayName": "Community 8",
+        "canonical": "#4c6057",
+        "tonalRamp": [
+          "oklch(0.150 0.0283 166.03)",
+          "oklch(0.264 0.0283 166.03)",
+          "oklch(0.379 0.0283 166.03)",
+          "oklch(0.493 0.0283 166.03)",
+          "oklch(0.607 0.0283 166.03)",
+          "oklch(0.721 0.0283 166.03)",
+          "oklch(0.836 0.0283 166.03)",
+          "oklch(0.950 0.0283 166.03)"
         ]
       },
       "sidebar": {
@@ -354,44 +684,44 @@
         "displayName": "White Sidebar",
         "canonical": "#ffffff",
         "tonalRamp": [
-          "oklch(0.150 0.0000 89.88)",
-          "oklch(0.264 0.0000 89.88)",
-          "oklch(0.379 0.0000 89.88)",
-          "oklch(0.493 0.0000 89.88)",
-          "oklch(0.607 0.0000 89.88)",
-          "oklch(0.721 0.0000 89.88)",
-          "oklch(0.836 0.0000 89.88)",
-          "oklch(0.950 0.0000 89.88)"
+          "oklch(0.150 0.0000 0.00)",
+          "oklch(0.264 0.0000 0.00)",
+          "oklch(0.379 0.0000 0.00)",
+          "oklch(0.493 0.0000 0.00)",
+          "oklch(0.607 0.0000 0.00)",
+          "oklch(0.721 0.0000 0.00)",
+          "oklch(0.836 0.0000 0.00)",
+          "oklch(0.950 0.0000 0.00)"
         ]
       },
       "sidebar-foreground": {
         "role": "neutral",
         "displayName": "Sidebar Foreground",
-        "canonical": "#535c4f",
+        "canonical": "#526259",
         "tonalRamp": [
-          "oklch(0.150 0.0235 135.96)",
-          "oklch(0.264 0.0235 135.96)",
-          "oklch(0.379 0.0235 135.96)",
-          "oklch(0.493 0.0235 135.96)",
-          "oklch(0.607 0.0235 135.96)",
-          "oklch(0.721 0.0235 135.96)",
-          "oklch(0.836 0.0235 135.96)",
-          "oklch(0.950 0.0235 135.96)"
+          "oklch(0.150 0.0243 160.72)",
+          "oklch(0.264 0.0243 160.72)",
+          "oklch(0.379 0.0243 160.72)",
+          "oklch(0.493 0.0243 160.72)",
+          "oklch(0.607 0.0243 160.72)",
+          "oklch(0.721 0.0243 160.72)",
+          "oklch(0.836 0.0243 160.72)",
+          "oklch(0.950 0.0243 160.72)"
         ]
       },
       "sidebar-primary": {
         "role": "neutral",
-        "displayName": "Sidebar Primary",
-        "canonical": "#1d1f20",
+        "displayName": "Navigation Selected",
+        "canonical": "#202923",
         "tonalRamp": [
-          "oklch(0.150 0.0036 228.95)",
-          "oklch(0.264 0.0036 228.95)",
-          "oklch(0.379 0.0036 228.95)",
-          "oklch(0.493 0.0036 228.95)",
-          "oklch(0.607 0.0036 228.95)",
-          "oklch(0.721 0.0036 228.95)",
-          "oklch(0.836 0.0036 228.95)",
-          "oklch(0.950 0.0036 228.95)"
+          "oklch(0.150 0.0168 155.93)",
+          "oklch(0.264 0.0168 155.93)",
+          "oklch(0.379 0.0168 155.93)",
+          "oklch(0.493 0.0168 155.93)",
+          "oklch(0.607 0.0168 155.93)",
+          "oklch(0.721 0.0168 155.93)",
+          "oklch(0.836 0.0168 155.93)",
+          "oklch(0.950 0.0168 155.93)"
         ]
       },
       "sidebar-primary-foreground": {
@@ -399,164 +729,74 @@
         "displayName": "Sidebar Primary Foreground",
         "canonical": "#ffffff",
         "tonalRamp": [
-          "oklch(0.150 0.0000 89.88)",
-          "oklch(0.264 0.0000 89.88)",
-          "oklch(0.379 0.0000 89.88)",
-          "oklch(0.493 0.0000 89.88)",
-          "oklch(0.607 0.0000 89.88)",
-          "oklch(0.721 0.0000 89.88)",
-          "oklch(0.836 0.0000 89.88)",
-          "oklch(0.950 0.0000 89.88)"
+          "oklch(0.150 0.0000 0.00)",
+          "oklch(0.264 0.0000 0.00)",
+          "oklch(0.379 0.0000 0.00)",
+          "oklch(0.493 0.0000 0.00)",
+          "oklch(0.607 0.0000 0.00)",
+          "oklch(0.721 0.0000 0.00)",
+          "oklch(0.836 0.0000 0.00)",
+          "oklch(0.950 0.0000 0.00)"
         ]
       },
       "sidebar-accent": {
         "role": "neutral",
-        "displayName": "Charcoal Navigation",
-        "canonical": "#20231f",
+        "displayName": "Navigation Hover",
+        "canonical": "#edf3ef",
         "tonalRamp": [
-          "oklch(0.150 0.0086 137.82)",
-          "oklch(0.264 0.0086 137.82)",
-          "oklch(0.379 0.0086 137.82)",
-          "oklch(0.493 0.0086 137.82)",
-          "oklch(0.607 0.0086 137.82)",
-          "oklch(0.721 0.0086 137.82)",
-          "oklch(0.836 0.0086 137.82)",
-          "oklch(0.950 0.0086 137.82)"
+          "oklch(0.150 0.0083 157.09)",
+          "oklch(0.264 0.0083 157.09)",
+          "oklch(0.379 0.0083 157.09)",
+          "oklch(0.493 0.0083 157.09)",
+          "oklch(0.607 0.0083 157.09)",
+          "oklch(0.721 0.0083 157.09)",
+          "oklch(0.836 0.0083 157.09)",
+          "oklch(0.950 0.0083 157.09)"
         ]
       },
       "sidebar-accent-foreground": {
         "role": "neutral",
         "displayName": "Sidebar Accent Foreground",
-        "canonical": "#ffffff",
+        "canonical": "#244b32",
         "tonalRamp": [
-          "oklch(0.150 0.0000 89.88)",
-          "oklch(0.264 0.0000 89.88)",
-          "oklch(0.379 0.0000 89.88)",
-          "oklch(0.493 0.0000 89.88)",
-          "oklch(0.607 0.0000 89.88)",
-          "oklch(0.721 0.0000 89.88)",
-          "oklch(0.836 0.0000 89.88)",
-          "oklch(0.950 0.0000 89.88)"
+          "oklch(0.150 0.0622 154.05)",
+          "oklch(0.264 0.0622 154.05)",
+          "oklch(0.379 0.0622 154.05)",
+          "oklch(0.493 0.0622 154.05)",
+          "oklch(0.607 0.0622 154.05)",
+          "oklch(0.721 0.0622 154.05)",
+          "oklch(0.836 0.0622 154.05)",
+          "oklch(0.950 0.0622 154.05)"
         ]
       },
       "sidebar-border": {
         "role": "neutral",
         "displayName": "Sidebar Border",
-        "canonical": "#e2e7df",
+        "canonical": "#dde5df",
         "tonalRamp": [
-          "oklch(0.150 0.0119 133.38)",
-          "oklch(0.264 0.0119 133.38)",
-          "oklch(0.379 0.0119 133.38)",
-          "oklch(0.493 0.0119 133.38)",
-          "oklch(0.607 0.0119 133.38)",
-          "oklch(0.721 0.0119 133.38)",
-          "oklch(0.836 0.0119 133.38)",
-          "oklch(0.950 0.0119 133.38)"
+          "oklch(0.150 0.0117 153.66)",
+          "oklch(0.264 0.0117 153.66)",
+          "oklch(0.379 0.0117 153.66)",
+          "oklch(0.493 0.0117 153.66)",
+          "oklch(0.607 0.0117 153.66)",
+          "oklch(0.721 0.0117 153.66)",
+          "oklch(0.836 0.0117 153.66)",
+          "oklch(0.950 0.0117 153.66)"
         ]
       },
       "sidebar-ring": {
         "role": "neutral",
         "displayName": "Sidebar Ring",
-        "canonical": "#238832",
+        "canonical": "#247344",
         "tonalRamp": [
-          "oklch(0.150 0.1534 145.31)",
-          "oklch(0.264 0.1534 145.31)",
-          "oklch(0.379 0.1534 145.31)",
-          "oklch(0.493 0.1534 145.31)",
-          "oklch(0.607 0.1534 145.31)",
-          "oklch(0.721 0.1534 145.31)",
-          "oklch(0.836 0.1534 145.31)",
-          "oklch(0.950 0.1534 145.31)"
-        ]
-      },
-      "brand": {
-        "role": "primary",
-        "displayName": "Forest Green",
-        "canonical": "#098830",
-        "tonalRamp": [
-          "oklch(0.150 0.1606 146.76)",
-          "oklch(0.264 0.1606 146.76)",
-          "oklch(0.379 0.1606 146.76)",
-          "oklch(0.493 0.1606 146.76)",
-          "oklch(0.607 0.1606 146.76)",
-          "oklch(0.721 0.1606 146.76)",
-          "oklch(0.836 0.1606 146.76)",
-          "oklch(0.950 0.1606 146.76)"
-        ]
-      },
-      "graph-ink": {
-        "role": "analytical",
-        "displayName": "Graph Ink",
-        "canonical": "#20251f",
-        "tonalRamp": [
-          "oklch(0.150 0.0132 140.45)",
-          "oklch(0.264 0.0132 140.45)",
-          "oklch(0.379 0.0132 140.45)",
-          "oklch(0.493 0.0132 140.45)",
-          "oklch(0.607 0.0132 140.45)",
-          "oklch(0.721 0.0132 140.45)",
-          "oklch(0.836 0.0132 140.45)",
-          "oklch(0.950 0.0132 140.45)"
-        ]
-      },
-      "graph-incoming": {
-        "role": "analytical",
-        "displayName": "Incoming Green",
-        "canonical": "#098830",
-        "tonalRamp": [
-          "oklch(0.150 0.1606 146.76)",
-          "oklch(0.264 0.1606 146.76)",
-          "oklch(0.379 0.1606 146.76)",
-          "oklch(0.493 0.1606 146.76)",
-          "oklch(0.607 0.1606 146.76)",
-          "oklch(0.721 0.1606 146.76)",
-          "oklch(0.836 0.1606 146.76)",
-          "oklch(0.950 0.1606 146.76)"
-        ]
-      },
-      "graph-outgoing": {
-        "role": "analytical",
-        "displayName": "Outgoing Slate",
-        "canonical": "#677b92",
-        "tonalRamp": [
-          "oklch(0.150 0.0427 252.13)",
-          "oklch(0.264 0.0427 252.13)",
-          "oklch(0.379 0.0427 252.13)",
-          "oklch(0.493 0.0427 252.13)",
-          "oklch(0.607 0.0427 252.13)",
-          "oklch(0.721 0.0427 252.13)",
-          "oklch(0.836 0.0427 252.13)",
-          "oklch(0.950 0.0427 252.13)"
-        ]
-      },
-      "graph-related": {
-        "role": "analytical",
-        "displayName": "Graph Related",
-        "canonical": "#c0c9bb",
-        "tonalRamp": [
-          "oklch(0.150 0.0216 134.11)",
-          "oklch(0.264 0.0216 134.11)",
-          "oklch(0.379 0.0216 134.11)",
-          "oklch(0.493 0.0216 134.11)",
-          "oklch(0.607 0.0216 134.11)",
-          "oklch(0.721 0.0216 134.11)",
-          "oklch(0.836 0.0216 134.11)",
-          "oklch(0.950 0.0216 134.11)"
-        ]
-      },
-      "graph-surface": {
-        "role": "analytical",
-        "displayName": "Graph Surface",
-        "canonical": "#ffffff",
-        "tonalRamp": [
-          "oklch(0.150 0.0000 89.88)",
-          "oklch(0.264 0.0000 89.88)",
-          "oklch(0.379 0.0000 89.88)",
-          "oklch(0.493 0.0000 89.88)",
-          "oklch(0.607 0.0000 89.88)",
-          "oklch(0.721 0.0000 89.88)",
-          "oklch(0.836 0.0000 89.88)",
-          "oklch(0.950 0.0000 89.88)"
+          "oklch(0.150 0.1070 153.43)",
+          "oklch(0.264 0.1070 153.43)",
+          "oklch(0.379 0.1070 153.43)",
+          "oklch(0.493 0.1070 153.43)",
+          "oklch(0.607 0.1070 153.43)",
+          "oklch(0.721 0.1070 153.43)",
+          "oklch(0.836 0.1070 153.43)",
+          "oklch(0.950 0.1070 153.43)"
         ]
       }
     },
@@ -684,7 +924,7 @@
       "refersTo": "button-primary",
       "description": "40px primary action from the Base UI button system.",
       "html": "<button class=\"ds-button\">Inspect account</button>",
-      "css": ".ds-button{font-family:\"Inter Variable\",sans-serif;font-size:15px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 16px;border:1px solid transparent;border-radius:var(--radius-lg,1rem);cursor:pointer;transition:background-color 150ms;}.ds-button{background:var(--primary);color:var(--primary-foreground);}.ds-button:hover{background:color-mix(in oklch,var(--primary) 80%,transparent)}.ds-button:focus-visible{outline:0;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}.ds-button:active{transform:translateY(1px)}.ds-button:disabled{pointer-events:none;opacity:.5}@media(pointer:coarse){.ds-button{min-height:44px}}"
+      "css": ".ds-button{font-family:\"Inter Variable\",sans-serif;font-size:15px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 16px;border:1px solid transparent;border-radius:var(--radius-lg,.75rem);cursor:pointer;transition:background-color 150ms;}.ds-button{background:var(--primary);color:var(--primary-foreground);}.ds-button:hover{background:color-mix(in oklch,var(--primary) 80%,transparent)}.ds-button:focus-visible{outline:0;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}.ds-button:active{transform:translateY(1px)}.ds-button:disabled{pointer-events:none;opacity:.5}@media(pointer:coarse){.ds-button{min-height:44px}}"
     },
     {
       "name": "Outline Button",
@@ -692,7 +932,7 @@
       "refersTo": "button-outline",
       "description": "40px outline action from the Base UI button system.",
       "html": "<button class=\"ds-button\">Inspect account</button>",
-      "css": ".ds-button{font-family:\"Inter Variable\",sans-serif;font-size:15px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 16px;border:1px solid transparent;border-radius:var(--radius-lg,1rem);cursor:pointer;transition:background-color 150ms;}.ds-button{background:var(--background);color:var(--foreground);border-color:var(--border);}.ds-button:hover{background:var(--muted)}.ds-button:focus-visible{outline:0;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}.ds-button:active{transform:translateY(1px)}.ds-button:disabled{pointer-events:none;opacity:.5}@media(pointer:coarse){.ds-button{min-height:44px}}"
+      "css": ".ds-button{font-family:\"Inter Variable\",sans-serif;font-size:15px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 16px;border:1px solid transparent;border-radius:var(--radius-lg,.75rem);cursor:pointer;transition:background-color 150ms;}.ds-button{background:var(--background);color:var(--foreground);border-color:var(--border);}.ds-button:hover{background:var(--muted)}.ds-button:focus-visible{outline:0;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}.ds-button:active{transform:translateY(1px)}.ds-button:disabled{pointer-events:none;opacity:.5}@media(pointer:coarse){.ds-button{min-height:44px}}"
     },
     {
       "name": "Ghost Button",
@@ -700,7 +940,7 @@
       "refersTo": "button-ghost",
       "description": "40px ghost action from the Base UI button system.",
       "html": "<button class=\"ds-button\">Inspect account</button>",
-      "css": ".ds-button{font-family:\"Inter Variable\",sans-serif;font-size:15px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 16px;border:1px solid transparent;border-radius:var(--radius-lg,1rem);cursor:pointer;transition:background-color 150ms;}.ds-button{background:transparent;color:var(--foreground);}.ds-button:hover{background:var(--muted)}.ds-button:focus-visible{outline:0;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}.ds-button:active{transform:translateY(1px)}.ds-button:disabled{pointer-events:none;opacity:.5}@media(pointer:coarse){.ds-button{min-height:44px}}"
+      "css": ".ds-button{font-family:\"Inter Variable\",sans-serif;font-size:15px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;height:40px;padding:0 16px;border:1px solid transparent;border-radius:var(--radius-lg,.75rem);cursor:pointer;transition:background-color 150ms;}.ds-button{background:transparent;color:var(--foreground);}.ds-button:hover{background:var(--muted)}.ds-button:focus-visible{outline:0;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}.ds-button:active{transform:translateY(1px)}.ds-button:disabled{pointer-events:none;opacity:.5}@media(pointer:coarse){.ds-button{min-height:44px}}"
     },
     {
       "name": "Account Search",
@@ -708,15 +948,15 @@
       "refersTo": "input",
       "description": "Compact account lookup with a visible dark-green focus ring.",
       "html": "<label class=\"ds-label\" for=\"ds-account\">Account ID</label><input class=\"ds-input\" id=\"ds-account\" placeholder=\"Jump to account…\" />",
-      "css": ".ds-label{display:block;margin-bottom:8px;font:500 14px \"Inter Variable\",sans-serif;color:var(--foreground)}.ds-input{font:400 14px \"Inter Variable\",sans-serif;height:32px;width:240px;padding:4px 10px;background:transparent;color:var(--foreground);border:1px solid var(--input);border-radius:var(--radius-lg,1rem);transition:color 150ms,border-color 150ms}.ds-input::placeholder{color:var(--muted-foreground)}.ds-input:focus-visible{outline:0;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}.ds-input:disabled{opacity:.5;pointer-events:none;background:color-mix(in oklch,var(--input) 50%,transparent)}"
+      "css": ".ds-label{display:block;margin-bottom:8px;font:500 14px \"Inter Variable\",sans-serif;color:var(--foreground)}.ds-input{font:400 16px \"Inter Variable\",sans-serif;height:40px;width:240px;padding:4px 10px;background:transparent;color:var(--foreground);border:1px solid var(--input);border-radius:var(--radius-lg,.75rem);transition:color 150ms,border-color 150ms}.ds-input::placeholder{color:var(--muted-foreground)}.ds-input:focus-visible{outline:0;border-color:var(--ring);box-shadow:0 0 0 3px color-mix(in oklch,var(--ring) 50%,transparent)}.ds-input:disabled{opacity:.5;pointer-events:none;background:color-mix(in oklch,var(--input) 50%,transparent)}@media(min-width:768px){.ds-input{font-size:15px}}"
     },
     {
       "name": "Active Navigation",
       "kind": "nav",
       "refersTo": "navigation-active",
-      "description": "Standard 32px sidebar navigation with a charcoal selected destination.",
-      "html": "<nav class=\"ds-nav\" aria-label=\"Workspace\"><button class=\"ds-nav-item\" aria-current=\"page\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\" aria-hidden=\"true\"><path d=\"M32 32h80v80H32zM144 32h80v80h-80zM32 144h80v80H32zM144 144h80v80h-80z\"/></svg>Overview</button></nav>",
-      "css": ".ds-nav{width:240px;padding:8px;background:var(--sidebar)}.ds-nav-item{font-family:\"Inter Variable\",sans-serif;font-size:14px;font-weight:500;display:flex;gap:8px;align-items:center;width:100%;height:32px;padding:8px;border:0;border-radius:var(--radius-md,.8rem);background:var(--sidebar-accent);color:var(--sidebar-accent-foreground);cursor:pointer;transition:background-color 160ms cubic-bezier(.23,1,.32,1)}.ds-nav-item:hover{background:var(--sidebar-accent)}.ds-nav-item:focus-visible{outline:2px solid var(--sidebar-ring);outline-offset:2px}"
+      "description": "32px desktop navigation, soft hover and charcoal selection; 44px mobile targets.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Workspace\"><button class=\"ds-nav-item\" aria-current=\"page\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\" aria-hidden=\"true\"><path d=\"M32 32h80v80H32zM144 32h80v80h-80zM32 144h80v80H32zM144 144h80v80h-80z\"/></svg>Overview</button><button class=\"ds-nav-item\">Investigation</button></nav>",
+      "css": ".ds-nav{width:240px;padding:8px;background:var(--sidebar)}.ds-nav-item{font-family:\"Inter Variable\",sans-serif;font-size:14px;font-weight:400;display:flex;gap:8px;align-items:center;width:100%;height:32px;padding:8px;border:0;border-radius:var(--radius-md,.6rem);background:transparent;color:var(--sidebar-foreground);cursor:pointer;transition:background-color 160ms cubic-bezier(.23,1,.32,1)}.ds-nav-item:hover{background:var(--sidebar-accent);color:var(--sidebar-accent-foreground)}.ds-nav-item[aria-current=page],.ds-nav-item[aria-current=page]:hover{background:var(--sidebar-primary);color:var(--sidebar-primary-foreground);font-weight:500}.ds-nav-item:focus-visible{outline:2px solid var(--sidebar-ring);outline-offset:2px}@media(max-width:767px){.ds-nav-item{min-height:44px;padding-inline:12px}.ds-nav-item+.ds-nav-item{margin-top:4px}}"
     },
     {
       "name": "Secondary Badge",
@@ -724,7 +964,7 @@
       "refersTo": "badge-secondary",
       "description": "Compact passive metadata pill.",
       "html": "<span class=\"ds-badge\">Synthetic data</span>",
-      "css": ".ds-badge{display:inline-flex;align-items:center;justify-content:center;height:20px;padding:2px 8px;font:500 12px/16px \"Inter Variable\",sans-serif;border:1px solid transparent;border-radius:var(--radius-4xl,2.6rem);background:var(--secondary);color:var(--secondary-foreground)}"
+      "css": ".ds-badge{display:inline-flex;align-items:center;justify-content:center;height:20px;padding:2px 8px;font:500 12px/16px \"Inter Variable\",sans-serif;border:1px solid transparent;border-radius:var(--radius-4xl,1.95rem);background:var(--secondary);color:var(--secondary-foreground)}"
     },
     {
       "name": "Evidence Card",
@@ -732,15 +972,15 @@
       "refersTo": "card",
       "description": "Factual white card with fine tonal separation.",
       "html": "<section class=\"ds-card\"><h3 class=\"ds-card-title\">Observed transfers</h3><p class=\"ds-card-description\">Recorded account activity</p><p class=\"ds-card-body\">Inspect the evidence supporting this hypothesis.</p></section>",
-      "css": ".ds-card{width:280px;padding:16px;border-radius:var(--radius-xl,1.4rem);background:var(--card);color:var(--card-foreground);box-shadow:0 0 0 1px var(--border);font:400 14px/20px \"Inter Variable\",sans-serif}.ds-card-title{margin:0;font-size:16px;line-height:24px;font-weight:500}.ds-card-description{margin:4px 0 16px;color:var(--muted-foreground)}.ds-card-body{margin:0}"
+      "css": ".ds-card{width:280px;padding:16px;border-radius:1rem;background:var(--card);color:var(--card-foreground);box-shadow:0 0 0 1px var(--border);font:400 14px/20px \"Inter Variable\",sans-serif}.ds-card-title{margin:0;font-size:16px;line-height:24px;font-weight:500}.ds-card-description{margin:4px 0 16px;color:var(--muted-foreground)}.ds-card-body{margin:0}"
     },
     {
       "name": "Selected Account",
       "kind": "custom",
       "refersTo": "graph-account",
-      "description": "Selected account glyph with role symbol and legible ID.",
+      "description": "176×136px account cell with a selected glyph, 16px short IDs and 14px IDs longer than 12 characters.",
       "html": "<div class=\"ds-account\"><span class=\"ds-glyph\"><svg width=\"28\" height=\"28\" viewBox=\"0 0 256 256\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"16\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M32 80h176m-32-32 32 32-32 32M224 176H48m32-32-32 32 32 32\"/></svg></span><strong class=\"ds-account-id\">10001</strong><span class=\"ds-account-role\">Transit</span><span class=\"ds-account-state\">Selected</span></div>",
-      "css": ".ds-account{display:flex;flex-direction:column;align-items:center;width:124px;height:136px;background:#ffffff;color:var(--foreground);font-family:\"Inter Variable\",sans-serif}.ds-glyph{display:flex;align-items:center;justify-content:center;width:68px;height:68px;margin-top:2px;margin-bottom:7px;border:2px solid #20251f;border-radius:50%;background:#20251f;color:#ffffff}.ds-account-id{font-family:ui-monospace,monospace;font-size:16px;line-height:20px;font-weight:600}.ds-account-role{font-size:13px;line-height:18px;color:var(--muted-foreground)}.ds-account-state{margin-top:2px;font-size:11px;line-height:16px}"
+      "css": ".ds-account{display:flex;flex-direction:column;align-items:center;width:176px;height:136px;background:var(--graph-surface);color:var(--foreground);font-family:\"Inter Variable\",sans-serif}.ds-glyph{display:flex;align-items:center;justify-content:center;width:68px;height:68px;margin-top:2px;margin-bottom:7px;border:2px solid var(--graph-ink);border-radius:50%;background:var(--graph-ink);color:#ffffff}.ds-account-id{font-family:ui-monospace,monospace;font-size:16px;line-height:20px;font-weight:600}.ds-account-role{font-size:13px;line-height:18px;color:var(--muted-foreground)}.ds-account-state{margin-top:2px;font-size:13px;line-height:16px}.ds-account-id[data-long=true]{font-size:14px}"
     }
   ],
   "narrative": {

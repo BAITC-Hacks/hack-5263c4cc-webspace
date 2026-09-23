@@ -26,7 +26,7 @@ Installed direct runtime versions at 23 September 2026:
 | html-to-image | 1.11.13 | [MIT](https://github.com/bubkoo/html-to-image) |
 | Phosphor React | 2.1.10 | [MIT](https://github.com/phosphor-icons/react) |
 | shadcn Base Nova component source / CLI | 4.21.0 CLI | [MIT](https://github.com/shadcn-ui/ui) |
-| Geist variable font | 5.3.0 distribution | [SIL OFL-1.1](https://github.com/vercel/geist-font) |
+| Inter Variable font (`@fontsource-variable/inter`) | 5.3.0 distribution | [SIL OFL-1.1](https://github.com/rsms/inter) |
 
 Direct browser runtime license texts are retained in [licenses/frontend.txt](licenses/frontend.txt), copied from the installed distributions. Python distributions retain their original license files in installed package metadata. Binary NumPy/SciPy wheels contain additional notices that remain applicable; the core project license is not a replacement for those notices.
 
@@ -38,4 +38,4 @@ Development tools include Vite, TypeScript, pytest and HTTPX. Exact direct and t
 
 Research references such as ThreatSight 360, NVIDIA AI-Q, IBM AMLSim, LangGraph, OpenAI Agents SDK and PydanticAI informed architectural comparisons; they are not installed runtime dependencies unless listed above. Their capabilities and license restrictions are detailed in [the research report](docs/research/ecosystem-2026.md).
 
-The Aqsha Lens logo was generated for this project with OpenAI image generation. The exact prompt and asset provenance are retained in `web/public/brand/aqsha-lens-mark.provenance.json`. It contains no copied bank logo.
+The Aqsha Lens logo was generated for this project with OpenAI image generation. The exact prompt and asset provenance are retained in `web/public/brand/aqsha-freedom-mark.provenance.json`. It contains no copied bank logo.
