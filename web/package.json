@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
+    "api:generate": "PYTHON_DOTENV_DISABLED=1 uv run --directory .. --frozen python scripts/export_openapi.py && openapi-typescript openapi.json -o src/generated/api.d.ts",
+    "api:check": "PYTHON_DOTENV_DISABLED=1 uv run --directory .. --frozen python scripts/export_openapi.py --check && openapi-typescript openapi.json -o src/generated/api.d.ts --check",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
@@ -36,6 +38,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "6.1.1",
+    "openapi-typescript": "7.13.0",
     "tailwindcss": "4.3.3",
     "typescript": "^5.9.0",
     "vite": "8.3.0"

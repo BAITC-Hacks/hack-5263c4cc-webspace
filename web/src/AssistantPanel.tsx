@@ -527,7 +527,7 @@ function EvidenceDetails({
                     {toolLabels[step.tool] || step.tool.replaceAll("_", " ")}
                   </span>
                   <Badge variant="secondary">
-                    {step.status === "ok" || step.status === "success"
+                    {step.status === "complete"
                       ? "Checked"
                       : step.status.replaceAll("_", " ")}
                   </Badge>

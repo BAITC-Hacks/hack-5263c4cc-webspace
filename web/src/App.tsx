@@ -121,7 +121,9 @@ export default function App() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [summaryError, setSummaryError] = useState("");
   const [revision, setRevision] = useState(0);
-  const [view, setView] = useState<WorkspaceView>("overview");
+  const [view, setView] = useState<WorkspaceView>(() =>
+    window.location.hash === "#compare-entities" ? "signals" : "overview",
+  );
   const [nodes, setNodes] = useState<NodeSummary[]>([]);
   const [total, setTotal] = useState(0);
   const [queueLoading, setQueueLoading] = useState(true);
@@ -151,6 +153,16 @@ export default function App() {
   useEffect(() => {
     mainContent.current?.scrollTo(0, 0);
   }, [view]);
+  useEffect(() => {
+    const openHashTarget = () => {
+      if (window.location.hash === "#compare-entities") {
+        setView("signals");
+        setSheetOpen(false);
+      }
+    };
+    window.addEventListener("hashchange", openHashTarget);
+    return () => window.removeEventListener("hashchange", openHashTarget);
+  }, []);
   const wide = useWideInspector();
   const inspectorVisible = view === "network" || view === "signals";
   const refresh = () => setRevision((value) => value + 1);

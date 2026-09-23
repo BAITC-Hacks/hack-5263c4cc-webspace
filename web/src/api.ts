@@ -1,3 +1,5 @@
+import type { components } from "./generated/api";
+
 export type Gid = string;
 
 export function isGid(value: unknown): value is Gid {
@@ -6,180 +8,17 @@ export function isGid(value: unknown): value is Gid {
 
 export const compareGids = (a: Gid, b: Gid) => a.length - b.length || a.localeCompare(b);
 
-export type Role =
-  | "consolidator"
-  | "transit"
-  | "distributor"
-  | "terminal"
-  | "coordinator"
-  | "peripheral"
-  | "boundary_unknown"
-  | string;
-export interface NodeSummary {
-  gid: Gid;
-  role: Role;
-  role_score: number;
-  priority_score: number;
-  cluster_id: number;
-  evidence: string;
-  depth: number;
-  is_seed: boolean;
-  truncated_by_depth: boolean;
-  in_degree: number;
-  out_degree: number;
-  in_kzt: number;
-  out_kzt: number;
-  rank: number;
-}
-export interface SummaryActivity {
-  start: string;
-  end: string;
-  n_tx: number;
-  sum_kzt: number;
-}
-export interface Summary {
-  dataset: {
-    name: string;
-    kind: "synthetic" | "official";
-    description: string;
-  };
-  counts: {
-    nodes: number;
-    edges: number;
-    transactions: number;
-    seeds: number;
-    clusters: number;
-    components: number;
-    boundary_nodes: number;
-    isolated_nodes: number;
-  };
-  period: { start: string | null; end: string | null };
-  total_kzt: number;
-  activity: SummaryActivity[];
-  runtime_ms: number;
-  role_counts: Record<string, number>;
-  limitations: string[];
-  top_nodes: NodeSummary[];
-}
-export interface Counterparty {
-  gid: Gid;
-  role: Role;
-  sum_kzt: number;
-  n_tx: number;
-}
-export interface TimelineDay {
-  date: string;
-  in_kzt: number;
-  out_kzt: number;
-  in_tx: number;
-  out_tx: number;
-}
-export interface NodeDetail extends NodeSummary {
-  metrics: {
-    in_degree: number;
-    out_degree: number;
-    in_kzt: number;
-    out_kzt: number;
-    in_tx: number;
-    out_tx: number;
-    pagerank: number;
-    betweenness: number;
-    pass_through: number;
-    seed_reach: number;
-    neighbor_clusters: number;
-    matched_2d_ratio: number;
-    active_days: number;
-  };
-  role_scores: Record<string, number>;
-  reasons: { label: string; value: string | number; detail: string }[];
-  score_factors: {
-    label: string;
-    value: number;
-    weight: number;
-    contribution: number;
-  }[];
-  limitations: string[];
-  observability: { label: string; level: string; notes: string[] };
-  timeline: TimelineDay[];
-  counterparties: { incoming: Counterparty[]; outgoing: Counterparty[] };
-}
-export interface GraphEdge {
-  id: string;
-  source: string;
-  target: string;
-  src: Gid;
-  dst: Gid;
-  sum_kzt: number;
-  n_tx: number;
-  depth: number;
-}
-export interface GraphData {
-  nodes: (NodeSummary & { id: string; label: string; is_root: boolean })[];
-  edges: GraphEdge[];
-  truncated: boolean;
-  root_gid: Gid | null;
-}
-export interface Cluster {
-  cluster_id: number;
-  n_nodes: number;
-  n_seed: number;
-  sum_kzt_internal: number;
-  top_gids: Gid[];
-  hypothesis: string;
-  roles: Record<string, number>;
-}
-export interface CopilotResponse {
-  answer: string;
-  mode: "offline" | "openai" | "fallback";
-  citations: {
-    label?: string;
-    gid?: Gid;
-    text?: string;
-    kind?: string;
-    evidence_version?: string;
-    payload_sha256?: string;
-    source?: Record<string, unknown>;
-    source_json?: string;
-  }[];
-  observations?: {
-    evidence_id: string;
-    path: string;
-    label: string;
-    value: string;
-    unit?: string;
-  }[];
-  grounding?: {
-    typed_observations_checked: number;
-    numeric_literals_checked: number;
-    prose_entailment: "not_checked";
-    note: string;
-  };
-  local_workflow?: {
-    action: string;
-    action_label: string;
-    recognized: boolean;
-  };
-  limitations: string[];
-  trace: { tool: string; status: string; elapsed_ms?: number }[];
-  model?: string;
-  memory?: {
-    session_id: string;
-    turns: number;
-    expires_in_seconds: number;
-    persistence: "process" | "sqlite";
-  };
-  execution?: {
-    run_id: string;
-    status: "completed" | "offline" | "fallback";
-    model_rounds: number;
-    tool_calls: number;
-    input_tokens: number;
-    output_tokens: number;
-    elapsed_ms: number;
-    fallback_code?: string;
-    evidence_version?: string;
-  };
-}
+export type Role = NodeSummary["role"];
+export type NodeSummary = components["schemas"]["NodeSummary"];
+export type SummaryActivity = components["schemas"]["SummaryActivity"];
+export type Summary = components["schemas"]["SummaryResponse"];
+export type Counterparty = components["schemas"]["Counterparty"];
+export type TimelineDay = components["schemas"]["TimelineDay"];
+export type NodeDetail = components["schemas"]["NodeResponse"];
+export type GraphEdge = components["schemas"]["GraphEdge"];
+export type GraphData = components["schemas"]["GraphResponse"];
+export type Cluster = components["schemas"]["Cluster"];
+export type CopilotResponse = components["schemas"]["CopilotResponse"];
 
 /** Safe message metadata: session IDs are private capabilities, never transcript data. */
 export type CopilotReply = Omit<CopilotResponse, "memory"> & {
@@ -259,89 +98,8 @@ export const dateLabel = (date: string | null | undefined, year = false) =>
       })
     : "—";
 
-export interface SignalReport {
-  gid: Gid;
-  temporal: {
-    overlap_2d_ratio: number;
-    spikes: {
-      date: string;
-      total_kzt: number;
-      baseline_median_kzt: number;
-      ratio: number;
-    }[];
-    synchronized_inflows: {
-      date: string;
-      payers: Gid[];
-      payer_count: number;
-      sum_kzt: number;
-    }[];
-    caveat: string;
-  };
-  routes: {
-    path: Gid[];
-    occurrences: {
-      in_date: string;
-      out_date: string;
-      in_kzt: number;
-      out_kzt: number;
-      lag_days: number;
-    }[];
-    occurrence_count: number;
-    distinct_start_dates: number;
-  }[];
-  cycles: {
-    path: Gid[];
-    edges: { src: Gid; dst: Gid; sum_kzt: number; dates: string[] }[];
-    chronological_example:
-      { src: Gid; dst: Gid; date: string; sum_kzt: number }[] | null;
-    kind: string;
-  }[];
-  anomalies: {
-    id: string;
-    title: string;
-    evidence: string;
-    metrics: Record<string, unknown>;
-  }[];
-  limits: Record<string, unknown>;
-  caveats: string[];
-}
-export interface ResilienceReport {
-  top_n: number;
-  removed_gids: Gid[];
-  baseline: ResilienceMetrics;
-  after: ResilienceMetrics;
-  change: Partial<ResilienceMetrics>;
-  caveat: string;
-}
-export interface ResilienceMetrics {
-  nodes: number;
-  edges: number;
-  weak_components: number;
-  largest_component_nodes: number;
-  reachable_seed_pairs: number;
-}
-export interface CollectorReport {
-  gids: Gid[];
-  max_hops: number;
-  items: {
-    gid: Gid;
-    role: string;
-    priority_score: number;
-    paths: { source_gid: Gid; path: Gid[]; hops: number }[];
-    matched_sources: number;
-  }[];
-  total?: number;
-  truncated?: boolean;
-  caveat: string;
-}
-export interface Dossier {
-  gid: Gid;
-  title: string;
-  role: string;
-  priority_score: number;
-  evidence: string[];
-  hypotheses: string[];
-  missing_evidence: string[];
-  next_requests: { priority: number; request: string; reason: string }[];
-  citations: string[];
-}
+export type SignalReport = components["schemas"]["SignalsResponse"];
+export type ResilienceReport = components["schemas"]["ResilienceResponse"];
+export type ResilienceMetrics = components["schemas"]["ResilienceMetrics"];
+export type CollectorReport = components["schemas"]["CollectorsResponse"];
+export type Dossier = components["schemas"]["DossierResponse"];

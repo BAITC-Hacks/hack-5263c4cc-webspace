@@ -306,7 +306,7 @@ export function CohortPanel({
     }
   }
   return (
-    <Card id="compare-entities">
+    <Card id="compare-entities" tabIndex={-1} className="scroll-mt-6">
       <CardHeader>
         <CardTitle>Common collectors</CardTitle>
         <CardDescription>
@@ -489,6 +489,32 @@ export function SignalsPanel({
   const [error, setError] = useState("");
   const [dossierError, setDossierError] = useState("");
   const [revision, setRevision] = useState(0);
+  const [hashRevision, setHashRevision] = useState(0);
+  const comparisonReached = useRef(false);
+  useEffect(() => {
+    const followHash = () => {
+      comparisonReached.current = false;
+      setHashRevision((value) => value + 1);
+    };
+    window.addEventListener("hashchange", followHash);
+    return () => window.removeEventListener("hashchange", followHash);
+  }, []);
+  useEffect(() => {
+    if (
+      window.location.hash !== "#compare-entities" ||
+      comparisonReached.current ||
+      (gid !== null && !data && !error)
+    ) return;
+    // Wait for the lazy panel and its signal cards before locating the target.
+    const frame = window.requestAnimationFrame(() => {
+      const target = document.getElementById("compare-entities");
+      if (!target) return;
+      comparisonReached.current = true;
+      target.focus({ preventScroll: true });
+      target.scrollIntoView({ block: "start", behavior: "instant" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [gid, data, error, hashRevision]);
   useEffect(() => {
     setData(null);
     setDossier(null);
