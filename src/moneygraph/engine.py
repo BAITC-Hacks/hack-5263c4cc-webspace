@@ -149,10 +149,19 @@ class Analysis:
             raise ValueError("is_seed must contain boolean values")
         known = set(gids)
         for frame in (edges, tx):
+            if any(not isinstance(value, int) or isinstance(value, bool)
+                   for column in ("src", "dst") for value in frame[column]):
+                raise ValueError("Edge and transaction endpoints must be integers")
             if not (set(frame["src"]) | set(frame["dst"])).issubset(known):
                 raise ValueError("Every edge and transaction endpoint must exist in nodes")
             if any(not math.isfinite(float(v)) or float(v) <= 0 for v in frame["sum_kzt"]):
                 raise ValueError("Transaction and edge amounts must be finite and positive")
+        if any(not isinstance(value, int) or isinstance(value, bool) or value <= 0
+               for value in edges["n_tx"]):
+            raise ValueError("Edge transaction counts must be positive integers")
+        if any(not isinstance(value, int) or isinstance(value, bool) or value < 0
+               for value in edges["depth"]):
+            raise ValueError("Edge depth must be a nonnegative integer")
         pairs = [(r["src"], r["dst"]) for r in edges.iter_rows(named=True)]
         if len(pairs) != len(set(pairs)):
             raise ValueError("Edges must have one row per directed pair")
@@ -166,7 +175,7 @@ class Analysis:
             raise ValueError("Edges and transactions do not cover the same directed pairs")
         for r in edges.iter_rows(named=True):
             total, count = aggregate[(r["src"], r["dst"])]
-            if not math.isclose(float(r["sum_kzt"]), total, rel_tol=1e-9, abs_tol=0.01) or r["n_tx"] != count:
+            if not math.isclose(float(r["sum_kzt"]), total, rel_tol=0.0, abs_tol=0.01) or r["n_tx"] != count:
                 raise ValueError("Edge amounts or counts do not match transaction aggregates")
 
     def _find_clusters(self) -> dict[int, int]:

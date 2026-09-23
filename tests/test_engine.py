@@ -84,6 +84,41 @@ def test_aggregation_mismatch_is_rejected():
         Analysis(pl.concat([nodes, nodes.head(1)]), edges, tx)
 
 
+@pytest.mark.parametrize("table_index", [1, 2])
+@pytest.mark.parametrize("column", ["src", "dst"])
+@pytest.mark.parametrize("dtype", [pl.Float64, pl.Boolean])
+def test_endpoint_types_cannot_alias_integer_account_ids(table_index, column, dtype):
+    source = list(frames([{"src": 1, "dst": 2, "date": date(2026, 7, 1), "sum_kzt": 20000.0}]))
+    source[table_index] = source[table_index].with_columns(pl.col(column).cast(dtype))
+    with pytest.raises(ValueError, match="endpoints must be integers"):
+        Analysis(*source)
+
+
+@pytest.mark.parametrize("column,value,message", [
+    ("n_tx", 1.0, "counts must be positive integers"),
+    ("n_tx", True, "counts must be positive integers"),
+    ("n_tx", 0, "counts must be positive integers"),
+    ("n_tx", -1, "counts must be positive integers"),
+    ("depth", 1.0, "Edge depth must be a nonnegative integer"),
+    ("depth", True, "Edge depth must be a nonnegative integer"),
+    ("depth", -1, "Edge depth must be a nonnegative integer"),
+])
+def test_edge_counts_and_depth_have_strict_integer_contracts(column, value, message):
+    nodes, edges, tx = frames()
+    with pytest.raises(ValueError, match=message):
+        Analysis(nodes, edges.with_columns(pl.lit(value).alias(column)), tx)
+
+
+def test_aggregation_tolerance_does_not_grow_with_transfer_size():
+    nodes, edges, tx = frames([
+        {"src": 1, "dst": 2, "date": date(2026, 7, 1), "sum_kzt": 1_000_000_000.0},
+    ])
+    for mismatch in (0.02, 0.5):
+        with pytest.raises(ValueError, match="amounts or counts"):
+            Analysis(nodes, edges.with_columns(pl.col("sum_kzt") + mismatch), tx)
+    Analysis(nodes, edges.with_columns(pl.col("sum_kzt") + 0.005), tx)
+
+
 def test_graph_is_bounded_and_has_valid_endpoints():
     analysis = load_analysis()
     node = analysis.summary()["top_nodes"][0]["gid"]
