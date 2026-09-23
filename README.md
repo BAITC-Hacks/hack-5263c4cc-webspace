@@ -107,6 +107,67 @@ curl -fsS http://127.0.0.1:8000/ | grep -qi '<!doctype html'
 
 Health must report `status: "ok"` and the intended `dataset_kind`. Copilot status checks configuration, not provider availability. Open the UI and inspect an account; for a credential-free check, run a local investigation action. An API-only JSON message at `/` means the frontend build is missing. The investigation UI works offline after installation; the optional `/docs` page uses external CDN assets.
 
+### Private Linux server
+
+Use a normal, dedicated login account with GitHub repository access, uv, Node.js 22.12+, and npm installed. On the server, use this checkout location so the service definition below works unchanged:
+
+```bash
+mkdir -p "$HOME/apps"
+git clone https://github.com/BAITC-Hacks/hack-5263c4cc-webspace.git "$HOME/apps/aqsha-lens"
+cd "$HOME/apps/aqsha-lens"
+```
+
+Complete **Install, configure, and start** above in this directory. Verify the foreground server, then stop it with **Ctrl+C** before starting the managed service. Keep data and any optional SQLite file readable/writable only by the service account. SQLite needs a writable parent directory and a regular, non-symlink database file; it is initialized on the first session request.
+
+Create a systemd **user service** on the server:
+
+```bash
+mkdir -p "$HOME/.config/systemd/user"
+cat > "$HOME/.config/systemd/user/aqsha-lens.service" <<'UNIT'
+[Unit]
+Description=Aqsha Lens investigation workspace
+
+[Service]
+Type=simple
+WorkingDirectory=%h/apps/aqsha-lens
+ExecStart=%h/apps/aqsha-lens/.venv/bin/moneygraph serve --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=5
+UMask=0077
+
+[Install]
+WantedBy=default.target
+UNIT
+systemctl --user daemon-reload
+systemctl --user enable --now aqsha-lens.service
+systemctl --user status aqsha-lens.service --no-pager
+```
+
+`%h` expands to the service user's home directory. The CLI loads the checkout's `.env`; the unit contains no credentials and performs no dependency installation at startup. For service startup after reboot and operation after logout, an administrator must enable user lingering if server policy allows it:
+
+```bash
+sudo loginctl enable-linger "$USER"
+```
+
+From **your own computer**, open an SSH tunnel. Replace `your-user@your-server` with your server login:
+
+```bash
+ssh -N -o ExitOnForwardFailure=yes \
+  -L 127.0.0.1:18000:127.0.0.1:8000 your-user@your-server
+```
+
+Keep the SSH session running and open **http://127.0.0.1:18000** locally. Port 18000 is on your computer; port 8000 remains on the server's loopback interface. If 18000 is occupied, change only the first port and the browser URL. Do not open application port 8000 to the internet. SSH access is the access boundary for this deployment; it does not add in-app user identities. [OpenSSH local-forwarding reference](https://man.openbsd.org/ssh#L).
+
+Useful server commands:
+
+```bash
+journalctl --user -u aqsha-lens.service -n 100 --no-pager
+systemctl --user restart aqsha-lens.service
+systemctl --user stop aqsha-lens.service
+```
+
+The server's health check uses `http://127.0.0.1:8000/api/health`; the equivalent check through your tunnel uses local port 18000. Test a local assistant action after setting `MONEYGRAPH_MEMORY_PATH`, because health alone does not initialize conversation storage. This service template and tunnel syntax are provided for Linux administration; no remote server was provisioned or SSH deployment performed as part of the submission.
+
 ## Required outputs
 
 From raw Parquet to all three required CSVs in one command:
