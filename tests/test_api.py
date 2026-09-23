@@ -43,6 +43,22 @@ def test_unknown_entities_and_bounded_queries(client):
     assert client.get("/api/unknown").status_code == 404
 
 
+def test_account_pagination_contract_and_bounds(client):
+    first = client.get("/api/nodes", params={"limit": 2}).json()
+    second = client.get("/api/nodes", params={"limit": 2, "offset": 2}).json()
+    combined = client.get("/api/nodes", params={"limit": 4}).json()
+    assert first["items"] + second["items"] == combined["items"]
+    assert first["total"] == second["total"] == combined["total"]
+    assert client.get("/api/nodes", params={"offset": first["total"]}).json() == {"items": [], "total": first["total"]}
+    for invalid in (-1, 1_000_001, "invalid"):
+        assert client.get("/api/nodes", params={"offset": invalid}).status_code == 422
+
+    role = first["items"][0]["role"]
+    filtered = client.get("/api/nodes", params={"role": role, "limit": 500}).json()
+    page = client.get("/api/nodes", params={"role": role, "limit": 2, "offset": 1}).json()
+    assert page == {"items": filtered["items"][1:3], "total": filtered["total"]}
+
+
 def test_exports_cover_required_three_contracts(client):
     expected = {
         "nodes_roles.csv": ["gid", "role", "role_score", "cluster_id", "priority_score", "evidence"],

@@ -363,11 +363,14 @@ class Analysis:
             "limitations": LIMITATIONS, "top_nodes": [self._brief(r) for r in self._ranked[:20]],
         }
 
-    def nodes(self, query: str = "", role: str | None = None, cluster_id: int | None = None, limit: int = 50) -> dict[str, Any]:
+    def nodes(self, query: str = "", role: str | None = None, cluster_id: int | None = None,
+              limit: int = 50, offset: int = 0) -> dict[str, Any]:
         query = query.strip().casefold()
         matched = [r for r in self._ranked if (not query or query in str(r["gid"]))
                    and (not role or r["role"] == role) and (cluster_id is None or r["cluster_id"] == cluster_id)]
-        return {"items": [self._brief(r) for r in matched[:max(0, min(limit, 500))]], "total": len(matched)}
+        start = max(0, min(offset, len(matched)))
+        return {"items": [self._brief(r) for r in matched[start:start + max(0, min(limit, 500))]],
+                "total": len(matched)}
 
     def node(self, gid: int) -> dict[str, Any] | None:
         if gid not in self._records:

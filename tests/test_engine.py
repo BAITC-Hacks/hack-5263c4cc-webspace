@@ -105,3 +105,40 @@ def test_priority_contributions_explain_final_priority():
 def test_missing_explicit_dataset_fails_instead_of_silently_using_demo(tmp_path):
     with pytest.raises(ValueError, match="must contain"):
         load_analysis(tmp_path)
+
+
+def test_pagination_reaches_every_node_beyond_the_page_cap():
+    nodes, edges, transactions = frames()
+    extra = pl.DataFrame({"gid": list(range(7, 517)), "depth": [1] * 510, "is_seed": [False] * 510})
+    analysis = Analysis(pl.concat([nodes, extra]), edges, transactions)
+
+    first = analysis.nodes(limit=500)
+    final = analysis.nodes(limit=500, offset=500)
+    combined = first["items"] + final["items"]
+    assert first["total"] == final["total"] == 516
+    assert len(first["items"]) == 500 and len(final["items"]) == 16
+    assert len({row["gid"] for row in combined}) == 516
+    assert {row["gid"] for row in combined} == set(range(1, 517))
+    assert [row["rank"] for row in combined] == list(range(1, 517))
+    assert analysis.nodes(offset=516) == {"items": [], "total": 516}
+    assert analysis.nodes(offset=1_000_000) == {"items": [], "total": 516}
+
+
+def test_pagination_slices_after_all_filters_and_preserves_total():
+    nodes = pl.DataFrame({"gid": [1, 11, 12, 13, 22], "depth": [0, 1, 1, 1, 1],
+                          "is_seed": [True, False, False, False, False]})
+    transactions = pl.DataFrame({"src": [1] * 4, "dst": [11, 12, 13, 22],
+                                 "date": [date(2026, 7, 1)] * 4,
+                                 "sum_kzt": [10000.0, 20000.0, 30000.0, 40000.0]})
+    edges = transactions.select("src", "dst", "sum_kzt").with_columns(
+        pl.lit(1).alias("n_tx"), pl.lit(1).alias("depth"))
+    analysis = Analysis(nodes, edges, transactions)
+    all_rows = analysis.nodes(limit=500)["items"]
+    filters = {"query": "1", "role": "terminal", "cluster_id": analysis.node(11)["cluster_id"]}
+    expected = [row for row in all_rows if filters["query"] in str(row["gid"])
+                and row["role"] == filters["role"] and row["cluster_id"] == filters["cluster_id"]]
+    assert len(expected) == 3
+    page = analysis.nodes(**filters, limit=1, offset=1)
+    assert page == {"items": expected[1:2], "total": len(expected)}
+    assert analysis.nodes(**filters, offset=len(expected)) == {"items": [], "total": len(expected)}
+    assert analysis.nodes(**filters, limit=1) == analysis.nodes(**filters, limit=1, offset=0)
