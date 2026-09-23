@@ -6,4 +6,4 @@ command -v npm >/dev/null || { echo 'Node.js 22+ and npm are required.' >&2; exi
 uv sync --frozen --extra dev
 npm --prefix web ci --no-audit --no-fund
 npm --prefix web run build
-exec uv run --frozen uvicorn moneygraph.api:app --host 127.0.0.1 --port "${PORT:-8000}" --no-access-log
+exec uv run --frozen uvicorn moneygraph.api:app --host 127.0.0.1 --port "${PORT:-8000}" --no-access-log --no-proxy-headers
