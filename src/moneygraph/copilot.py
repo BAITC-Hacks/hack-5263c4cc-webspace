@@ -11,6 +11,8 @@ from fastapi import APIRouter, HTTPException, Request
 from openai import OpenAI, OpenAIError
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
+from .evidence import EvidenceContext
+
 router = APIRouter(prefix="/api")
 _slots = threading.BoundedSemaphore(2)
 MAX_ROUNDS = 3
@@ -84,10 +86,13 @@ def offline_answer(node: dict, reason: str | None = None) -> dict:
             "limitations": list(dict.fromkeys(limitations)), "trace": []}
 
 
-def evidence_tool(name: str, arguments: str, engine: Any, gid: int, gids: list[int] | None = None) -> dict:
+def evidence_tool(name: str, arguments: str, engine: Any, gid: int, gids: list[int] | None = None,
+                  *, context: EvidenceContext | None = None) -> dict:
     """Selection is bound in application code; model cannot broaden its authority."""
     if json.loads(arguments) != {}:
         raise ValueError("Tool arguments must be empty; account scope is fixed.")
+    if context is not None:
+        context.require_analysis(engine)
     node = engine.node(gid)
     if node is None:
         raise ValueError("Selected account is unavailable.")
@@ -114,8 +119,7 @@ def evidence_tool(name: str, arguments: str, engine: Any, gid: int, gids: list[i
                       if c["cluster_id"] == cluster_id), None)
         return {"evidence_id": f"cluster:{cluster_id}", "data": found}
     if name in {"inspect_patterns", "find_common_collectors", "simulate_top_removal", "inspect_missing_evidence"}:
-        from .signals import SignalAnalysis
-        signals = SignalAnalysis(engine)
+        signals = (context or EvidenceContext(engine)).signals
         if name == "inspect_patterns":
             payload = deepcopy(signals.node(gid))
             # Bound agent context independently of the interactive evidence viewer.
@@ -143,7 +147,10 @@ def evidence_tool(name: str, arguments: str, engine: Any, gid: int, gids: list[i
     raise ValueError("Unknown tool.")
 
 
-def investigate(engine: Any, request: CopilotRequest, client: Any = None) -> dict:
+def investigate(engine: Any, request: CopilotRequest, client: Any = None,
+                *, context: EvidenceContext | None = None) -> dict:
+    context = context or EvidenceContext(engine)
+    context.require_analysis(engine)
     node = engine.node(request.gid)
     if node is None:
         raise KeyError(request.gid)
@@ -189,7 +196,7 @@ def investigate(engine: Any, request: CopilotRequest, client: Any = None) -> dic
                 calls_used += 1
                 if calls_used > MAX_TOOL_CALLS:
                     raise ValueError("Tool budget exhausted.")
-                result = evidence_tool(call.name, call.arguments, engine, request.gid, request.gids)
+                result = evidence_tool(call.name, call.arguments, engine, request.gid, request.gids, context=context)
                 encoded = json.dumps(result, default=str)
                 if len(encoded) > 24000:
                     raise ValueError("Evidence payload exceeds bounded context.")
@@ -215,9 +222,9 @@ def investigate(engine: Any, request: CopilotRequest, client: Any = None) -> dic
 
 @router.post("/copilot")
 def copilot(request: CopilotRequest, http_request: Request):
-    from .api import get_engine
+    from .api import get_evidence
     try:
-        engine = getattr(http_request.app.state, "analysis", None) or get_engine()
-        return investigate(engine, request)
+        context = get_evidence(http_request)
+        return investigate(context.analysis, request, context=context)
     except KeyError:
         raise HTTPException(status_code=404, detail="Account not found") from None

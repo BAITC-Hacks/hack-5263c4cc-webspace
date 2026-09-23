@@ -1,10 +1,9 @@
 """Read-only HTTP interface for deterministic graph evidence."""
 
 from contextlib import asynccontextmanager
-import csv
-from io import StringIO
 import os
 from pathlib import Path
+from threading import Lock
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -15,7 +14,9 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .engine import Analysis, ROLES, load_analysis
+from .evidence import EvidenceContext
 from .signals import SignalAnalysis
+from .exports import export_bytes
 
 load_dotenv(override=False)
 _analysis: Analysis | None = None
@@ -28,6 +29,15 @@ def get_engine() -> Analysis:
     return _analysis
 
 
+def get_evidence(request: Request) -> EvidenceContext:
+    state = request.app.state
+    with state.evidence_lock:
+        if state.evidence is None:
+            state.analysis = state.analysis or get_engine()
+            state.evidence = EvidenceContext(state.analysis)
+        return state.evidence
+
+
 def make_app(analysis: Analysis | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI):
@@ -37,6 +47,8 @@ def make_app(analysis: Analysis | None = None) -> FastAPI:
 
     application = FastAPI(title="Money Graph", version="0.1.0", lifespan=lifespan)
     application.state.analysis = analysis
+    application.state.evidence = EvidenceContext(analysis) if analysis is not None else None
+    application.state.evidence_lock = Lock()
     application.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]", "testserver"])
 
     @application.middleware("http")
@@ -48,17 +60,14 @@ def make_app(analysis: Analysis | None = None) -> FastAPI:
         if request.url.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
         return response
-    application.state.signals = None
     application.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                                allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
     def engine(request: Request) -> Analysis:
-        return request.app.state.analysis or get_engine()
+        return get_evidence(request).analysis
 
     def signals(request: Request) -> SignalAnalysis:
-        if request.app.state.signals is None:
-            request.app.state.signals = SignalAnalysis(engine(request))
-        return request.app.state.signals
+        return get_evidence(request).signals
 
     @application.get("/api/health")
     def health(request: Request):
@@ -138,14 +147,10 @@ def make_app(analysis: Analysis | None = None) -> FastAPI:
     @application.get("/api/exports/{name}")
     def export(name: str, request: Request):
         try:
-            columns, rows = engine(request).export_rows(name)
+            content = export_bytes(engine(request), name)
         except ValueError as error:
             raise HTTPException(404, "Unknown export") from error
-        text = StringIO(newline="")
-        writer = csv.DictWriter(text, fieldnames=columns)
-        writer.writeheader()
-        writer.writerows(rows)
-        return Response(text.getvalue(), media_type="text/csv; charset=utf-8",
+        return Response(content, media_type="text/csv; charset=utf-8",
                         headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
 
     from .copilot import router as copilot_router
