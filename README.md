@@ -28,6 +28,8 @@ uv run --frozen moneygraph export --data /absolute/path/to/data --out outputs/su
 
 Omit `--data` to export the synthetic fixture. The official data and generated exports remain local and are excluded from Git. Invalid input schemas, duplicate node IDs, missing endpoints and inconsistent edge/transaction aggregates fail explicitly.
 
+Backend-only review commands are also available: `validate-submission`, `explain --gid`, `sensitivity`, `compare-rankings`, and `export --bundle outputs/submission.zip`. They run locally, preserve the default CSV calculations, and require no frontend changes. See the [CLI guide](docs/backend-cli.md) for examples, report interpretation and exit codes.
+
 ## Investigation workflow
 
 1. Review the ranked queue, then search by `gid` or filter by role/community.
