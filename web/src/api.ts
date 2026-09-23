@@ -40,11 +40,11 @@ export async function fetchApi<T>(path: string, options: RequestInit = {}): Prom
 }
 
 export const roleColors: Record<string, string> = {
-  consolidator: '#327157', transit: '#527e9b', distributor: '#a67842',
-  terminal: '#846497', coordinator: '#354f46', peripheral: '#9aa59f', boundary_unknown: '#b48953',
+  consolidator: '#2563eb', transit: '#0891b2', distributor: '#d97706',
+  terminal: '#7c3aed', coordinator: '#334155', peripheral: '#94a3b8', boundary_unknown: '#c2410c',
 };
 export const roleLabel = (role: string) => role === 'boundary_unknown' ? 'Boundary unknown' : role.charAt(0).toUpperCase() + role.slice(1).replaceAll('_', ' ');
-export const roleColor = (role: string) => roleColors[role] ?? '#7d8a83';
+export const roleColor = (role: string) => roleColors[role] ?? '#94a3b8';
 export const number = (value: number | undefined) => new Intl.NumberFormat('en-US').format(value ?? 0);
 export const compact = (value: number | undefined) => new Intl.NumberFormat('en-US', {notation: 'compact', maximumFractionDigits: 2}).format(value ?? 0);
 export const money = (value: number | undefined) => `${compact(value)} ₸`;

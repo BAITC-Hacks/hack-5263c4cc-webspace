@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
-import { Focus, Minus, Plus, X } from 'lucide-react';
+import { ArrowsOutSimpleIcon, ArrowRightIcon, DownloadSimpleIcon, MinusIcon, PlusIcon, XIcon } from '@phosphor-icons/react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { GraphData, GraphEdge } from './api';
-import { exactMoney, number, roleColor } from './api';
+import { exactMoney, number, roleColor, roleLabel } from './api';
 
 interface Props {data: GraphData; onSelect: (gid: number) => void; colorBy?: 'role' | 'cluster'}
-const communityColors = ['#327157','#527e9b','#a67842','#846497','#467f85','#9e6760','#758550','#617398','#966b85','#5d8273'];
+const communityColors = ['#2563eb','#0891b2','#d97706','#7c3aed','#059669','#dc2626','#475569','#c026d3','#4f46e5','#0f766e'];
 
 export default function NetworkGraph({data, onSelect, colorBy = 'role'}: Props) {
   const container = useRef<HTMLDivElement>(null);
@@ -32,17 +35,17 @@ export default function NetworkGraph({data, onSelect, colorBy = 'role'}: Props) 
       style: [
         {selector: 'node', style: {
           'background-color': 'data(color)', width: 'data(size)', height: 'data(size)',
-          label: 'data(label)', color: '#4c5e53', 'font-family': 'ui-monospace, monospace',
-          'font-size': 9, 'text-valign': 'bottom', 'text-margin-y': 6,
-          'border-width': 2, 'border-color': '#fff', 'text-background-color': '#fbfcf8',
+          label: 'data(label)', color: '#404040', 'font-family': 'Geist Variable, sans-serif',
+          'font-size': 11, 'text-valign': 'bottom', 'text-margin-y': 6,
+          'border-width': 2, 'border-color': '#fff', 'text-background-color': '#ffffff',
           'text-background-opacity': .85, 'text-background-padding': '2px',
         }},
         {selector: '.seed', style: {shape: 'diamond', 'border-width': 2}},
-        {selector: '.boundary', style: {shape: 'octagon', 'border-style': 'dashed', 'border-width': 2, 'border-color': '#9b6e3c', 'background-opacity': .65}},
-        {selector: '.root', style: {'border-width': 4, 'border-color': '#b3cdae', 'font-weight': 'bold', 'font-size': 11, 'text-margin-y': 9}},
-        {selector: 'edge', style: {'curve-style': 'bezier', width: 'data(width)', 'line-color': '#bccbc0', 'target-arrow-color': '#8d9f92', 'target-arrow-shape': 'triangle', 'arrow-scale': .9, opacity: .72}},
-        {selector: 'edge:selected', style: {'line-color': '#215742', 'target-arrow-color': '#215742', width: 3, opacity: 1}},
-        {selector: 'node:selected', style: {'border-color': '#102f23', 'border-width': 3}},
+        {selector: '.boundary', style: {shape: 'octagon', 'border-style': 'dashed', 'border-width': 2, 'border-color': '#c2410c', 'background-opacity': .65}},
+        {selector: '.root', style: {'border-width': 4, 'border-color': '#a3a3a3', 'font-weight': 'bold', 'font-size': 11, 'text-margin-y': 9}},
+        {selector: 'edge', style: {'curve-style': 'bezier', width: 'data(width)', 'line-color': '#a3a3a3', 'target-arrow-color': '#737373', 'target-arrow-shape': 'triangle', 'arrow-scale': .9, opacity: .72}},
+        {selector: 'edge:selected', style: {'line-color': '#171717', 'target-arrow-color': '#171717', width: 3, opacity: 1}},
+        {selector: 'node:selected', style: {'border-color': '#171717', 'border-width': 3}},
         {selector: '.faded', style: {opacity: .17}},
       ],
       layout: {name: 'cose', animate: false, fit: true, padding: 52, nodeRepulsion: () => 10000, idealEdgeLength: () => 95, edgeElasticity: () => 90, numIter: 350, gravity: .45, componentSpacing: 100},
@@ -66,18 +69,31 @@ export default function NetworkGraph({data, onSelect, colorBy = 'role'}: Props) 
     return () => {cancelAnimationFrame(frame); observer.disconnect(); cy.destroy(); instance.current = null;};
   }, [data, colorBy]);
 
-  return <div className="network-stage">
-    <div ref={container} className="network-canvas" role="img" aria-label={`Directed network of ${data.nodes.length} entities and ${data.edges.length} transfer relationships. Select entities in the review queue for keyboard access.`} />
-    <div className="graph-tools" aria-label="Graph controls">
-      <button aria-label="Zoom in" onClick={() => instance.current?.zoom({level: (instance.current?.zoom() ?? 1) * 1.25, renderedPosition: {x: (container.current?.clientWidth ?? 0) / 2, y: (container.current?.clientHeight ?? 0) / 2}})}><Plus size={16} /></button>
-      <button aria-label="Zoom out" onClick={() => instance.current?.zoom((instance.current?.zoom() ?? 1) / 1.25)}><Minus size={16} /></button>
-      <button aria-label="Fit graph to view" onClick={() => instance.current?.fit(undefined, 52)}><Focus size={16} /></button>
+  const exportGraph = () => {
+    const cy = instance.current;
+    if (!cy) return;
+    const link = document.createElement('a');
+    link.href = cy.png({full: true, scale: 2, bg: '#ffffff', maxWidth: 1800, maxHeight: 1400});
+    link.download = `observed-network-${data.root_gid ?? 'overview'}.png`;
+    link.click();
+  };
+
+  return <div className="flex flex-col gap-3">
+    <div className="relative h-[360px] overflow-hidden rounded-lg border bg-background sm:h-[440px]">
+      <div ref={container} className="network-canvas h-full w-full" role="img" aria-label={`Directed network of ${data.nodes.length} entities and ${data.edges.length} transfer relationships. Use the account table for keyboard selection.`}/>
+      <div className="absolute left-3 top-3 flex gap-1 rounded-lg border bg-background p-1" role="toolbar" aria-label="Graph controls">
+        <Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon" aria-label="Zoom in" onClick={() => instance.current?.zoom({level: (instance.current?.zoom() ?? 1) * 1.25, renderedPosition: {x: (container.current?.clientWidth ?? 0) / 2, y: (container.current?.clientHeight ?? 0) / 2}})}><PlusIcon/></Button>}/><TooltipContent>Zoom in</TooltipContent></Tooltip>
+        <Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon" aria-label="Zoom out" onClick={() => instance.current?.zoom((instance.current?.zoom() ?? 1) / 1.25)}><MinusIcon/></Button>}/><TooltipContent>Zoom out</TooltipContent></Tooltip>
+        <Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon" aria-label="Fit graph to view" onClick={() => instance.current?.fit(undefined, 52)}><ArrowsOutSimpleIcon/></Button>}/><TooltipContent>Fit network</TooltipContent></Tooltip>
+        <Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon" aria-label="Download network image" onClick={exportGraph}><DownloadSimpleIcon/></Button>}/><TooltipContent>Download PNG</TooltipContent></Tooltip>
+      </div>
+      {data.nodes.length === 1 && data.edges.length === 0 && <div className="absolute inset-x-4 bottom-4 text-center text-sm text-muted-foreground">No recorded transfers for this account.</div>}
     </div>
-    <div className="graph-scale">{colorBy === 'cluster' ? 'Colors show network communities' : 'Colors show role hypotheses'} / Select an entity</div>
-    {edge && <div className="edge-preview" role="status">
-      <div><span className="mono">{edge.src}</span><span className="transfer-direction" aria-label="to">→</span><span className="mono">{edge.dst}</span><strong>{exactMoney(edge.sum_kzt)}</strong><small>{number(edge.n_tx)} transfers</small></div>
-      <button className="icon-button" aria-label="Close transfer details" onClick={() => setEdge(null)}><X size={15} /></button>
+    {edge && <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/40 p-3 text-sm" role="status">
+      <Badge variant="outline">Transfer evidence</Badge><strong className="tabular-nums">{edge.src}</strong><ArrowRightIcon className="size-4 text-muted-foreground"/><strong className="tabular-nums">{edge.dst}</strong><span className="ml-auto font-medium tabular-nums">{exactMoney(edge.sum_kzt)}</span><span className="text-muted-foreground">{number(edge.n_tx)} transfers</span>
+      <Button variant="ghost" size="icon-sm" aria-label="Close transfer details" onClick={() => setEdge(null)}><XIcon/></Button>
     </div>}
-    {data.nodes.length === 1 && data.edges.length === 0 && <div className="isolated-label">No observed transfers for this entity.</div>}
+    {colorBy === 'role' && <ul aria-label="Role color legend" className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-muted-foreground">{[...new Set(data.nodes.map(node => node.role))].sort().map(role => <li key={role} className="flex items-center gap-1.5"><span aria-hidden="true" className="size-2.5 rounded-full" style={{backgroundColor: roleColor(role)}}/>{roleLabel(role)}</li>)}</ul>}
+    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground"><span>{colorBy === 'cluster' ? 'Colors identify communities' : 'Colors identify role hypotheses'}. Arrows show observed direction.</span><span>Drag to pan · scroll to zoom</span></div>
   </div>;
 }
