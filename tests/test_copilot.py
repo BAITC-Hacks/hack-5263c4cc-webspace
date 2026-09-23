@@ -99,3 +99,30 @@ def test_invalid_requests_and_unknown_account():
         CopilotRequest(gid=7, question="Explain", api_key="secret")
     with pytest.raises(KeyError):
         investigate(Engine(), CopilotRequest(gid=999, question="Explain"))
+
+
+def test_cohort_scope_is_bounded_and_validated_before_provider():
+    with pytest.raises(ValidationError):
+        CopilotRequest(gid=7, question="Collectors?", gids=[1, 2, 3, 4, 5, 6])
+    with pytest.raises(ValidationError):
+        CopilotRequest(gid=7, question="Collectors?", gids=[7, 7])
+    client = FakeClient([])
+    with pytest.raises(KeyError):
+        investigate(Engine(), CopilotRequest(gid=7, question="Collectors?", gids=[999]), client)
+    assert client.requests == []
+
+
+def test_signal_tools_cite_computed_read_only_evidence():
+    from moneygraph.engine import load_analysis
+    engine = load_analysis()
+    before = engine.export_rows('nodes_roles.csv')
+    patterns = evidence_tool('inspect_patterns', '{}', engine, 1020)
+    assert patterns['evidence_id'] == 'patterns:1020'
+    assert len(patterns['data']['routes']) <= 4
+    assert all(len(r['occurrences']) <= 3 for r in patterns['data']['routes'])
+    collectors = evidence_tool('find_common_collectors', '{}', engine, 1001, [1001,1002])
+    assert collectors['data']['gids'] == [1001,1002]
+    assert len(collectors['data']['items']) <= 8
+    simulation = evidence_tool('simulate_top_removal', '{}', engine, 1001)
+    assert simulation['data']['top_n'] == 5
+    assert engine.export_rows('nodes_roles.csv') == before
