@@ -125,6 +125,7 @@ class Analysis:
         for rank, row in enumerate(self._ranked, 1):
             row["rank"] = rank
         self._clusters = self._cluster_summaries()
+        self._activity = self._activity_summary()
         self.runtime_ms = round((perf_counter() - started) * 1000, 2)
 
     @staticmethod
@@ -356,8 +357,29 @@ class Analysis:
                            "hypothesis": hypothesis, "roles": roles})
         return result
 
+    def _activity_summary(self) -> list[dict[str, Any]]:
+        if not self._transactions:
+            return []
+        start = _day(self._transactions[0]["date"])
+        end = _day(self._transactions[-1]["date"])
+        period_days = (end - start).days + 1
+        width = (period_days + 31) // 32
+        buckets = [
+            {"start": (start + timedelta(days=offset)).isoformat(),
+             "end": (start + timedelta(days=min(offset + width, period_days) - 1)).isoformat(),
+             "n_tx": 0, "sum_kzt": 0.0}
+            for offset in range(0, period_days, width)
+        ]
+        # Global activity counts raw transfers once, including self-transfers.
+        for tx in self._transactions:
+            bucket = buckets[(_day(tx["date"]) - start).days // width]
+            bucket["n_tx"] += 1
+            bucket["sum_kzt"] += float(tx["sum_kzt"])
+        for bucket in buckets:
+            bucket["sum_kzt"] = _number(bucket["sum_kzt"])
+        return buckets
+
     def summary(self) -> dict[str, Any]:
-        dates = [_day(r["date"]) for r in self._transactions]
         return {
             "dataset": {"name": self.dataset_name, "kind": self.dataset_kind,
                         "description": "Original generated demonstration; contains no organizer records." if self.dataset_kind == "synthetic" else "Locally configured dataset. Raw records remain on this machine."},
@@ -366,7 +388,9 @@ class Analysis:
                        "components": nx.number_weakly_connected_components(self.G),
                        "boundary_nodes": sum(r["truncated_by_depth"] for r in self._records.values()),
                        "isolated_nodes": len(list(nx.isolates(self.G)))},
-            "period": {"start": min(dates).isoformat() if dates else None, "end": max(dates).isoformat() if dates else None},
+            "period": {"start": self._activity[0]["start"] if self._activity else None,
+                       "end": self._activity[-1]["end"] if self._activity else None},
+            "activity": self._activity,
             "total_kzt": _number(sum(r["sum_kzt"] for r in self._edges)), "runtime_ms": self.runtime_ms,
             "role_counts": {role: sum(r["role"] == role for r in self._records.values()) for role in ROLES},
             "limitations": LIMITATIONS, "top_nodes": [self._brief(r) for r in self._ranked[:20]],

@@ -1,5 +1,5 @@
 import csv
-from datetime import date
+from datetime import date, timedelta
 
 import polars as pl
 import pytest
@@ -19,6 +19,84 @@ def frames(transactions=None):
     tx = pl.DataFrame(transactions)
     edges = tx.group_by(["src", "dst"]).agg(pl.col("sum_kzt").sum(), pl.len().alias("n_tx")).with_columns(pl.lit(1).alias("depth"))
     return nodes, edges, tx
+
+
+def test_summary_activity_counts_each_transaction_once_including_self_transfers():
+    source = frames([
+        {"src": 1, "dst": 1, "date": date(2026, 7, 1), "sum_kzt": 7500.25},
+        {"src": 1, "dst": 2, "date": date(2026, 7, 1), "sum_kzt": 20000.0},
+        {"src": 1, "dst": 2, "date": date(2026, 7, 1), "sum_kzt": 5000.0},
+        {"src": 2, "dst": 3, "date": date(2026, 7, 2), "sum_kzt": 14000.0},
+    ])
+    summary = Analysis(*source).summary()
+    assert summary["activity"] == [
+        {"start": "2026-07-01", "end": "2026-07-01", "n_tx": 3, "sum_kzt": 32500.25},
+        {"start": "2026-07-02", "end": "2026-07-02", "n_tx": 1, "sum_kzt": 14000.0},
+    ]
+    assert sum(bucket["n_tx"] for bucket in summary["activity"]) == summary["counts"]["transactions"]
+    assert sum(bucket["sum_kzt"] for bucket in summary["activity"]) == summary["total_kzt"]
+    assert Analysis(*(frame.reverse() for frame in source)).summary()["activity"] == summary["activity"]
+
+
+def test_summary_activity_includes_zero_days_inside_the_observed_period():
+    summary = Analysis(*frames([
+        {"src": 1, "dst": 2, "date": date(2026, 7, 1), "sum_kzt": 5000.0},
+        {"src": 2, "dst": 3, "date": date(2026, 7, 4), "sum_kzt": 10000.0},
+    ])).summary()
+    assert summary["activity"] == [
+        {"start": "2026-07-01", "end": "2026-07-01", "n_tx": 1, "sum_kzt": 5000.0},
+        {"start": "2026-07-02", "end": "2026-07-02", "n_tx": 0, "sum_kzt": 0.0},
+        {"start": "2026-07-03", "end": "2026-07-03", "n_tx": 0, "sum_kzt": 0.0},
+        {"start": "2026-07-04", "end": "2026-07-04", "n_tx": 1, "sum_kzt": 10000.0},
+    ]
+
+
+def test_summary_activity_preserves_raw_amounts_with_tolerance_adjusted_edges():
+    nodes, edges, tx = frames([
+        {"src": 1, "dst": 2, "date": date(2026, 7, 1), "sum_kzt": 5000.0},
+    ])
+    summary = Analysis(nodes, edges.with_columns(pl.col("sum_kzt") + 0.005), tx).summary()
+    assert summary["activity"] == [
+        {"start": "2026-07-01", "end": "2026-07-01", "n_tx": 1, "sum_kzt": 5000.0},
+    ]
+    assert summary["total_kzt"] == 5000.005
+
+
+@pytest.mark.parametrize("period_days", [33, 64, 65, 1000])
+def test_summary_activity_bounds_buckets_and_preserves_boundary_transactions(period_days):
+    start = date(2026, 1, 1)
+    end = start + timedelta(days=period_days - 1)
+    width = (period_days + 31) // 32
+    summary = Analysis(*frames([
+        {"src": 1, "dst": 2, "date": start, "sum_kzt": 5000.0},
+        {"src": 1, "dst": 2, "date": start + timedelta(days=width - 1), "sum_kzt": 10000.0},
+        {"src": 1, "dst": 2, "date": start + timedelta(days=width), "sum_kzt": 15000.0},
+        {"src": 1, "dst": 2, "date": end, "sum_kzt": 20000.0},
+    ])).summary()
+    activity = summary["activity"]
+    assert len(activity) == (period_days + width - 1) // width <= 32
+    assert activity[0] == {
+        "start": start.isoformat(), "end": (start + timedelta(days=width - 1)).isoformat(),
+        "n_tx": 2, "sum_kzt": 15000.0,
+    }
+    assert activity[1]["start"] == (start + timedelta(days=width)).isoformat()
+    assert activity[1]["n_tx"] == 1
+    assert activity[1]["sum_kzt"] == 15000.0
+    assert activity[-1]["end"] == end.isoformat()
+    assert activity[-1]["n_tx"] == 1
+    assert all(bucket["n_tx"] == 0 and bucket["sum_kzt"] == 0 for bucket in activity[2:-1])
+    assert all(date.fromisoformat(current["end"]) + timedelta(days=1) == date.fromisoformat(following["start"])
+               for current, following in zip(activity, activity[1:]))
+    assert sum(bucket["n_tx"] for bucket in activity) == summary["counts"]["transactions"] == 4
+    assert sum(bucket["sum_kzt"] for bucket in activity) == summary["total_kzt"] == 50000.0
+
+
+def test_summary_activity_is_empty_without_transactions():
+    nodes, edges, tx = frames()
+    summary = Analysis(nodes, edges.clear(), tx.clear()).summary()
+    assert summary["activity"] == []
+    assert summary["period"] == {"start": None, "end": None}
+    assert summary["counts"]["transactions"] == summary["total_kzt"] == 0
 
 
 def test_isolated_seeds_are_present_in_all_views_and_clusters():
