@@ -58,3 +58,17 @@ def test_exports_cover_required_three_contracts(client):
         assert rows
         if name == "top_nodes.csv":
             assert len(rows) >= 20
+
+
+def test_local_host_boundary_and_private_response_headers():
+    from moneygraph.api import make_app
+    from moneygraph.engine import load_analysis
+    with TestClient(make_app(load_analysis())) as local:
+        assert local.get('/api/summary', headers={'Host':'untrusted.example'}).status_code == 400
+        response = local.get('/api/summary')
+        assert response.headers['cache-control'] == 'no-store'
+        assert response.headers['x-content-type-options'] == 'nosniff'
+        assert response.headers['x-frame-options'] == 'DENY'
+        foreign = local.options('/api/copilot', headers={'Origin':'https://untrusted.example',
+                         'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'})
+        assert 'access-control-allow-origin' not in foreign.headers

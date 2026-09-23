@@ -5,14 +5,17 @@ import csv
 from io import StringIO
 import os
 from pathlib import Path
+from typing import Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .engine import Analysis, ROLES, load_analysis
+from .signals import SignalAnalysis
 
 load_dotenv(override=False)
 _analysis: Analysis | None = None
@@ -34,11 +37,28 @@ def make_app(analysis: Analysis | None = None) -> FastAPI:
 
     application = FastAPI(title="Money Graph", version="0.1.0", lifespan=lifespan)
     application.state.analysis = analysis
+    application.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]", "testserver"])
+
+    @application.middleware("http")
+    async def browser_security_headers(request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        response.headers["X-Frame-Options"] = "DENY"
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
+    application.state.signals = None
     application.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                                allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
     def engine(request: Request) -> Analysis:
         return request.app.state.analysis or get_engine()
+
+    def signals(request: Request) -> SignalAnalysis:
+        if request.app.state.signals is None:
+            request.app.state.signals = SignalAnalysis(engine(request))
+        return request.app.state.signals
 
     @application.get("/api/health")
     def health(request: Request):
@@ -73,6 +93,47 @@ def make_app(analysis: Analysis | None = None) -> FastAPI:
     @application.get("/api/clusters")
     def clusters(request: Request):
         return engine(request).clusters()
+
+    @application.get("/api/signals/{gid}")
+    def node_signals(gid: int, request: Request):
+        try:
+            return signals(request).node(gid)
+        except KeyError:
+            raise HTTPException(404, "Node not found in the loaded dataset") from None
+
+    @application.get("/api/resilience")
+    def resilience(request: Request, top_n: int = Query(5, ge=1, le=20)):
+        return signals(request).resilience(top_n)
+
+    @application.get("/api/collectors")
+    def collectors(request: Request, gids: str = Query(..., min_length=1, max_length=120),
+                   max_hops: int = Query(3, ge=1, le=3)):
+        try:
+            selected = [int(value.strip()) for value in gids.split(",")]
+            return signals(request).collectors(selected, max_hops=max_hops)
+        except (ValueError, TypeError):
+            raise HTTPException(422, "Select one to five distinct integer account IDs") from None
+        except KeyError:
+            raise HTTPException(404, "A selected account is not in the loaded dataset") from None
+
+    @application.get("/api/provenance")
+    def analysis_provenance(request: Request):
+        from .audit import provenance
+        return provenance(engine(request))
+
+    @application.get("/api/dossier/{gid}")
+    def dossier(gid: int, request: Request, format: Literal["json", "markdown"] = "json"):
+        try:
+            result = signals(request).dossier(gid)
+        except KeyError:
+            raise HTTPException(404, "Node not found in the loaded dataset") from None
+        if format == "markdown":
+            from .audit import dossier_markdown, provenance
+            return Response(dossier_markdown(result, provenance(engine(request))),
+                            media_type="text/markdown; charset=utf-8",
+                            headers={"Content-Disposition": f'attachment; filename="account-{gid}-dossier.md"',
+                                     "Cache-Control": "no-store"})
+        return result
 
     @application.get("/api/exports/{name}")
     def export(name: str, request: Request):
