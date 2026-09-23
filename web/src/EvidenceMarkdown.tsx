@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 const inertContent = {
   // Navigation is restricted to separately validated server citations.
   // Model-generated links/images cannot fetch content or leave the workspace.
-  a: ({children}: {children?: ReactNode}) => <span className="asst-inline-reference">{children}</span>,
+  a: ({children}: {children?: ReactNode}) => <span className="underline decoration-dotted underline-offset-4">{children}</span>,
   img: () => null,
 };
 
