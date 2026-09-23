@@ -124,6 +124,12 @@ A clean temporary clone of application commit `4f1f8f7`, without `.env`, organiz
 
 The installed Recharts version is 3.8.0; 3.10.1 is the researched latest release, not the shipped version. React Flow 12.11.6, Dagre 3.1.1, Base UI 1.8.0 and Phosphor 2.1.10 are pinned in the lockfile. Generated logo provenance is present both in the PNG metadata and its adjacent JSON file. No Lucide imports or direct Lucide dependency remain.
 
+## 17:00 checkpoint on 23 September 2026
+
+Committed snapshot `83a848d` was checked in a separate detached Git worktree with a newly created virtual environment and freshly installed frontend dependencies. `scripts/check.sh` passed: **130 backend tests**, **8 frontend session tests**, TypeScript compilation and the Vite production build. The backend suite also passed with dotenv loading disabled, an empty OpenAI key and both external-AI flags explicitly false. Existing host runtimes and package caches were available; this is a fresh-checkout check, not an independently provisioned machine.
+
+The snapshot retains the non-fatal 504.86 kB main-bundle warning. A targeted scan of all 123 tracked files found no supplied OpenAI/Brev/GitHub credential formats and no tracked Parquet, CSV or private environment files. These checks cover this exact committed snapshot; concurrent uncommitted dashboard and README work is outside their scope.
+
 ## Remaining verification boundary
 
 The live five-minute judge demonstration and an independently provisioned fresh-machine installation remain external acceptance activities. Million-node performance, domain-expert usefulness, calibrated role confidence and production security have not been measured. The hosted CI billing block remains external to the passing local checks.
