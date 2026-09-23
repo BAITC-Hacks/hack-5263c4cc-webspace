@@ -1,3 +1,5 @@
+import type { Gid } from "@/api";
+import { isGid } from "@/api";
 import {
   useEffect,
   useMemo,
@@ -54,11 +56,10 @@ function validatedScope(value: unknown): EvidenceScope | null {
   if (!value || typeof value !== "object") return null;
   const { gid, gids } = value as EvidenceScope;
   if (
-    !Number.isSafeInteger(gid) ||
-    gid < 0 ||
+    !isGid(gid) ||
     !Array.isArray(gids) ||
     gids.length > 5 ||
-    gids.some((id) => !Number.isSafeInteger(id) || id < 0) ||
+    gids.some((id) => !isGid(id)) ||
     new Set(gids).size !== gids.length
   )
     return null;
@@ -179,7 +180,7 @@ type Props = {
   close: () => void;
   request: AssistantRequest;
   selection: EvidenceScope | null;
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
 };
 
 export default function AssistantRuntime({
@@ -386,7 +387,7 @@ export default function AssistantRuntime({
     link.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  const selectCitation = (gid: number) => {
+  const selectCitation = (gid: Gid) => {
     onSelect(gid);
     if (mobile) close();
     else setExpanded(false);

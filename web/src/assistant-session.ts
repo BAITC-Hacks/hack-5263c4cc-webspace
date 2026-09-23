@@ -1,3 +1,4 @@
+import type { Gid } from "@/api";
 import { ApiError, fetchApi } from "./api";
 import type { CopilotReply, CopilotResponse } from "./api";
 
@@ -9,7 +10,7 @@ export class AssistantSessions {
   private readonly sessions = new Map<string, Session>();
   private readonly runs = new Map<string, symbol>();
 
-  async prepare(threadId: string, previousReplyId: string | undefined, scope: { gid: number; gids: number[] }): Promise<Run> {
+  async prepare(threadId: string, previousReplyId: string | undefined, scope: { gid: Gid; gids: Gid[] }): Promise<Run> {
     const session = this.sessions.get(threadId);
     if (session?.stale) throw new Error("This conversation's saved context expired or no longer matches the dataset. Start a new conversation to continue safely.");
     const reset = !!session && (session.uncertain || session.lastReplyId !== previousReplyId);

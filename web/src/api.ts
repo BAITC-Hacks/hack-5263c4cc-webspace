@@ -1,3 +1,11 @@
+export type Gid = string;
+
+export function isGid(value: unknown): value is Gid {
+  return typeof value === "string" && /^(0|[1-9]\d{0,18})$/.test(value) && BigInt(value) <= 9223372036854775807n;
+}
+
+export const compareGids = (a: Gid, b: Gid) => a.length - b.length || a.localeCompare(b);
+
 export type Role =
   | "consolidator"
   | "transit"
@@ -8,7 +16,7 @@ export type Role =
   | "boundary_unknown"
   | string;
 export interface NodeSummary {
-  gid: number;
+  gid: Gid;
   role: Role;
   role_score: number;
   priority_score: number;
@@ -54,7 +62,7 @@ export interface Summary {
   top_nodes: NodeSummary[];
 }
 export interface Counterparty {
-  gid: number;
+  gid: Gid;
   role: Role;
   sum_kzt: number;
   n_tx: number;
@@ -99,8 +107,8 @@ export interface GraphEdge {
   id: string;
   source: string;
   target: string;
-  src: number;
-  dst: number;
+  src: Gid;
+  dst: Gid;
   sum_kzt: number;
   n_tx: number;
   depth: number;
@@ -109,14 +117,14 @@ export interface GraphData {
   nodes: (NodeSummary & { id: string; label: string; is_root: boolean })[];
   edges: GraphEdge[];
   truncated: boolean;
-  root_gid: number | null;
+  root_gid: Gid | null;
 }
 export interface Cluster {
   cluster_id: number;
   n_nodes: number;
   n_seed: number;
   sum_kzt_internal: number;
-  top_gids: number[];
+  top_gids: Gid[];
   hypothesis: string;
   roles: Record<string, number>;
 }
@@ -125,12 +133,32 @@ export interface CopilotResponse {
   mode: "offline" | "openai" | "fallback";
   citations: {
     label?: string;
-    gid?: number;
+    gid?: Gid;
     text?: string;
     kind?: string;
     evidence_version?: string;
     payload_sha256?: string;
+    source?: Record<string, unknown>;
+    source_json?: string;
   }[];
+  observations?: {
+    evidence_id: string;
+    path: string;
+    label: string;
+    value: string;
+    unit?: string;
+  }[];
+  grounding?: {
+    typed_observations_checked: number;
+    numeric_literals_checked: number;
+    prose_entailment: "not_checked";
+    note: string;
+  };
+  local_workflow?: {
+    action: string;
+    action_label: string;
+    recognized: boolean;
+  };
   limitations: string[];
   trace: { tool: string; status: string; elapsed_ms?: number }[];
   model?: string;
@@ -204,20 +232,12 @@ export async function fetchApi<T>(
   return response.json() as Promise<T>;
 }
 
-export const roleColors: Record<string, string> = {
-  consolidator: "#098830",
-  transit: "#567b94",
-  distributor: "#a37f32",
-  terminal: "#7c7192",
-  coordinator: "#26342b",
-  peripheral: "#97a394",
-  boundary_unknown: "#67875c",
-};
+export { roleColors, roleColor, communityColors, communityColor } from "./lib/visualization";
+
 export const roleLabel = (role: string) =>
   role === "boundary_unknown"
     ? "Boundary unknown"
     : role.charAt(0).toUpperCase() + role.slice(1).replaceAll("_", " ");
-export const roleColor = (role: string) => roleColors[role] ?? "#94a3b8";
 export const number = (value: number | undefined) =>
   new Intl.NumberFormat("en-US").format(value ?? 0);
 export const compact = (value: number | undefined) =>
@@ -240,7 +260,7 @@ export const dateLabel = (date: string | null | undefined, year = false) =>
     : "—";
 
 export interface SignalReport {
-  gid: number;
+  gid: Gid;
   temporal: {
     overlap_2d_ratio: number;
     spikes: {
@@ -251,14 +271,14 @@ export interface SignalReport {
     }[];
     synchronized_inflows: {
       date: string;
-      payers: number[];
+      payers: Gid[];
       payer_count: number;
       sum_kzt: number;
     }[];
     caveat: string;
   };
   routes: {
-    path: number[];
+    path: Gid[];
     occurrences: {
       in_date: string;
       out_date: string;
@@ -270,10 +290,10 @@ export interface SignalReport {
     distinct_start_dates: number;
   }[];
   cycles: {
-    path: number[];
-    edges: { src: number; dst: number; sum_kzt: number; dates: string[] }[];
+    path: Gid[];
+    edges: { src: Gid; dst: Gid; sum_kzt: number; dates: string[] }[];
     chronological_example:
-      { src: number; dst: number; date: string; sum_kzt: number }[] | null;
+      { src: Gid; dst: Gid; date: string; sum_kzt: number }[] | null;
     kind: string;
   }[];
   anomalies: {
@@ -287,7 +307,7 @@ export interface SignalReport {
 }
 export interface ResilienceReport {
   top_n: number;
-  removed_gids: number[];
+  removed_gids: Gid[];
   baseline: ResilienceMetrics;
   after: ResilienceMetrics;
   change: Partial<ResilienceMetrics>;
@@ -301,13 +321,13 @@ export interface ResilienceMetrics {
   reachable_seed_pairs: number;
 }
 export interface CollectorReport {
-  gids: number[];
+  gids: Gid[];
   max_hops: number;
   items: {
-    gid: number;
+    gid: Gid;
     role: string;
     priority_score: number;
-    paths: { source_gid: number; path: number[]; hops: number }[];
+    paths: { source_gid: Gid; path: Gid[]; hops: number }[];
     matched_sources: number;
   }[];
   total?: number;
@@ -315,7 +335,7 @@ export interface CollectorReport {
   caveat: string;
 }
 export interface Dossier {
-  gid: number;
+  gid: Gid;
   title: string;
   role: string;
   priority_score: number;
@@ -325,17 +345,3 @@ export interface Dossier {
   next_requests: { priority: number; request: string; reason: string }[];
   citations: string[];
 }
-
-// Shared categorical identity across overview and investigation views.
-export const communityColors = [
-  "#098830",
-  "#3c6d4e",
-  "#638a52",
-  "#667787",
-  "#7c7490",
-  "#a2784f",
-  "#6c8a86",
-  "#505b54",
-];
-export const communityColor = (id: number) =>
-  communityColors[Math.abs(id) % communityColors.length];

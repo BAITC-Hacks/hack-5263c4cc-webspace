@@ -1,3 +1,4 @@
+import type { Gid } from "@/api";
 import {
   createContext,
   lazy,
@@ -12,7 +13,7 @@ import type { ReactNode } from "react";
 import { ChatCircleTextIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 
-export type EvidenceScope = { gid: number; gids: number[] };
+export type EvidenceScope = { gid: Gid; gids: Gid[] };
 export type AssistantRequest = {
   sequence: number;
   scope: EvidenceScope | null;
@@ -21,8 +22,8 @@ export type AssistantRequest = {
 };
 type OpenOptions = {
   expanded?: boolean;
-  gid?: number;
-  gids?: number[];
+  gid?: Gid;
+  gids?: Gid[];
   prompt?: string;
   newChat?: boolean;
 };
@@ -49,9 +50,9 @@ export function AssistantWorkspaceProvider({
   onOpen,
 }: {
   children: ReactNode;
-  selected: number | null;
-  cohort: number[];
-  onSelect: (gid: number) => void;
+  selected: Gid | null;
+  cohort: Gid[];
+  onSelect: (gid: Gid) => void;
   onOpen: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -159,8 +160,8 @@ export function AskEvidenceAction({
   children,
   disabled = false,
 }: {
-  gid?: number;
-  gids?: number[];
+  gid?: Gid;
+  gids?: Gid[];
   prompt: string;
   children: ReactNode;
   disabled?: boolean;

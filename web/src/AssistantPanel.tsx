@@ -1,3 +1,4 @@
+import type { Gid } from "@/api";
 import { lazy, Suspense, useId } from "react";
 import {
   ActionBarPrimitive,
@@ -8,6 +9,7 @@ import {
   MessagePrimitive,
   MessagePartPrimitive,
   ThreadPrimitive,
+  useAui,
   useAuiState,
 } from "@assistant-ui/react";
 import {
@@ -37,6 +39,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Field, FieldLabel } from "@/components/ui/field";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { CheckedObservations, EvidencePacketButton, SourceSnapshot } from "@/components/AssistantEvidence";
 import {
   InputGroup,
   InputGroupAddon,
@@ -49,9 +53,9 @@ import "./assistant-panel.css";
 const EvidenceMarkdown = lazy(() => import("./EvidenceMarkdown"));
 
 export interface AssistantPanelProps {
-  gid: number;
-  gids: number[];
-  onSelect: (gid: number) => void;
+  gid: Gid;
+  gids: Gid[];
+  onSelect: (gid: Gid) => void;
   expanded?: boolean;
 }
 
@@ -124,6 +128,7 @@ export function AssistantPanel({
                 <ArrowDown />
               </ThreadPrimitive.ScrollToBottom>
             </AuiIf>
+            <InvestigationActions />
             <EvidenceComposer />
             <MemoryNotice />
           </div>
@@ -131,6 +136,34 @@ export function AssistantPanel({
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
   );
+}
+
+function InvestigationActions() {
+  const aui = useAui();
+  const running = useAuiState((state) => state.thread.isRunning);
+  const actions = [
+    ["Explain review priority", "Explain the review priority and score contributions."],
+    ["Review routes and return flows", "Review repeated routes and return flows."],
+    ["Find common collectors", "Find common collectors for the selected accounts."],
+    ["Simulate top-five removal", "Simulate removal of the top five accounts."],
+    ["Plan evidence requests", "Plan the next evidence requests."],
+    ["Challenge the role hypothesis", "Challenge the role hypothesis."],
+    ["Prepare an investigation brief", "Prepare an investigation brief."],
+  ];
+  return <DropdownMenu>
+    <DropdownMenuTrigger render={<Button variant="ghost" size="sm" className="mb-1" disabled={running} />}>
+      <ListChecks /> Investigation actions
+    </DropdownMenuTrigger>
+    <DropdownMenuContent side="top" className="w-72">
+      <DropdownMenuGroup>
+        <DropdownMenuLabel>Available with local evidence</DropdownMenuLabel>
+        {actions.map(([label, prompt]) => <DropdownMenuItem key={label} onClick={() => {
+          if (aui.thread.getState().isRunning) return;
+          aui.thread.append({ content: [{ type: "text", text: prompt }], runConfig: aui.composer.getState().runConfig });
+        }}>{label}</DropdownMenuItem>)}
+      </DropdownMenuGroup>
+    </DropdownMenuContent>
+  </DropdownMenu>;
 }
 
 function MemoryNotice() {
@@ -154,7 +187,7 @@ function MemoryNotice() {
   );
 }
 
-function Welcome({ gid, gids }: { gid: number; gids: number[] }) {
+function Welcome({ gid, gids }: { gid: Gid; gids: Gid[] }) {
   const suggestions = [
     {
       title: "Explain this account",
@@ -306,7 +339,7 @@ function SafeMarkdown() {
   );
 }
 
-function AssistantMessage({ onSelect }: { onSelect: (gid: number) => void }) {
+function AssistantMessage({ onSelect }: { onSelect: (gid: Gid) => void }) {
   const metadata = useAuiState(
     (state) => state.message.metadata.custom as Partial<ReplyMetadata>,
   );
@@ -366,10 +399,13 @@ function AssistantMessage({ onSelect }: { onSelect: (gid: number) => void }) {
             <p className="asst-local-notice" role="status">
               <ShieldCheck />
               {reply.mode === "fallback"
-                ? "AI could not complete this check. Showing the computed local summary."
-                : "Computed locally. Free-form follow-ups need the optional AI connection."}
+                ? `AI could not complete this check. Showing ${reply.local_workflow?.recognized ? reply.local_workflow.action_label.toLowerCase() : "the computed local summary"}.`
+                : reply.local_workflow?.recognized
+                  ? `${reply.local_workflow.action_label} · computed locally from scoped evidence.`
+                  : "Computed locally. Use Investigation actions for a specific check; free-form follow-ups need the optional AI connection."}
             </p>
           )}
+          <CheckedObservations reply={reply} />
           <EvidenceDetails reply={reply} onSelect={onSelect} />
         </>
       )}
@@ -392,6 +428,7 @@ function AssistantMessage({ onSelect }: { onSelect: (gid: number) => void }) {
           <ArrowCounterClockwise />
           Retry
         </ActionBarPrimitive.Reload>
+        {reply && <EvidencePacketButton reply={reply} />}
         <ReplyBranches />
         {typeof metadata.elapsedMs === "number" && (
           <span
@@ -411,7 +448,7 @@ function EvidenceDetails({
   onSelect,
 }: {
   reply: CopilotReply;
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
 }) {
   if (
     !reply.citations.length &&
@@ -460,6 +497,7 @@ function EvidenceDetails({
                       </strong>
                     )}
                     {citation.text && <p>{citation.text}</p>}
+                    <SourceSnapshot citation={citation} />
                   </div>
                 </li>
               ))}

@@ -7,19 +7,40 @@ const ts = require("typescript");
 
 // Compile the actual browser helpers without adding a second test runtime.
 const output = fs.mkdtempSync(path.join(os.tmpdir(), "moneygraph-session-tests-"));
-for (const name of ["api", "assistant-session"]) {
+for (const name of ["api", "assistant-session", "lib/visualization", "evidence-packet"]) {
   const source = fs.readFileSync(path.join(__dirname, "../src", `${name}.ts`), "utf8");
+  fs.mkdirSync(path.dirname(path.join(output, `${name}.js`)), { recursive: true });
   fs.writeFileSync(path.join(output, `${name}.js`), ts.transpileModule(source, {
     compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
   }).outputText);
 }
 const { AssistantSessions, publicCopilotReply } = require(path.join(output, "assistant-session.js"));
-const { ApiError, fetchApi } = require(path.join(output, "api.js"));
+const { ApiError, fetchApi, isGid, compareGids } = require(path.join(output, "api.js"));
+const { evidencePacket } = require(path.join(output, "evidence-packet.js"));
 const originalFetch = global.fetch;
 afterEach(() => { global.fetch = originalFetch; });
 after(() => fs.rmSync(output, { recursive: true }));
 
-const scope = { gid: 1211, gids: [] };
+const scope = { gid: "1211", gids: [] };
+test("evidence packets retain exact source IDs and omit private session capabilities", () => {
+  const source = { evidence_id: "node:test", data: { gid: "9007199254740993", in_kzt: 100 } };
+  const source_json = '{"data": {"gid": "9007199254740993", "in_kzt": 100.0}, "evidence_id": "node:test"}';
+  const hash = require("node:crypto").createHash("sha256").update(source_json).digest("hex");
+  const packet = evidencePacket({
+    answer: "Observed inflow.", mode: "offline", citations: [{ label: "node:test", source, source_json, payload_sha256: hash }],
+    limitations: ["Partial observation"], trace: [],
+    memory: { session_id: "private-capability", turns: 1, expires_in_seconds: 86400, persistence: "process" },
+  }, "2026-09-23T12:00:00Z");
+  assert.equal(packet.review_status, "unreviewed");
+  assert.deepEqual(packet.citations[0].source, source);
+  assert.equal(packet.citations[0].source.data.gid, "9007199254740993");
+  assert.equal(packet.created_at, "2026-09-23T12:00:00Z");
+  assert.equal(JSON.stringify(packet).includes("private-capability"), false);
+  assert.equal(Object.hasOwn(packet, "memory"), false);
+  const downloaded = JSON.parse(JSON.stringify(packet));
+  assert.equal(downloaded.citations[0].source_json, source_json);
+  assert.equal(require("node:crypto").createHash("sha256").update(downloaded.citations[0].source_json).digest("hex"), downloaded.citations[0].payload_sha256);
+});
 const memory = (id) => ({ session_id: id, turns: 0, expires_in_seconds: 86400, persistence: "process" });
 function server() {
   const calls = [];
@@ -43,6 +64,21 @@ test("handshake contains scope only; follow-ups reuse the private capability", a
   assert.equal(next.sessionId, first.sessionId);
   assert.equal(next.fresh, false);
   assert.equal(calls.length, 1);
+});
+
+test("int64 account IDs remain exact through validation, sorting and session JSON", async () => {
+  const gid = "9007199254740993";
+  const adjacent = "9007199254740992";
+  assert.equal(isGid(gid), true);
+  assert.equal(isGid("9223372036854775807"), true);
+  for (const invalid of [Number(gid), "9223372036854775808", "01", "+1", "1.0", "1e3", "-1", " 1", true]) {
+    assert.equal(isGid(invalid), false);
+  }
+  assert.deepEqual([gid, "10", adjacent, "2"].sort(compareGids), ["2", "10", adjacent, gid]);
+  const calls = server();
+  const sessions = new AssistantSessions();
+  await sessions.prepare("large", undefined, { gid, gids: [adjacent] });
+  assert.deepEqual(JSON.parse(calls[0].body), { gid, gids: [adjacent] });
 });
 
 test("branches and interrupted requests delete old context before starting fresh", async () => {
