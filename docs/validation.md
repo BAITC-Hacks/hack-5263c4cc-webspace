@@ -93,6 +93,10 @@ The local credential file, downloaded organizer material and generated evaluatio
 
 The provenance receipt hashes canonical input rows, the deterministic `engine.py` source and exact required CSV bytes. It identifies those contents; it does not authenticate the dataset, cover every dependency or optional UI/agent source file, or certify an analytical conclusion.
 
+## Hosted CI status
+
+The GitHub Actions workflow is committed with pinned action revisions. The first remote run could not start a job because GitHub reported an account billing lock. No workflow step ran, so this is an infrastructure block rather than a backend or browser build result. Local checks remain the available verification evidence. [Run and annotations](https://github.com/BAITC-Hacks/hack-5263c4cc-webspace/actions/runs/35848438498).
+
 ## Remaining verification boundary
 
 Frontend production-build results and live browser interaction checks are recorded separately by the integration owner; this backend review does not claim them. The final live five-minute judge demonstration and a genuinely fresh-machine dependency installation also remain external acceptance activities. Million-node performance, domain-expert usefulness, calibrated role confidence and production security have not been measured.
