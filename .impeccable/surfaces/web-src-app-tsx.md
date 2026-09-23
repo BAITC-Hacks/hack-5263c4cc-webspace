@@ -2,7 +2,7 @@
 version: 1
 slug: "web-src-app-tsx"
 primary_target: "web/src/App.tsx"
-related_targets: ["web/src/styles.css", "web/src/AssistantWorkspace.tsx", "web/src/AssistantRuntime.tsx", "web/src/AssistantPanel.tsx", "web/src/assistant-panel.css"]
+related_targets: ["web/src/styles.css", "web/src/Overview.tsx", "web/src/components/OverviewMetrics.tsx", "web/src/AssistantWorkspace.tsx", "web/src/AssistantRuntime.tsx", "web/src/AssistantPanel.tsx", "web/src/assistant-panel.css"]
 ---
 
 # Freedom Finance investigation workspace
@@ -27,3 +27,5 @@ FINISH: Keep DESIGN.md and its sidecar aligned with source, inspect desktop and 
 REDESIGN AUTHORITY: The latest user-selected Freedom Finance reference supersedes the previous copper/Mercury/Linear palette direction. The required Base UI, Phosphor and assistant-ui component choices remain. Keep the first viewport focused on useful records and actual dataset values.
 
 MOTION: Fast sidebar collapse, Base UI overlay transitions and chart tooltips; a single 180 ms workspace entrance. Graph navigation interpolates over 200 ms and disables movement for reduced motion. No looping decorative motion or particles suggesting live money transfers.
+
+METRIC CARDS: Show real seed share, transfer activity, turnover history and community sizes using shadcn Card/Chart with Recharts. Retain the two/four-column layout, exact-value tooltips and explicit empty/loading states. The global activity series uses at most 32 date buckets; no synthetic trend deltas. Current card verification captures use `artifacts/metric-cards-*.png`.

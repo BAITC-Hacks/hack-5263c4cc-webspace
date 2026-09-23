@@ -1,6 +1,14 @@
 # Verified validation results
 
-Verified on 23 September 2026 against the local Freedom Finance implementation. Only aggregate statistics are recorded here. Organizer records, generated CSVs, credentials and live response artifacts remain outside Git. The hardening verification immediately below is current; later sections retain earlier measurements and their original scope.
+Verified on 23 September 2026 against the local Freedom Finance implementation. Only aggregate statistics are recorded here. Organizer records, generated CSVs, credentials and live response artifacts remain outside Git. The overview verification immediately below is current; later sections retain earlier measurements and their original scope.
+
+## Overview metric cards
+
+The overview now composes the installed [shadcn Card](https://ui.shadcn.com/docs/components/base/card) and [Chart](https://ui.shadcn.com/docs/components/base/chart) components with Recharts. The four cards show seed share, transfer counts over time, transaction turnover over time and up to 12 community sizes. Values come from the loaded dataset; there are no invented trend deltas. Pointer and keyboard tooltips expose exact values and date ranges. Grouped date buckets are labeled explicitly.
+
+`summary.activity` adds at most 32 fixed-width calendar buckets, computed once from validated transaction rows. Each contains `start`, `end`, `n_tx` and `sum_kzt`; gaps are zero-filled and the final end date is capped at the observed period. Self-transfers count once. Empty transactions return no buckets. Existing `total_kzt` still sums supplied edge aggregates; activity uses raw transaction amounts, so the two may differ by the already permitted input-validation tolerance. Scoring, required CSV contracts and agent behavior are unchanged.
+
+All **138 backend tests** and **8 frontend session tests** passed, followed by TypeScript and the production build. Eight additional backend cases cover raw totals, self-transfers, order invariance, gaps, long periods, empty input and tolerance-adjusted edges. Browser checks at 1440px and 390px found no horizontal overflow; keyboard navigation revealed the correct date/value and numeric community ID. An isolated browser fixture with zero counts and null dates rendered all four empty cards without exceptions or NaN. Independent visual and interaction review passed after correcting the community tooltip and mobile seed footer. Captures remain ignored under `artifacts/metric-cards-*.png`.
 
 
 ## Architecture and agent hardening verification

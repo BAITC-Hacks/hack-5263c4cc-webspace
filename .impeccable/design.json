@@ -567,7 +567,7 @@
       },
       "metric": {
         "displayName": "Metric",
-        "purpose": "Factual metric numerals; 1.65rem below 640px."
+        "purpose": "Factual metric numerals at 2rem; 1.65rem below 640px."
       },
       "title": {
         "displayName": "Title",

@@ -47,7 +47,7 @@ typography:
     letterSpacing: "-0.025em"
   metric:
     fontFamily: "Inter Variable, Inter, sans-serif"
-    fontSize: "1.85rem"
+    fontSize: "2rem"
     fontWeight: 600
     lineHeight: 1.25
     letterSpacing: "-0.025em"
@@ -222,6 +222,8 @@ The white sidebar retains the standard Base UI geometry: 32px navigation rows, 8
 ### Cards, records and badges
 
 Cards are white and ringed, with 16px default internal spacing and a 12px compact variant. Several overview cards explicitly use 20px horizontal padding. Card footers stay transparent. Tables use muted 13px medium headers, 15px records, 12px vertical cell padding and tabular, right-aligned quantities. Badges are compact 20px pills; secondary badges use the pale secondary surface and its foreground. Metric hierarchy is label, large figure and concise supporting context.
+
+The four overview metric cards compose the existing shadcn Card and Chart components. They add a seed-share bar, recorded-transfer columns, a turnover area chart and community-size columns beneath the totals. Each chart occupies a 76px region; quiet footers show the actual observation period or count scope. Activity charts show at most 32 chronological calendar buckets and say “Grouped” when a bucket spans multiple dates. Tooltips expose exact dates and values through pointer or keyboard navigation. Community bars preserve the full chart's category colors and disclose the number shown. Empty activity and unavailable community data remain explicit. These are observed distributions and transaction histories, never invented growth comparisons.
 
 ### Transfer neighborhoods
 

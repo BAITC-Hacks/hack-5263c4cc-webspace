@@ -186,7 +186,7 @@ uv run --frozen python scripts/evaluate_copilot.py
 
 The first command installs frozen dependencies, runs backend and session tests, and builds the production frontend. Session tests check conversation isolation, branching, cancellation, deletion races, and token-free exports. The evaluation script runs seven synthetic scenarios offline; `--live` explicitly opts into a paid provider check using synthetic evidence only.
 
-**Current local checks:** 130 backend tests, 8 session tests, and the TypeScript/Vite production build passed. Tests cover exact CSV contracts, input-order invariance, isolated seeds, observation boundaries, temporal ordering, search bounds, tool authorization, memory expiry, and request safeguards. The startup command also passed from a clean checkout of the final application commit. [Clean-checkout verification](docs/readme-verification.md) · [Full validation and its limits](docs/validation.md).
+**Current local checks:** 138 backend tests, 8 session tests, and the TypeScript/Vite production build passed. Tests cover exact CSV contracts, input-order invariance, isolated seeds, observation boundaries, bounded activity aggregation, temporal ordering, search bounds, tool authorization, memory expiry, and request safeguards. The startup command also passed from the application checkout identified in the verification note. [Clean-checkout verification](docs/readme-verification.md) · [Full validation and its limits](docs/validation.md).
 
 **Five-minute walkthrough:**
 
