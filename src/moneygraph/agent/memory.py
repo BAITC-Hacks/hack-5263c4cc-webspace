@@ -16,7 +16,6 @@ import sqlite3
 import threading
 import time
 from typing import Callable
-from weakref import WeakKeyDictionary
 
 from .contracts import MAX_HISTORY_CHARACTERS, MAX_HISTORY_TURNS
 
@@ -28,24 +27,13 @@ class MemoryUnavailable(Exception):
         super().__init__(detail)
 
 
-_versions: WeakKeyDictionary = WeakKeyDictionary()
-_version_lock = threading.Lock()
-
-
 def evidence_version(engine) -> str | None:
-    # Non-Analysis adapters used by offline tests need no fabricated dataset digest.
-    if not hasattr(engine, "_transactions"):
-        return None
-    with _version_lock:
-        if engine not in _versions:
-            from ..audit import provenance
-            receipt = provenance(engine)
-            sources = [Path(__file__).parent.parent / "signals.py"]
-            sources += sorted(Path(__file__).parent.glob("*.py"))
-            source_hash = hashlib.sha256(b"".join(p.read_bytes() for p in sources)).hexdigest()
-            encoded = json.dumps([receipt["dataset_sha256"], receipt["algorithm_sha256"], source_hash])
-            _versions[engine] = hashlib.sha256(encoded.encode()).hexdigest()
-        return _versions[engine]
+    # Facades expose only their captured identity, never raw records or source paths.
+    version = getattr(engine, "evidence_version", None)
+    if isinstance(version, str):
+        return version
+    snapshot = getattr(engine, "_snapshot_metadata", None)
+    return snapshot.evidence_version if snapshot is not None else None
 
 
 def scope_key(engine, gid: int, gids: list[int] | None) -> str:

@@ -1,7 +1,8 @@
 """Fixed-scope read tools; no provider or conversation state is available here."""
 import json
-from copy import deepcopy
-from typing import Any
+
+from ..engine import Analysis
+from ..evidence import EvidenceService, get_evidence_service
 
 TOOLS = [
     {"type": "function", "name": name, "description": description,
@@ -19,10 +20,12 @@ TOOLS = [
     ]
 ]
 
-def evidence_tool(name: str, arguments: str, engine: Any, gid: int, gids: list[int] | None = None) -> dict:
+def evidence_tool(name: str, arguments: str, engine: Analysis | EvidenceService,
+                  gid: int, gids: list[int] | None = None) -> dict:
     """Selection is bound in application code; model cannot broaden its authority."""
     if json.loads(arguments) != {}:
         raise ValueError("Tool arguments must be empty; account scope is fixed.")
+    engine = get_evidence_service(engine)
     node = engine.node(gid)
     if node is None:
         raise ValueError("Selected account is unavailable.")
@@ -53,11 +56,10 @@ def evidence_tool(name: str, arguments: str, engine: Any, gid: int, gids: list[i
                       if c["cluster_id"] == cluster_id), None)
         return {"evidence_id": f"cluster:{cluster_id}", "data": found}
     if name in {"inspect_patterns", "find_common_collectors", "simulate_top_removal", "inspect_missing_evidence", "inspect_investigation_brief"}:
-        from ..signals import SignalAnalysis
-        signals = SignalAnalysis(engine)
+        signals = engine
         if name == "inspect_investigation_brief":
             dossier = signals.dossier(gid)
-            patterns = signals.node(gid)
+            patterns = signals.signal_node(gid)
             fields = ("gid", "depth", "is_seed", "role", "role_score", "priority_score",
                       "cluster_id", "in_degree", "out_degree", "in_kzt", "out_kzt", "score_factors")
             return {"evidence_id": f"brief:{gid}", "data": {
@@ -75,7 +77,7 @@ def evidence_tool(name: str, arguments: str, engine: Any, gid: int, gids: list[i
                 "limitations": list(node.get("limitations", [])) + patterns["caveats"],
             }}
         if name == "inspect_patterns":
-            payload = deepcopy(signals.node(gid))
+            payload = signals.signal_node(gid)
             # Bound agent context independently of the interactive evidence viewer.
             payload = {**payload, "routes": payload.get("routes", [])[:4],
                        "cycles": payload.get("cycles", [])[:4],

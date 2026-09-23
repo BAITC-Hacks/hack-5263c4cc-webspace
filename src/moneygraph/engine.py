@@ -9,7 +9,6 @@ from __future__ import annotations
 from bisect import bisect_right
 from collections import Counter, defaultdict, deque
 from datetime import date, timedelta
-import csv
 import json
 import math
 from pathlib import Path
@@ -19,6 +18,8 @@ from typing import Any
 
 import networkx as nx
 import polars as pl
+
+from .exports import EXPORT_NAMES, export_bytes
 
 ROLES = ("consolidator", "transit", "distributor", "terminal", "coordinator", "peripheral", "boundary_unknown")
 ROLE_COLUMNS = ("gid", "role", "role_score", "cluster_id", "priority_score", "evidence")
@@ -127,6 +128,8 @@ class Analysis:
         self._clusters = self._cluster_summaries()
         self._activity = self._activity_summary()
         self.runtime_ms = round((perf_counter() - started) * 1000, 2)
+        from .snapshot import build_snapshot_metadata
+        self._snapshot_metadata = build_snapshot_metadata(self)
 
     @staticmethod
     def _validate(nodes: pl.DataFrame, edges: pl.DataFrame, tx: pl.DataFrame) -> None:
@@ -489,13 +492,9 @@ class Analysis:
         output = Path(output_dir)
         output.mkdir(parents=True, exist_ok=True)
         paths = {}
-        for name in ("nodes_roles.csv", "clusters.csv", "top_nodes.csv"):
-            columns, rows = self.export_rows(name)
+        for name in EXPORT_NAMES:
             path = output / name
-            with path.open("w", newline="", encoding="utf-8") as stream:
-                writer = csv.DictWriter(stream, fieldnames=columns)
-                writer.writeheader()
-                writer.writerows(rows)
+            path.write_bytes(export_bytes(self, name))
             paths[name] = str(path)
         return paths
 

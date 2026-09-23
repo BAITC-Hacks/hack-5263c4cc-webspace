@@ -14,6 +14,8 @@ from .agent.contracts import (CopilotRequest, ConversationTurn, SessionCreateReq
 from .agent.evidence import TOOLS, evidence_tool
 from .agent.runtime import offline_answer, run_investigation
 from .agent.memory import ConversationMemory, MemoryUnavailable, scope_key
+from .evidence import get_evidence_service
+from .http_contracts import CopilotResponse, CopilotStatusResponse, SessionResponse
 
 router = APIRouter(prefix="/api")
 _memory_lock = threading.Lock()
@@ -28,7 +30,7 @@ def ai_configured() -> bool:
     )
 
 
-@router.get("/copilot/status")
+@router.get("/copilot/status", response_model=CopilotStatusResponse)
 def copilot_status():
     enabled = ai_configured()
     return {
@@ -57,7 +59,7 @@ def copilot_status():
 
 
 def investigate(engine: Any, request: CopilotRequest, client: Any = None) -> dict:
-    return run_investigation(engine, request, client, enabled=ai_configured(), client_factory=OpenAI)
+    return run_investigation(get_evidence_service(engine), request, client, enabled=ai_configured(), client_factory=OpenAI)
 
 
 def conversation_memory(app) -> ConversationMemory:
@@ -67,7 +69,7 @@ def conversation_memory(app) -> ConversationMemory:
         return app.state.conversation_memory
 
 
-@router.post("/copilot")
+@router.post("/copilot", response_model=CopilotResponse, response_model_exclude_unset=True)
 def copilot(request: CopilotRequest, http_request: Request):
     from .api import get_engine
     store = None
@@ -103,7 +105,7 @@ def copilot(request: CopilotRequest, http_request: Request):
                 pass  # Lease expires; never leak storage details from exception cleanup.
 
 
-@router.post("/copilot/sessions", status_code=201)
+@router.post("/copilot/sessions", status_code=201, response_model=SessionResponse)
 def create_conversation(request: SessionCreateRequest, http_request: Request):
     """Return an empty session capability before any question or model work."""
     from .api import get_engine

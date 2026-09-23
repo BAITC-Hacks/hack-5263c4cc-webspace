@@ -1,12 +1,12 @@
 """Reproducibility receipts without serializing private records into logs."""
 from __future__ import annotations
 
-import csv
 import hashlib
-import io
 import json
 from pathlib import Path
 from typing import Any
+
+from .exports import EXPORT_NAMES, export_bytes
 
 
 def _digest(value: Any) -> str:
@@ -16,16 +16,12 @@ def _digest(value: Any) -> str:
 
 
 def export_content(analysis: Any, name: str) -> str:
-    columns, rows = analysis.export_rows(name)
-    stream = io.StringIO(newline="")
-    writer = csv.DictWriter(stream, fieldnames=columns)
-    writer.writeheader()
-    writer.writerows(rows)
-    return stream.getvalue()
+    """Compatibility text view of the canonical UTF-8 download bytes."""
+    return export_bytes(analysis, name).decode("utf-8")
 
 
-def provenance(analysis: Any) -> dict:
-    """Hash canonical input rows and exact CSV bytes, independent of wall-clock time."""
+def _build_provenance(analysis: Any) -> dict:
+    """Build a receipt once from completed analysis, without consulting its snapshot."""
     inputs = {
         "nodes": sorted(analysis._nodes.values(), key=lambda row: row["gid"]),
         "edges": analysis._edges,
@@ -35,14 +31,24 @@ def provenance(analysis: Any) -> dict:
     engine_path = Path(__file__).with_name("engine.py")
     algorithm_hash = hashlib.sha256(engine_path.read_bytes()).hexdigest()
     exports = []
-    for name in ("nodes_roles.csv", "clusters.csv", "top_nodes.csv"):
-        content = export_content(analysis, name).encode()
+    for name in EXPORT_NAMES:
+        content = export_bytes(analysis, name)
         exports.append({"name": name, "sha256": hashlib.sha256(content).hexdigest(),
                         "bytes": len(content), "rows": len(analysis.export_rows(name)[1])})
     return {"schema_version": 1, "dataset_kind": analysis.dataset_kind,
             "dataset_sha256": _digest(table_hashes), "canonical_table_sha256": table_hashes,
             "algorithm_sha256": algorithm_hash, "exports": exports,
             "interpretation": "Hashes identify canonical loaded evidence and exact export bytes; they do not prove data authenticity or analytical accuracy."}
+
+
+def provenance(analysis: Any) -> dict:
+    """Read captured identity without hashing live source files on later requests."""
+    snapshot = getattr(analysis, "_snapshot_metadata", None)
+    if snapshot is not None:
+        return snapshot.receipt()
+    # Small read adapters may supply no construction-time metadata. Real Analysis
+    # instances always publish captured metadata before returning to their caller.
+    return _build_provenance(analysis)
 
 
 def dossier_markdown(dossier: dict, receipt: dict) -> str:
