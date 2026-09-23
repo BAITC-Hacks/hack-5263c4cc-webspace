@@ -1,0 +1,24 @@
+{
+  "tool": "image_gen.imagegen",
+  "mode": "built-in image generation",
+  "date": "2026-09-23",
+  "provenance_recorded_at_utc": "2026-09-23T11:57:11Z",
+  "model": "Not exposed by the built-in image generation tool",
+  "prompt": "Use case: logo-brand. Asset type: a production app icon and compact sidebar brand symbol for Aqsha Lens, a financial flow investigation tool in the Freedom Finance ecosystem. Create ONE original, sophisticated, flat geometric brand symbol on a genuinely transparent background. The symbol is an abstract uppercase A built from two bold interlocking folded bands, with a simple open triangular counter and one confidently placed green flow band integrated as the crossbar. Its visual character should be clean, strong, precise, friendly and institutional, like a contemporary financial services identity. Broad solid shapes, clean geometric angles, slight optical corner softening, no fine lines or small details. Main structure charcoal #20231F. The flow band uses Freedom lime #8CE85F with a small solid deep green #098830 plane where it intersects. No other colors. Every color plane is a single flat fill, no gradients. Square composition, single mark centered and filling about 84% of the square, balanced margins. Optimized for immediate recognition at 16–48 pixels. This is a distinct Aqsha Lens identity, do not copy the Freedom Finance F-shield or any existing logo. No surrounding container or badge, no shield, no wordmark, no text, no labels, no lettering apart from the abstract A silhouette, no extra symbols, no mockup, no texture, no shadows, no reflections, no 3D, no outlines, no graph network of dots, no watermark. Produce a crisp logo with real background alpha transparency, not a checkerboard illustration.",
+  "source_file": "/home/lain/.codex/generated_images/01a0ce1e-eddc-7952-b435-7d689832a750/exec-6a3c884c-8435-46de-a38e-f027799d8877.png",
+  "usage": "Aqsha Lens application brand mark",
+  "references_reviewed": [
+    "docs/research/freedom-ui-reference.md",
+    "artifacts/references/freedom-gallery1-2.webp",
+    "artifacts/references/freedom-gallery2-1poster.jpg"
+  ],
+  "output": {
+    "file": "aqsha-freedom-mark.png",
+    "width": 1254,
+    "height": 1254,
+    "format": "PNG",
+    "mode": "RGBA"
+  },
+  "post_processing": "Generation prompt, tool and date embedded as PNG text metadata. Original IDAT chunks, pixel data and alpha remain unchanged.",
+  "design": "Original abstract A with a charcoal structure and lime/deep-green flow band, aligned to the Freedom Finance ecosystem palette."
+}

@@ -72,6 +72,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { AskEvidenceAction } from "@/AssistantWorkspace";
 
 function State({
   error,
@@ -393,6 +394,15 @@ export function CohortPanel({
             >
               Clear selection
             </Button>
+          )}
+          {gids.length > 1 && (
+            <AskEvidenceAction
+              gid={selected ?? gids[0]}
+              gids={gids}
+              prompt="Find shared downstream collectors for the comparison accounts. Explain observed paths and missing evidence."
+            >
+              Explain shared collectors
+            </AskEvidenceAction>
           )}
         </div>
         <State
@@ -1031,6 +1041,11 @@ export function ResiliencePanel({
           Remove priority entities from a copy of the graph and compare
           connectivity.
         </p>
+        <div>
+          <AskEvidenceAction prompt="Explain the structural effect of removing the top five priority accounts. What can this simulation establish, and what remains unknown?">
+            Explain the top-five scenario
+          </AskEvidenceAction>
+        </div>
       </header>
       <Card>
         <CardHeader>

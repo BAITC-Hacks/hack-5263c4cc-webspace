@@ -1,7 +1,6 @@
-import { lazy, Suspense, useEffect, useMemo, useRef } from "react";
+import { lazy, Suspense, useId } from "react";
 import {
   ActionBarPrimitive,
-  AssistantRuntimeProvider,
   AuiIf,
   BranchPickerPrimitive,
   ComposerPrimitive,
@@ -9,25 +8,24 @@ import {
   MessagePrimitive,
   MessagePartPrimitive,
   ThreadPrimitive,
-  useAui,
   useAuiState,
-  useLocalRuntime,
 } from "@assistant-ui/react";
-import type { ChatModelAdapter } from "@assistant-ui/react";
 import {
   ArrowDown,
   ArrowUp,
-  Check,
+  ArrowCounterClockwise,
+  ArrowSquareOut,
   CaretLeft,
   CaretRight,
-  Question,
+  Check,
   Copy,
   Fingerprint,
-  ChatCircleText,
-  ArrowCounterClockwise,
+  GitBranch,
+  ListChecks,
+  PencilSimple,
+  Question,
   ShieldCheck,
   Stop,
-  Trash,
   Users,
 } from "@phosphor-icons/react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -38,24 +36,14 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Field, FieldLabel } from "@/components/ui/field";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
-import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import type { CopilotResponse } from "./api";
-import { fetchApi } from "./api";
+import type { CopilotReply } from "./api";
 import "./assistant-panel.css";
 
 const EvidenceMarkdown = lazy(() => import("./EvidenceMarkdown"));
@@ -64,287 +52,242 @@ export interface AssistantPanelProps {
   gid: number;
   gids: number[];
   onSelect: (gid: number) => void;
+  expanded?: boolean;
 }
 
-type ReplyMetadata = { evidence: CopilotResponse; elapsedMs: number };
+type ReplyMetadata = {
+  evidence: CopilotReply;
+  elapsedMs: number;
+  memoryReset?: boolean;
+};
 
-/** The browser renders completed server evidence; it never executes agent tools. */
-export function AssistantPanel({ gid, gids, onSelect }: AssistantPanelProps) {
-  const cohort = [...new Set(gids)].sort((a, b) => a - b);
-  if (
-    !Number.isSafeInteger(gid) ||
-    cohort.length > 5 ||
-    cohort.some((id) => !Number.isSafeInteger(id))
-  ) {
-    return (
-      <Alert variant="destructive">
-        <Question />
-        <AlertTitle>Choose a valid scope</AlertTitle>
-        <AlertDescription>
-          Select one entity and at most five comparison entities.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-  const scope = `${gid}:${cohort.join(",")}`;
-  return (
-    <ScopedAssistant key={scope} gid={gid} gids={cohort} onSelect={onSelect} />
-  );
-}
+const toolLabels: Record<string, string> = {
+  inspect_investigation_brief: "Investigation brief and next evidence requests",
+  inspect_selected_node: "Account activity and review priority",
+  inspect_neighborhood: "Connected accounts and transfers",
+  inspect_cluster: "Community structure",
+  inspect_patterns: "Timing, repeated routes, and return flows",
+  find_common_collectors: "Shared collectors across selected accounts",
+  simulate_top_removal: "Network resilience",
+  inspect_missing_evidence: "Evidence gaps and next requests",
+};
 
-function ScopedAssistant({ gid, gids, onSelect }: AssistantPanelProps) {
-  const activeRequests = useRef(new Set<AbortController>());
-  const cohortKey = gids.join(",");
-  const adapter = useMemo<ChatModelAdapter>(
-    () => ({
-      async run({ messages, abortSignal }) {
-        // The server accepts an independent question, not chat history. Scope is
-        // immutable for this runtime and never supplied by model-generated text.
-        const latestUser = [...messages]
-          .reverse()
-          .find((message) => message.role === "user");
-        const question =
-          latestUser?.content
-            .filter((part) => part.type === "text")
-            .map((part) => part.text)
-            .join("\n")
-            .trim() ?? "";
-        if (!question || question.length > 1200)
-          throw new Error("Enter a question between 1 and 1,200 characters.");
-        const requestController = new AbortController();
-        activeRequests.current.add(requestController);
-        const cancel = () => requestController.abort();
-        abortSignal.addEventListener("abort", cancel, { once: true });
-        if (abortSignal.aborted) requestController.abort();
-        const started = performance.now();
-        try {
-          const response = await fetchApi<CopilotResponse>("/copilot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              gid,
-              ...(cohortKey ? { gids: cohortKey.split(",").map(Number) } : {}),
-              question,
-            }),
-            signal: requestController.signal,
-          });
-          requestController.signal.throwIfAborted();
-          if (
-            typeof response.answer !== "string" ||
-            !["offline", "openai", "fallback"].includes(response.mode)
-          ) {
-            throw new Error(
-              "The assistant returned an unreadable response. Retry this evidence check.",
-            );
-          }
-          return {
-            content: [{ type: "text", text: response.answer }],
-            metadata: {
-              custom: {
-                evidence: response,
-                elapsedMs: Math.round(performance.now() - started),
-              },
-            },
-          };
-        } finally {
-          abortSignal.removeEventListener("abort", cancel);
-          activeRequests.current.delete(requestController);
-        }
-      },
-    }),
-    [gid, cohortKey],
-  );
-  const runtime = useLocalRuntime(adapter, { maxSteps: 1 });
-
-  useEffect(() => {
-    const requests = activeRequests.current;
-    return () => {
-      for (const request of requests) request.abort();
-      requests.clear();
-    };
-  }, []);
-
-  return (
-    <AssistantRuntimeProvider runtime={runtime}>
-      <EvidenceThread gid={gid} gids={gids} onSelect={onSelect} />
-    </AssistantRuntimeProvider>
-  );
-}
-
-function EvidenceThread({ gid, gids, onSelect }: AssistantPanelProps) {
+/** Conversation UI only. The workspace owns its lifetime and evidence scope. */
+export function AssistantPanel({
+  gid,
+  gids,
+  onSelect,
+  expanded = false,
+}: AssistantPanelProps) {
   return (
     <ThreadPrimitive.Root
-      className="flex h-[70dvh] min-h-96 max-h-190 min-w-0 flex-col bg-background text-foreground"
-      aria-label={`Evidence assistant for entity ${gid}`}
+      className="asst-thread"
+      data-expanded={expanded || undefined}
+      aria-label={`Assistant conversation for entity ${gid}`}
     >
-      <ScopeHeader gid={gid} gids={gids} />
-      <Separator />
       <ThreadPrimitive.Viewport
-        className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto overscroll-contain px-4 pt-5"
+        className="asst-viewport"
         turnAnchor="top"
         autoScroll={false}
       >
         <AuiIf condition={(state) => state.thread.isEmpty}>
-          <Empty className="flex-none px-0 pt-2 pb-5">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <ChatCircleText />
-              </EmptyMedia>
-              <EmptyTitle>Ask the evidence</EmptyTitle>
-              <EmptyDescription>
-                Test a role hypothesis, follow a route, or identify what’s
-                missing.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent aria-label="Suggested evidence checks">
-              <ThreadPrimitive.Suggestion
-                prompt="Why is this entity prioritized?"
-                send
-                render={
-                  <Button
-                    variant="outline"
-                    className="h-auto w-full justify-between py-2.5"
-                  />
-                }
-              >
-                <span className="min-w-0 whitespace-normal text-left">
-                  Explain this review priority
-                </span>
-                <CaretRight data-icon="inline-end" />
-              </ThreadPrimitive.Suggestion>
-              <ThreadPrimitive.Suggestion
-                prompt="Check repeated routes and return flows for this entity."
-                send
-                render={
-                  <Button
-                    variant="outline"
-                    className="h-auto w-full justify-between py-2.5"
-                  />
-                }
-              >
-                <span className="min-w-0 whitespace-normal text-left">
-                  Find routes and return flows
-                </span>
-                <CaretRight data-icon="inline-end" />
-              </ThreadPrimitive.Suggestion>
-              <ThreadPrimitive.Suggestion
-                prompt="What evidence is missing, and what should I request next?"
-                send
-                render={
-                  <Button
-                    variant="outline"
-                    className="h-auto w-full justify-between py-2.5"
-                  />
-                }
-              >
-                <span className="min-w-0 whitespace-normal text-left">
-                  What should I request next?
-                </span>
-                <CaretRight data-icon="inline-end" />
-              </ThreadPrimitive.Suggestion>
-              {gids.length > 0 && (
-                <ThreadPrimitive.Suggestion
-                  prompt={`Who collects money from these ${gids.length} selected comparison accounts? Show the observed paths.`}
-                  send
-                  render={
-                    <Button
-                      variant="outline"
-                      className="h-auto w-full justify-between py-2.5"
-                    />
-                  }
-                >
-                  <span className="min-w-0 whitespace-normal text-left">
-                    Find shared collectors
-                  </span>
-                  <Users data-icon="inline-end" />
-                </ThreadPrimitive.Suggestion>
-              )}
-            </EmptyContent>
-          </Empty>
+          <Welcome gid={gid} gids={gids} />
         </AuiIf>
-        <div
-          className="flex flex-col gap-6 pb-5"
-          aria-label="Evidence check history"
-        >
+        <div className="asst-messages" aria-label="Conversation messages">
           <ThreadPrimitive.Messages>
-            {({ message }) =>
-              message.role === "user" ? (
-                <UserMessage />
-              ) : (
-                <AssistantMessage onSelect={onSelect} />
-              )
-            }
+            {({ message }) => {
+              if (message.role === "user") {
+                return message.composer.isEditing ? (
+                  <EditComposer />
+                ) : (
+                  <UserMessage />
+                );
+              }
+              return <AssistantMessage onSelect={onSelect} />;
+            }}
           </ThreadPrimitive.Messages>
         </div>
-        <ThreadPrimitive.ViewportFooter className="sticky bottom-0 -mx-4 mt-auto flex shrink-0 flex-col gap-3 bg-background px-4 pb-4">
-          <Separator />
-          <ThreadPrimitive.ScrollToBottom
-            render={
-              <Button
-                variant="outline"
-                size="sm"
-                className="absolute left-1/2 -top-9 -translate-x-1/2 disabled:hidden"
-              />
-            }
-            aria-label="Scroll to latest evidence check"
-          >
-            <ArrowDown data-icon="inline-start" />
-            Latest reply
-          </ThreadPrimitive.ScrollToBottom>
-          <EvidenceComposer />
-          <p className="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-            <ShieldCheck className="mt-0.5 size-3.5 shrink-0" />
-            <span>
-              Each question checks this scope afresh. History stays in this
-              view.
-            </span>
-          </p>
+        <ThreadPrimitive.ViewportFooter className="asst-footer">
+          <div className="asst-composer-wrap">
+            <AuiIf condition={(state) => !state.thread.isEmpty}>
+              <ThreadPrimitive.ScrollToBottom
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="asst-scroll-latest disabled:hidden"
+                  />
+                }
+                aria-label="Scroll to latest reply"
+                title="Scroll to latest reply"
+              >
+                <ArrowDown />
+              </ThreadPrimitive.ScrollToBottom>
+            </AuiIf>
+            <EvidenceComposer />
+            <MemoryNotice />
+          </div>
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
   );
 }
 
-function ScopeHeader({ gid, gids }: { gid: number; gids: number[] }) {
-  const aui = useAui();
+function MemoryNotice() {
+  const memory = useAuiState((state) => {
+    const latestReply = [...state.thread.messages]
+      .reverse()
+      .find(
+        (message) =>
+          message.role === "assistant" && message.metadata.custom?.evidence,
+      );
+    return (latestReply?.metadata.custom as Partial<ReplyMetadata> | undefined)
+      ?.evidence?.memory;
+  });
   return (
-    <header className="flex shrink-0 flex-wrap items-center gap-2 px-4 py-3">
-      <Fingerprint className="size-4 text-muted-foreground" />
-      <span className="text-sm">
-        Entity <strong className="font-mono font-medium">{gid}</strong>
-      </span>
-      <AuiIf condition={(state) => !state.thread.isEmpty}>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="ml-auto"
-          aria-label="Clear this local conversation"
-          title="Clear this local conversation"
-          onClick={() => {
-            aui.thread().cancelRun();
-            aui.thread().reset();
-          }}
-        >
-          <Trash />
-        </Button>
-      </AuiIf>
-      {gids.length > 0 && (
-        <p className="flex w-full items-start gap-2 text-xs leading-relaxed text-muted-foreground">
-          <Users className="mt-0.5 size-3.5 shrink-0" />
-          <span className="break-words">Comparing {gids.join(", ")}</span>
-        </p>
-      )}
-    </header>
+    <p className="asst-footnote" role="status">
+      Evidence rechecked for every answer.{" "}
+      {memory
+        ? `Context expires within ${Math.max(1, Math.ceil(memory.expires_in_seconds / 3600))}h; delete this chat to clear it.`
+        : "Context expires within 24h; delete a chat to clear it."}
+    </p>
+  );
+}
+
+function Welcome({ gid, gids }: { gid: number; gids: number[] }) {
+  const suggestions = [
+    {
+      title: "Explain this account",
+      detail: "Activity, role, and review priority",
+      prompt:
+        "Explain this entity’s observed activity, role hypothesis, and review priority. Separate facts from hypotheses.",
+      Icon: Fingerprint,
+    },
+    {
+      title: "Follow the money",
+      detail: "Repeated routes and return flows",
+      prompt:
+        "Check repeated routes and return flows for this entity. Show observed paths and their limits.",
+      Icon: GitBranch,
+    },
+    {
+      title: "Plan the next step",
+      detail: "Missing evidence and useful requests",
+      prompt:
+        "What evidence is missing, and what should I request next? Prioritize the requests and explain why.",
+      Icon: ListChecks,
+    },
+    gids.length > 0
+      ? {
+          title: "Compare selected accounts",
+          detail: "Shared collectors and observed paths",
+          prompt: `Who collects money from these ${gids.length} selected comparison accounts? Show the observed paths and limitations.`,
+          Icon: Users,
+        }
+      : {
+          title: "Challenge the hypothesis",
+          detail: "Alternative explanations and limits",
+          prompt:
+            "Challenge this entity’s role hypothesis. Which observations support it, what alternative explanations fit, and what cannot be established?",
+          Icon: ShieldCheck,
+        },
+  ];
+  return (
+    <div className="asst-welcome">
+      <img
+        src="/brand/aqsha-freedom-mark.png"
+        alt=""
+        className="asst-welcome-mark"
+        width={48}
+        height={48}
+      />
+      <h2>What would you like to investigate?</h2>
+      <p className="asst-welcome-description">
+        Explore the evidence for account <strong>{gid}</strong>.
+      </p>
+      <div className="asst-suggestions" aria-label="Suggested questions">
+        {suggestions.map(({ title, detail, prompt, Icon }) => (
+          <ThreadPrimitive.Suggestion
+            key={title}
+            prompt={prompt}
+            send
+            render={<Button variant="outline" className="asst-suggestion" />}
+          >
+            <Icon className="asst-suggestion-icon" />
+            <span className="min-w-0">
+              <span className="asst-suggestion-title">{title}</span>
+              <span className="asst-suggestion-detail">{detail}</span>
+            </span>
+          </ThreadPrimitive.Suggestion>
+        ))}
+      </div>
+    </div>
   );
 }
 
 function UserMessage() {
   return (
-    <MessagePrimitive.Root className="flex flex-col gap-1.5 rounded-lg bg-muted p-3 text-sm leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere]">
-      <span className="text-xs font-medium text-muted-foreground">
-        Your question
-      </span>
-      <MessagePrimitive.Parts />
+    <MessagePrimitive.Root className="asst-user-message">
+      <div className="asst-user-bubble">
+        <MessagePrimitive.Parts />
+      </div>
+      <ActionBarPrimitive.Root hideWhenRunning className="asst-user-actions">
+        <ActionBarPrimitive.Copy
+          render={<Button variant="ghost" size="icon-sm" />}
+          className="asst-copy"
+          aria-label="Copy question"
+          title="Copy question"
+          copiedDuration={1800}
+        >
+          <Copy className="asst-copy-icon" />
+          <Check className="asst-copied-icon" />
+        </ActionBarPrimitive.Copy>
+        <ActionBarPrimitive.Edit
+          render={<Button variant="ghost" size="icon-sm" />}
+          aria-label="Edit question"
+          title="Edit question"
+        >
+          <PencilSimple />
+        </ActionBarPrimitive.Edit>
+        <ReplyBranches question />
+      </ActionBarPrimitive.Root>
+    </MessagePrimitive.Root>
+  );
+}
+
+function EditComposer() {
+  const inputId = useId();
+  return (
+    <MessagePrimitive.Root className="asst-edit-message">
+      <ComposerPrimitive.Root className="asst-edit-composer">
+        <Field>
+          <FieldLabel htmlFor={inputId}>Edit your question</FieldLabel>
+          <InputGroup>
+            <ComposerPrimitive.Input
+              render={
+                <InputGroupTextarea className="min-h-24 max-h-56 text-sm" />
+              }
+              id={inputId}
+              maxLength={1200}
+              rows={3}
+              submitMode="enter"
+              unstable_insertNewlineOnTouchEnter
+              addAttachmentOnPaste={false}
+              autoFocus
+            />
+            <InputGroupAddon align="block-end" className="justify-end gap-2">
+              <ComposerPrimitive.Cancel
+                render={<Button variant="ghost" size="sm" />}
+              >
+                Cancel
+              </ComposerPrimitive.Cancel>
+              <ComposerPrimitive.Send render={<Button size="sm" />}>
+                Save & resend <ArrowUp />
+              </ComposerPrimitive.Send>
+            </InputGroupAddon>
+          </InputGroup>
+        </Field>
+      </ComposerPrimitive.Root>
     </MessagePrimitive.Root>
   );
 }
@@ -372,10 +315,15 @@ function AssistantMessage({ onSelect }: { onSelect: (gid: number) => void }) {
   const isCancelled =
     status?.type === "incomplete" && status.reason === "cancelled";
   return (
-    <MessagePrimitive.Root className="flex min-w-0 flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2 text-sm">
-        <ShieldCheck className="size-4 text-muted-foreground" />
-        <strong className="font-medium">Evidence check</strong>
+    <MessagePrimitive.Root className="asst-assistant-message">
+      <div className="asst-reply-heading">
+        <img
+          src="/brand/aqsha-freedom-mark.png"
+          alt=""
+          width={24}
+          height={24}
+        />
+        <span className="font-medium">Aqsha</span>
         {reply && <ModeBadge mode={reply.mode} />}
       </div>
       <AuiIf condition={(state) => state.message.status?.type === "running"}>
@@ -384,13 +332,13 @@ function AssistantMessage({ onSelect }: { onSelect: (gid: number) => void }) {
           role="status"
         >
           <Spinner />
-          <span>Checking selected evidence…</span>
+          <span>Checking the evidence…</span>
         </div>
       </AuiIf>
       <MessagePrimitive.Parts components={{ Text: SafeMarkdown }} />
       {isCancelled && (
         <p className="text-sm text-muted-foreground" role="status">
-          Stopped waiting for this reply.
+          Reply stopped. You can retry or ask another question.
         </p>
       )}
       <MessagePrimitive.Error>
@@ -400,146 +348,40 @@ function AssistantMessage({ onSelect }: { onSelect: (gid: number) => void }) {
           <AlertDescription>
             <ErrorPrimitive.Message />
             <p className="mt-2">
-              Retry below. The graph and computed evidence remain available.
+              Your question and the computed evidence are still available.
             </p>
           </AlertDescription>
         </ErrorPrimitive.Root>
       </MessagePrimitive.Error>
       {reply && (
         <>
+          {metadata.memoryReset && (
+            <p className="asst-local-notice" role="status">
+              <ShieldCheck />
+              This version starts fresh context. Earlier branches and
+              interrupted replies were not sent.
+            </p>
+          )}
           {reply.mode !== "openai" && (
-            <Alert role="status">
-              <Question />
-              <AlertTitle>
-                {reply.mode === "fallback"
-                  ? "Local fallback"
-                  : "Local evidence summary"}
-              </AlertTitle>
-              <AlertDescription>
-                {reply.mode === "fallback"
-                  ? "The AI connection did not return an answer. This is the computed local summary."
-                  : "Free-form analysis needs the optional AI connection."}
-              </AlertDescription>
-            </Alert>
+            <p className="asst-local-notice" role="status">
+              <ShieldCheck />
+              {reply.mode === "fallback"
+                ? "AI could not complete this check. Showing the computed local summary."
+                : "Computed locally. Free-form follow-ups need the optional AI connection."}
+            </p>
           )}
-          {reply.citations.length > 0 && (
-            <section
-              className="flex flex-col gap-3"
-              aria-label="Evidence references"
-            >
-              <Separator />
-              <h4 className="text-xs font-medium text-muted-foreground">
-                Evidence references
-              </h4>
-              {reply.citations.map((citation, index) => (
-                <div
-                  className="flex min-w-0 flex-col gap-2"
-                  key={`${citation.label}-${index}`}
-                >
-                  {citation.gid !== undefined ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-auto max-w-full self-start py-1.5"
-                      onClick={() => onSelect(citation.gid!)}
-                    >
-                      <Fingerprint data-icon="inline-start" />
-                      <span className="whitespace-normal text-left [overflow-wrap:anywhere]">
-                        {citation.label || `Entity ${citation.gid}`}
-                      </span>
-                      <CaretRight data-icon="inline-end" />
-                    </Button>
-                  ) : (
-                    <strong className="text-xs font-medium">
-                      {citation.label || `Reference ${index + 1}`}
-                    </strong>
-                  )}
-                  {citation.text && (
-                    <p className="text-xs leading-relaxed text-muted-foreground [overflow-wrap:anywhere]">
-                      {citation.text}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </section>
-          )}
-          {reply.trace.length > 0 && (
-            <Collapsible>
-              <CollapsibleTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    className="group h-auto w-full justify-between py-2"
-                  />
-                }
-              >
-                <Check data-icon="inline-start" />
-                <span className="flex-1 text-left">
-                  {reply.trace.length} evidence checks
-                </span>
-                <CaretRight
-                  data-icon="inline-end"
-                  className="group-data-panel-open:rotate-90"
-                />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <ol className="flex list-none flex-col gap-3 px-1 pt-3">
-                  {reply.trace.map((step, index) => (
-                    <li
-                      className="flex items-start justify-between gap-3 text-xs"
-                      key={`${step.tool}-${index}`}
-                    >
-                      <span className="min-w-0 leading-relaxed [overflow-wrap:anywhere]">
-                        {step.tool.replaceAll("_", " ")}
-                      </span>
-                      <Badge variant="secondary">{step.status}</Badge>
-                    </li>
-                  ))}
-                </ol>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-          {reply.limitations.length > 0 && (
-            <Collapsible>
-              <CollapsibleTrigger
-                render={
-                  <Button
-                    variant="ghost"
-                    className="group h-auto w-full justify-between py-2"
-                  />
-                }
-              >
-                <span className="whitespace-normal text-left">
-                  What this answer cannot establish
-                </span>
-                <CaretRight
-                  data-icon="inline-end"
-                  className="group-data-panel-open:rotate-90"
-                />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <ul className="flex list-disc flex-col gap-2 pl-5 pt-2 text-xs leading-relaxed text-muted-foreground">
-                  {reply.limitations.map((limitation, index) => (
-                    <li key={index}>{limitation}</li>
-                  ))}
-                </ul>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
+          <EvidenceDetails reply={reply} onSelect={onSelect} />
         </>
       )}
-      <ActionBarPrimitive.Root
-        hideWhenRunning
-        className="flex flex-wrap items-center gap-1"
-      >
+      <ActionBarPrimitive.Root hideWhenRunning className="asst-reply-actions">
         <ActionBarPrimitive.Copy
           render={<Button variant="ghost" size="sm" />}
           className="asst-copy"
           aria-label="Copy answer"
           copiedDuration={1800}
         >
-          <Copy data-icon="inline-start" className="asst-copy-icon" />
-          <Check data-icon="inline-start" className="asst-copied-icon" />
+          <Copy className="asst-copy-icon" />
+          <Check className="asst-copied-icon" />
           <span className="asst-copy-label">Copy</span>
           <span className="asst-copied-label">Copied</span>
         </ActionBarPrimitive.Copy>
@@ -547,45 +389,220 @@ function AssistantMessage({ onSelect }: { onSelect: (gid: number) => void }) {
           render={<Button variant="ghost" size="sm" />}
           aria-label="Retry this evidence check"
         >
-          <ArrowCounterClockwise data-icon="inline-start" />
+          <ArrowCounterClockwise />
           Retry
         </ActionBarPrimitive.Reload>
+        <ReplyBranches />
         {typeof metadata.elapsedMs === "number" && (
-          <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+          <span
+            className="ml-auto text-xs text-muted-foreground tabular-nums"
+            title="Time to receive the completed evidence check"
+          >
             {(metadata.elapsedMs / 1000).toFixed(1)}s
           </span>
         )}
-        <BranchPickerPrimitive.Root
-          hideWhenSingleBranch
-          className="flex items-center gap-1 text-xs text-muted-foreground"
-        >
-          <BranchPickerPrimitive.Previous
-            render={<Button variant="ghost" size="icon-sm" />}
-            aria-label="Previous reply version"
-          >
-            <CaretLeft />
-          </BranchPickerPrimitive.Previous>
-          <span>
-            <BranchPickerPrimitive.Number />/<BranchPickerPrimitive.Count />
-          </span>
-          <BranchPickerPrimitive.Next
-            render={<Button variant="ghost" size="icon-sm" />}
-            aria-label="Next reply version"
-          >
-            <CaretRight />
-          </BranchPickerPrimitive.Next>
-        </BranchPickerPrimitive.Root>
       </ActionBarPrimitive.Root>
     </MessagePrimitive.Root>
   );
 }
 
-function ModeBadge({ mode }: { mode: CopilotResponse["mode"] }) {
+function EvidenceDetails({
+  reply,
+  onSelect,
+}: {
+  reply: CopilotReply;
+  onSelect: (gid: number) => void;
+}) {
+  if (
+    !reply.citations.length &&
+    !reply.trace.length &&
+    !reply.limitations.length &&
+    !reply.execution
+  )
+    return null;
   return (
-    <Badge
-      variant={mode === "openai" ? "secondary" : "outline"}
-      className="ml-auto"
+    <div className="asst-evidence-details">
+      {reply.citations.length > 0 && (
+        <Collapsible>
+          <CollapsibleTrigger
+            render={
+              <Button variant="ghost" className="asst-detail-trigger group" />
+            }
+          >
+            <Fingerprint />
+            <span>
+              {reply.citations.length} evidence{" "}
+              {reply.citations.length === 1 ? "reference" : "references"}
+            </span>
+            <CaretRight className="ml-auto group-data-panel-open:rotate-90" />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <ol className="asst-sources" aria-label="Evidence references">
+              {reply.citations.map((citation, index) => (
+                <li key={`${citation.label}-${index}`}>
+                  <span className="asst-source-number">{index + 1}</span>
+                  <div className="min-w-0 flex-1">
+                    {citation.gid !== undefined ? (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="asst-source-link"
+                        onClick={() => onSelect(citation.gid!)}
+                      >
+                        <span>
+                          {citation.label || `Entity ${citation.gid}`}
+                        </span>
+                        <ArrowSquareOut />
+                      </Button>
+                    ) : (
+                      <strong className="text-xs font-medium">
+                        {citation.label || `Reference ${index + 1}`}
+                      </strong>
+                    )}
+                    {citation.text && <p>{citation.text}</p>}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+      {reply.trace.length > 0 && (
+        <Collapsible>
+          <CollapsibleTrigger
+            render={
+              <Button variant="ghost" className="asst-detail-trigger group" />
+            }
+          >
+            <ListChecks />
+            <span>
+              {reply.trace.length} evidence{" "}
+              {reply.trace.length === 1 ? "check" : "checks"}
+            </span>
+            <CaretRight className="ml-auto group-data-panel-open:rotate-90" />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <ol className="asst-trace">
+              {reply.trace.map((step, index) => (
+                <li key={`${step.tool}-${index}`}>
+                  <span className="min-w-0 flex-1">
+                    {toolLabels[step.tool] || step.tool.replaceAll("_", " ")}
+                  </span>
+                  <Badge variant="secondary">
+                    {step.status === "ok" || step.status === "success"
+                      ? "Checked"
+                      : step.status.replaceAll("_", " ")}
+                  </Badge>
+                </li>
+              ))}
+            </ol>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+      {reply.limitations.length > 0 && (
+        <Collapsible>
+          <CollapsibleTrigger
+            render={
+              <Button variant="ghost" className="asst-detail-trigger group" />
+            }
+          >
+            <ShieldCheck />
+            <span>Limits of this answer</span>
+            <CaretRight className="ml-auto group-data-panel-open:rotate-90" />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <ul className="asst-limitations">
+              {reply.limitations.map((limitation, index) => (
+                <li key={index}>{limitation}</li>
+              ))}
+            </ul>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+      {reply.execution && (
+        <Collapsible>
+          <CollapsibleTrigger
+            render={
+              <Button variant="ghost" className="asst-detail-trigger group" />
+            }
+          >
+            <ListChecks />
+            <span>Execution details</span>
+            <CaretRight className="ml-auto group-data-panel-open:rotate-90" />
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1 px-3 py-2 text-xs text-muted-foreground">
+              <dt>Status</dt>
+              <dd>{reply.execution.status}</dd>
+              {reply.model && (
+                <>
+                  <dt>Model</dt>
+                  <dd className="break-all">{reply.model}</dd>
+                </>
+              )}
+              <dt>Evidence checks</dt>
+              <dd>{reply.execution.tool_calls}</dd>
+              <dt>Model rounds</dt>
+              <dd>{reply.execution.model_rounds}</dd>
+              <dt>Reported tokens</dt>
+              <dd>
+                {reply.execution.input_tokens.toLocaleString()} input ·{" "}
+                {reply.execution.output_tokens.toLocaleString()} output
+              </dd>
+              <dt>Server time</dt>
+              <dd>{(reply.execution.elapsed_ms / 1000).toFixed(1)}s</dd>
+              {reply.execution.fallback_code && (
+                <>
+                  <dt>Fallback reason</dt>
+                  <dd>{reply.execution.fallback_code.replaceAll("_", " ")}</dd>
+                </>
+              )}
+              {reply.execution.evidence_version && (
+                <>
+                  <dt>Evidence version</dt>
+                  <dd className="break-all font-mono">
+                    {reply.execution.evidence_version}
+                  </dd>
+                </>
+              )}
+              <dt>Run receipt</dt>
+              <dd className="break-all font-mono">{reply.execution.run_id}</dd>
+            </dl>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+    </div>
+  );
+}
+
+function ReplyBranches({ question = false }: { question?: boolean }) {
+  return (
+    <BranchPickerPrimitive.Root
+      hideWhenSingleBranch
+      className="flex items-center gap-0.5 text-xs text-muted-foreground"
     >
+      <BranchPickerPrimitive.Previous
+        render={<Button variant="ghost" size="icon-sm" />}
+        aria-label={`Previous ${question ? "question" : "reply"} version`}
+      >
+        <CaretLeft />
+      </BranchPickerPrimitive.Previous>
+      <span className="tabular-nums">
+        <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
+      </span>
+      <BranchPickerPrimitive.Next
+        render={<Button variant="ghost" size="icon-sm" />}
+        aria-label={`Next ${question ? "question" : "reply"} version`}
+      >
+        <CaretRight />
+      </BranchPickerPrimitive.Next>
+    </BranchPickerPrimitive.Root>
+  );
+}
+
+function ModeBadge({ mode }: { mode: CopilotReply["mode"] }) {
+  return (
+    <Badge variant="outline" className="asst-mode-badge">
       {mode === "openai"
         ? "AI assisted"
         : mode === "fallback"
@@ -597,55 +614,68 @@ function ModeBadge({ mode }: { mode: CopilotResponse["mode"] }) {
 
 function EvidenceComposer() {
   const length = useAuiState((state) => state.composer.text.length);
+  const isEmpty = useAuiState((state) => state.thread.isEmpty);
   return (
-    <ComposerPrimitive.Root>
-      <FieldGroup>
-        <Field>
-          <FieldLabel htmlFor="evidence-assistant-question" className="sr-only">
-            Ask about the selected evidence
-          </FieldLabel>
-          <InputGroup>
-            <ComposerPrimitive.Input
-              render={<InputGroupTextarea className="min-h-20 max-h-40" />}
-              id="evidence-assistant-question"
-              placeholder="Ask about the selected evidence…"
-              maxLength={1200}
-              rows={2}
-              submitMode="enter"
-              unstable_insertNewlineOnTouchEnter
-              addAttachmentOnPaste={false}
-              unstable_focusOnThreadSwitched={false}
-              aria-describedby="assistant-input-help"
-            />
-            <InputGroupAddon align="block-end" className="justify-between">
-              <span
-                id="assistant-input-help"
-                className="max-w-48 text-xs leading-relaxed font-normal"
+    <ComposerPrimitive.Root className="asst-composer">
+      <Field>
+        <FieldLabel htmlFor="evidence-assistant-question" className="sr-only">
+          Ask Aqsha about the evidence
+        </FieldLabel>
+        <InputGroup className="asst-composer-input-group">
+          <ComposerPrimitive.Input
+            render={<InputGroupTextarea className="asst-composer-input" />}
+            id="evidence-assistant-question"
+            placeholder={
+              isEmpty ? "Ask Aqsha about this account…" : "Ask a follow-up…"
+            }
+            maxLength={1200}
+            rows={2}
+            submitMode="enter"
+            unstable_insertNewlineOnTouchEnter
+            addAttachmentOnPaste={false}
+            unstable_focusOnThreadSwitched={false}
+            aria-describedby="assistant-input-help"
+          />
+          <InputGroupAddon align="block-end" className="asst-composer-actions">
+            <span id="assistant-input-help" className="asst-input-help">
+              {length > 1000 ? (
+                `${length}/1,200 characters`
+              ) : (
+                <>
+                  <span className="asst-keyboard-help">
+                    Enter to send · Shift + Enter for a new line
+                  </span>
+                  <span className="asst-touch-help">
+                    Ask about the scoped evidence
+                  </span>
+                </>
+              )}
+            </span>
+            <AuiIf condition={(state) => !state.thread.isRunning}>
+              <ComposerPrimitive.Send
+                render={<Button size="icon-lg" className="rounded-full" />}
+                aria-label="Send question"
               >
-                {length > 1000
-                  ? `${length}/1,200 characters`
-                  : "Enter to send · Shift + Enter for a new line"}
-              </span>
-              <AuiIf condition={(state) => !state.thread.isRunning}>
-                <ComposerPrimitive.Send
-                  render={<Button size="icon" />}
-                  aria-label="Ask evidence assistant"
-                >
-                  <ArrowUp />
-                </ComposerPrimitive.Send>
-              </AuiIf>
-              <AuiIf condition={(state) => state.thread.isRunning}>
-                <ComposerPrimitive.Cancel
-                  render={<Button variant="secondary" size="icon" />}
-                  aria-label="Stop waiting for this reply"
-                >
-                  <Stop />
-                </ComposerPrimitive.Cancel>
-              </AuiIf>
-            </InputGroupAddon>
-          </InputGroup>
-        </Field>
-      </FieldGroup>
+                <ArrowUp weight="bold" />
+              </ComposerPrimitive.Send>
+            </AuiIf>
+            <AuiIf condition={(state) => state.thread.isRunning}>
+              <ComposerPrimitive.Cancel
+                render={
+                  <Button
+                    variant="secondary"
+                    size="icon-lg"
+                    className="rounded-full"
+                  />
+                }
+                aria-label="Stop waiting for this reply"
+              >
+                <Stop weight="fill" />
+              </ComposerPrimitive.Cancel>
+            </AuiIf>
+          </InputGroupAddon>
+        </InputGroup>
+      </Field>
     </ComposerPrimitive.Root>
   );
 }

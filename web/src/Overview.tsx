@@ -57,6 +57,7 @@ import {
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Failure, Pending } from "@/components/AsyncState";
+import { AskEvidenceAction } from "@/AssistantWorkspace";
 import {
   Table,
   TableBody,
@@ -145,12 +146,10 @@ export default function Overview({
   );
   const largestCommunities = useMemo(
     () =>
-      communities
-        .slice(0, 6)
-        .map((cluster) => ({
-          ...cluster,
-          label: `Community ${cluster.cluster_id}`,
-        })),
+      communities.slice(0, 6).map((cluster) => ({
+        ...cluster,
+        label: `Community ${cluster.cluster_id}`,
+      })),
     [communities],
   );
   const roles = useMemo(
@@ -183,25 +182,25 @@ export default function Overview({
 
   const metrics = [
     {
-      label: "Observed entities",
+      label: "Entities",
       value: number(summary.counts.nodes),
       note: `${number(summary.counts.seeds)} seed accounts`,
     },
     {
-      label: "Recorded transfers",
+      label: "Transfers",
       value: number(summary.counts.transactions),
-      note: `${number(summary.counts.edges)} directed relationships`,
+      note: `${number(summary.counts.edges)} relationships`,
     },
     {
-      label: "Observed turnover",
+      label: "Turnover",
       value: money(summary.total_kzt),
       exact: exactMoney(summary.total_kzt),
-      note: "Total recorded amount · KZT",
+      note: "Recorded in KZT",
     },
     {
       label: "Communities",
       value: number(summary.counts.clusters),
-      note: `${number(summary.counts.components)} disconnected components`,
+      note: `${number(summary.counts.components)} components`,
     },
   ];
   const coverage = [
@@ -252,7 +251,7 @@ export default function Overview({
           <CardHeader className="px-5">
             <CardTitle>Community distribution</CardTitle>
             <CardDescription>
-              Entities in the largest structural groups
+              Entities per community
             </CardDescription>
             <CardAction>
               <Badge variant="outline">
@@ -288,17 +287,17 @@ export default function Overview({
                     allowDecimals={false}
                     tickCount={4}
                     tickFormatter={(value) => compact(Number(value))}
-                    fontSize={11}
+                    fontSize={13}
                   />
                   <YAxis
                     type="category"
                     dataKey="label"
-                    width={100}
+                    width={120}
                     tickLine={false}
                     axisLine={false}
                     tickMargin={10}
                     interval={0}
-                    fontSize={12}
+                    fontSize={13}
                   />
                   <ChartTooltip
                     isAnimationActive={false}
@@ -353,7 +352,7 @@ export default function Overview({
                       position="right"
                       offset={8}
                       className="fill-foreground"
-                      fontSize={12}
+                      fontSize={13}
                       formatter={(value) => number(Number(value))}
                     />
                   </Bar>
@@ -571,7 +570,14 @@ export default function Overview({
               ? `${Math.min(5, summary.top_nodes.length)} highest-priority entities in the observed network`
               : "Entities ordered by heuristic review priority"}
           </CardDescription>
-          <CardAction>
+          <CardAction className="flex flex-wrap gap-2 max-sm:col-start-1 max-sm:row-start-3 max-sm:justify-self-start">
+            <AskEvidenceAction
+              gid={summary.top_nodes[0]?.gid}
+              prompt="Explain why this account leads the review queue and which evidence should be checked next."
+              disabled={!summary.top_nodes.length}
+            >
+              Explain priority
+            </AskEvidenceAction>
             <Button variant="outline" onClick={onInvestigate}>
               Investigate
               <ArrowRightIcon data-icon="inline-end" />

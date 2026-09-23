@@ -1,10 +1,9 @@
-import { lazy, Suspense, useState } from "react";
+import { useAssistantWorkspace } from "@/AssistantWorkspace";
 import {
   CaretDownIcon,
   CaretRightIcon,
   ChatCircleDotsIcon,
   DownloadSimpleIcon,
-  FingerprintIcon,
   InfoIcon,
   SquaresFourIcon,
 } from "@phosphor-icons/react";
@@ -34,17 +33,8 @@ import {
 } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
 import { Failure, NoResults, Pending } from "./AsyncState";
 
-// Desktop and mobile inspectors currently host separate ephemeral runtimes.
-// Within either inspector, tab changes and mobile Sheet reopening retain history.
-const AssistantPanel = lazy(() =>
-  import("@/AssistantPanel").then((module) => ({
-    default: module.AssistantPanel,
-  })),
-);
 interface Props {
   selected: number | null;
   node: NodeDetail | null;
@@ -66,8 +56,7 @@ export function EvidenceInspector({
   onSignals,
   retry,
 }: Props) {
-  const [tab, setTab] = useState("evidence");
-  const [assistantOpened, setAssistantOpened] = useState(false);
+  const { openAssistant } = useAssistantWorkspace();
   return (
     <Card className="flex h-full min-h-0 flex-col overflow-hidden">
       <CardHeader>
@@ -91,71 +80,44 @@ export function EvidenceInspector({
         )}
       </CardHeader>
       <CardContent className="flex min-h-0 flex-1 flex-col px-0">
-        <Tabs
-          value={tab}
-          onValueChange={(value) => {
-            setTab(String(value));
-            if (value === "assistant") setAssistantOpened(true);
-          }}
-          className="flex min-h-0 flex-1 flex-col gap-0"
-        >
-          <TabsList className="mx-4 mb-4 w-auto">
-            <TabsTrigger value="evidence">
-              <FingerprintIcon />
-              Evidence
-            </TabsTrigger>
-            <TabsTrigger value="assistant">
+        {node && (
+          <div className="px-4 pb-4">
+            <Button
+              className="w-full"
+              variant="outline"
+              onClick={() =>
+                openAssistant({
+                  gid: node.gid,
+                  gids: cohort,
+                  prompt:
+                    "Explain this account’s role hypothesis and strongest evidence. Separate facts from missing evidence.",
+                })
+              }
+            >
               <ChatCircleDotsIcon />
-              Assistant
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent
-            value="evidence"
-            keepMounted
-            className={cn(
-              "min-h-0 overflow-y-auto px-4 pb-4",
-              tab !== "evidence" && "hidden",
-            )}
-          >
-            {selected === null ? (
-              <NoResults
-                title="Choose an entity"
-                description="Choose an account from the graph or review queue."
-              />
-            ) : error ? (
-              <Failure message={error} retry={retry} />
-            ) : node ? (
-              <Evidence
-                node={node}
-                onSelect={onSelect}
-                onCommunity={onCommunity}
-                onSignals={onSignals}
-              />
-            ) : (
-              <Pending label="Loading selected entity" />
-            )}
-          </TabsContent>
-          <TabsContent
-            value="assistant"
-            keepMounted
-            className={cn(
-              "min-h-0 overflow-hidden",
-              tab !== "assistant" && "hidden",
-            )}
-          >
-            {error ? (
-              <Failure message={error} retry={retry} />
-            ) : node && assistantOpened ? (
-              <Suspense fallback={<Pending label="Opening assistant" />}>
-                <AssistantPanel
-                  gid={node.gid}
-                  gids={cohort}
-                  onSelect={onSelect}
-                />
-              </Suspense>
-            ) : null}
-          </TabsContent>
-        </Tabs>
+              Ask about this entity
+            </Button>
+          </div>
+        )}
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+          {selected === null ? (
+            <NoResults
+              title="Choose an entity"
+              description="Choose an account from the graph or review queue."
+            />
+          ) : error ? (
+            <Failure message={error} retry={retry} />
+          ) : node ? (
+            <Evidence
+              node={node}
+              onSelect={onSelect}
+              onCommunity={onCommunity}
+              onSignals={onSignals}
+            />
+          ) : (
+            <Pending label="Loading selected entity" />
+          )}
+        </div>
       </CardContent>
     </Card>
   );
