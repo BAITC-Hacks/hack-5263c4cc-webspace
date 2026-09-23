@@ -1,80 +1,53 @@
-import { lazy, Suspense, useEffect, useMemo, useRef } from "react";
-import {
-  ActionBarPrimitive,
-  AssistantRuntimeProvider,
-  AuiIf,
-  BranchPickerPrimitive,
-  ComposerPrimitive,
-  ErrorPrimitive,
-  MessagePrimitive,
-  MessagePartPrimitive,
-  ThreadPrimitive,
-  useAui,
-  useAuiState,
-  useLocalRuntime,
-} from "@assistant-ui/react";
-import type { ChatModelAdapter } from "@assistant-ui/react";
-import {
-  ArrowDown,
-  ArrowUp,
-  Check,
-  CaretLeft,
-  CaretRight,
-  Question,
-  Copy,
-  Fingerprint,
-  ChatCircleText,
-  ArrowCounterClockwise,
-  ShieldCheck,
-  Stop,
-  Trash,
-  Users,
-} from "@phosphor-icons/react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupTextarea,
-} from "@/components/ui/input-group";
-import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner";
-import type { CopilotResponse } from "./api";
-import { fetchApi } from "./api";
+import type {Gid} from '@/shared/api/types';
+import {lazy, Suspense, useEffect, useMemo, useRef} from "react";
+import {ActionBarPrimitive, AssistantRuntimeProvider, AuiIf, BranchPickerPrimitive, ComposerPrimitive, ErrorPrimitive, MessagePrimitive, MessagePartPrimitive, ThreadPrimitive, useAui, useAuiState, useLocalRuntime} from "@assistant-ui/react";
+import type {ChatModelAdapter} from "@assistant-ui/react";
+import { ArrowDown } from '@phosphor-icons/react/dist/csr/ArrowDown';
+import { ArrowUp } from '@phosphor-icons/react/dist/csr/ArrowUp';
+import { Check } from '@phosphor-icons/react/dist/csr/Check';
+import { CaretLeft } from '@phosphor-icons/react/dist/csr/CaretLeft';
+import { CaretRight } from '@phosphor-icons/react/dist/csr/CaretRight';
+import { Question } from '@phosphor-icons/react/dist/csr/Question';
+import { Copy } from '@phosphor-icons/react/dist/csr/Copy';
+import { Fingerprint } from '@phosphor-icons/react/dist/csr/Fingerprint';
+import { ChatCircleText } from '@phosphor-icons/react/dist/csr/ChatCircleText';
+import { ArrowCounterClockwise } from '@phosphor-icons/react/dist/csr/ArrowCounterClockwise';
+import { ShieldCheck } from '@phosphor-icons/react/dist/csr/ShieldCheck';
+import { Stop } from '@phosphor-icons/react/dist/csr/Stop';
+import { Trash } from '@phosphor-icons/react/dist/csr/Trash';
+import { Users } from '@phosphor-icons/react/dist/csr/Users';
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
+import {Badge} from "@/components/ui/badge";
+import {Button} from "@/components/ui/button";
+import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
+import {Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle} from "@/components/ui/empty";
+import {Field, FieldGroup, FieldLabel} from "@/components/ui/field";
+import {InputGroup, InputGroupAddon, InputGroupTextarea} from "@/components/ui/input-group";
+import {Separator} from "@/components/ui/separator";
+import {Spinner} from "@/components/ui/spinner";
+import type {CopilotResponse} from "@/api";
+import {isGid, compareGids} from "@/shared/api/types";
+import {useCopilot} from "./queries";
 import "./assistant-panel.css";
 
 const EvidenceMarkdown = lazy(() => import("./EvidenceMarkdown"));
 
 export interface AssistantPanelProps {
-  gid: number;
-  gids: number[];
-  onSelect: (gid: number) => void;
+  analysisId: string;
+  gid: Gid;
+  gids: Gid[];
+  onSelect: (gid: Gid) => void;
 }
 
 type ReplyMetadata = { evidence: CopilotResponse; elapsedMs: number };
 
 /** The browser renders completed server evidence; it never executes agent tools. */
-export function AssistantPanel({ gid, gids, onSelect }: AssistantPanelProps) {
-  const cohort = [...new Set(gids)].sort((a, b) => a - b);
+export function AssistantPanel({ analysisId, gid, gids, onSelect }: AssistantPanelProps) {
+  const cohort = [...new Set(gids)].sort(compareGids);
   if (
-    !Number.isSafeInteger(gid) ||
+    !isGid(gid) ||
     cohort.length > 5 ||
-    cohort.some((id) => !Number.isSafeInteger(id))
+    cohort.some((id) => !isGid(id))
   ) {
     return (
       <Alert variant="destructive">
@@ -86,13 +59,14 @@ export function AssistantPanel({ gid, gids, onSelect }: AssistantPanelProps) {
       </Alert>
     );
   }
-  const scope = `${gid}:${cohort.join(",")}`;
+  const scope = `${analysisId}:${gid}:${cohort.join(",")}`;
   return (
-    <ScopedAssistant key={scope} gid={gid} gids={cohort} onSelect={onSelect} />
+    <ScopedAssistant analysisId={analysisId} key={scope} gid={gid} gids={cohort} onSelect={onSelect} />
   );
 }
 
-function ScopedAssistant({ gid, gids, onSelect }: AssistantPanelProps) {
+function ScopedAssistant({ analysisId, gid, gids, onSelect }: AssistantPanelProps) {
+  const {mutateAsync: investigate} = useCopilot(analysisId, gid, gids);
   const activeRequests = useRef(new Set<AbortController>());
   const cohortKey = gids.join(",");
   const adapter = useMemo<ChatModelAdapter>(
@@ -118,16 +92,8 @@ function ScopedAssistant({ gid, gids, onSelect }: AssistantPanelProps) {
         if (abortSignal.aborted) requestController.abort();
         const started = performance.now();
         try {
-          const response = await fetchApi<CopilotResponse>("/copilot", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              gid,
-              ...(cohortKey ? { gids: cohortKey.split(",").map(Number) } : {}),
-              question,
-            }),
-            signal: requestController.signal,
-          });
+          const response = await investigate({input: {gid, question,
+            ...(cohortKey ? {gids: cohortKey.split(",")} : {})}, signal: requestController.signal});
           requestController.signal.throwIfAborted();
           if (
             typeof response.answer !== "string" ||
@@ -152,7 +118,7 @@ function ScopedAssistant({ gid, gids, onSelect }: AssistantPanelProps) {
         }
       },
     }),
-    [gid, cohortKey],
+    [gid, cohortKey, investigate],
   );
   const runtime = useLocalRuntime(adapter, { maxSteps: 1 });
 
@@ -166,7 +132,7 @@ function ScopedAssistant({ gid, gids, onSelect }: AssistantPanelProps) {
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
-      <EvidenceThread gid={gid} gids={gids} onSelect={onSelect} />
+      <EvidenceThread analysisId={analysisId} gid={gid} gids={gids} onSelect={onSelect} />
     </AssistantRuntimeProvider>
   );
 }
@@ -305,7 +271,7 @@ function EvidenceThread({ gid, gids, onSelect }: AssistantPanelProps) {
   );
 }
 
-function ScopeHeader({ gid, gids }: { gid: number; gids: number[] }) {
+function ScopeHeader({ gid, gids }: { gid: Gid; gids: Gid[] }) {
   const aui = useAui();
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-2 px-4 py-3">
@@ -363,7 +329,7 @@ function SafeMarkdown() {
   );
 }
 
-function AssistantMessage({ onSelect }: { onSelect: (gid: number) => void }) {
+function AssistantMessage({ onSelect }: { onSelect: (gid: Gid) => void }) {
   const metadata = useAuiState(
     (state) => state.message.metadata.custom as Partial<ReplyMetadata>,
   );

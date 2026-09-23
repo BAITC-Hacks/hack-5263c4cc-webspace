@@ -1,8 +1,6 @@
-import {
-  ArrowsClockwiseIcon,
-  MagnifyingGlassIcon,
-  WarningCircleIcon,
-} from "@phosphor-icons/react";
+import { ArrowsClockwiseIcon } from '@phosphor-icons/react/dist/csr/ArrowsClockwise';
+import { MagnifyingGlassIcon } from '@phosphor-icons/react/dist/csr/MagnifyingGlass';
+import { WarningCircleIcon } from '@phosphor-icons/react/dist/csr/WarningCircle';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {

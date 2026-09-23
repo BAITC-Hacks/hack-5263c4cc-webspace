@@ -1,5 +1,5 @@
-import { ApiError, fetchApi } from "./api";
-import type { CopilotReply, CopilotResponse } from "./api";
+import { ApiError, api } from "./shared/api/client.ts";
+import type { CopilotReply, CopilotResponse, Gid } from "./shared/api/types.ts";
 
 type Session = { sessionId: string; lastReplyId?: string; uncertain: boolean; stale?: boolean };
 type Run = { threadId: string; generation: symbol; sessionId: string; reset: boolean; fresh: boolean };
@@ -9,7 +9,7 @@ export class AssistantSessions {
   private readonly sessions = new Map<string, Session>();
   private readonly runs = new Map<string, symbol>();
 
-  async prepare(threadId: string, previousReplyId: string | undefined, scope: { gid: number; gids: number[] }): Promise<Run> {
+  async prepare(threadId: string, previousReplyId: string | undefined, scope: { analysisId: string; gid: Gid; gids: Gid[] }): Promise<Run> {
     const session = this.sessions.get(threadId);
     if (session?.stale) throw new Error("This conversation's saved context expired or no longer matches the dataset. Start a new conversation to continue safely.");
     const reset = !!session && (session.uncertain || session.lastReplyId !== previousReplyId);
@@ -23,11 +23,11 @@ export class AssistantSessions {
     }
     // Obtain the capability before sending any question. User cancellation must
     // not discard this response; an abandoned handshake contains scope only.
-    const memory = await fetchApi<NonNullable<CopilotResponse["memory"]>>("/copilot/sessions", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ gid: scope.gid, ...(scope.gids.length ? { gids: scope.gids } : {}) }),
-      signal: AbortSignal.timeout(10000),
-    });
+    const memory = await api.createSession({gid: scope.gid, ...(scope.gids.length ? {gids: scope.gids} : {})}, AbortSignal.timeout(10000));
+    if (memory.analysis_id !== scope.analysisId) {
+      await this.deleteToken(memory.session_id);
+      throw new Error("The analysis changed. Start a new conversation.");
+    }
     if (!/^[a-f0-9]{32}$/.test(memory.session_id)) throw new Error("The assistant could not establish private conversation context. Try again.");
     if (this.runs.get(threadId) !== generation) {
       await this.deleteToken(memory.session_id);
@@ -68,7 +68,7 @@ export class AssistantSessions {
 
   private async deleteToken(sessionId: string): Promise<void> {
     try {
-      await fetchApi<void>(`/copilot/sessions/${sessionId}`, { method: "DELETE", signal: AbortSignal.timeout(10000) });
+      await api.forgetSession(sessionId, AbortSignal.timeout(10000));
     } catch (error) {
       if (!(error instanceof ApiError && error.status === 404)) throw error;
     }

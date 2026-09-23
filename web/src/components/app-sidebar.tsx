@@ -1,15 +1,13 @@
-import {
-  ActivityIcon,
-  ChartPieSliceIcon,
-  DatabaseIcon,
-  FileTextIcon,
-  GitBranchIcon,
-  GraphIcon,
-  ShieldCheckIcon,
-  SidebarSimpleIcon,
-  SquaresFourIcon,
-  TableIcon,
-} from "@phosphor-icons/react";
+import { ActivityIcon } from '@phosphor-icons/react/dist/csr/Pulse';
+import { ChartPieSliceIcon } from '@phosphor-icons/react/dist/csr/ChartPieSlice';
+import { DatabaseIcon } from '@phosphor-icons/react/dist/csr/Database';
+import { FileTextIcon } from '@phosphor-icons/react/dist/csr/FileText';
+import { GitBranchIcon } from '@phosphor-icons/react/dist/csr/GitBranch';
+import { GraphIcon } from '@phosphor-icons/react/dist/csr/Graph';
+import { ShieldCheckIcon } from '@phosphor-icons/react/dist/csr/ShieldCheck';
+import { SidebarSimpleIcon } from '@phosphor-icons/react/dist/csr/SidebarSimple';
+import { SquaresFourIcon } from '@phosphor-icons/react/dist/csr/SquaresFour';
+import { TableIcon } from '@phosphor-icons/react/dist/csr/Table';
 import type { Summary } from "@/api";
 import { number } from "@/api";
 import { Badge } from "@/components/ui/badge";
@@ -120,7 +118,7 @@ export function AppSidebar({
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  render={<a href="/api/exports/nodes_roles.csv" download />}
+                  render={<a href="/api/v1/exports/nodes_roles.csv" download />}
                   tooltip="Download role assignments"
                 >
                   <FileTextIcon />
@@ -130,7 +128,7 @@ export function AppSidebar({
               <SidebarMenuItem>
                 <SidebarMenuButton
                   render={
-                    <a href="/api/provenance" download="audit-receipt.json" />
+                    <a href="/api/v1/provenance" download="audit-receipt.json" />
                   }
                   tooltip="Download audit receipt"
                 >

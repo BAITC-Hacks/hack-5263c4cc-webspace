@@ -1,75 +1,35 @@
-import {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type MouseEvent,
-} from "react";
-import { graphlib, layout } from "@dagrejs/dagre";
-import { toPng } from "html-to-image";
-import {
-  Background,
-  BackgroundVariant,
-  BaseEdge,
-  EdgeLabelRenderer,
-  Handle,
-  MarkerType,
-  Position,
-  ReactFlow,
-  type Edge,
-  type EdgeProps,
-  type Node,
-  type NodeProps,
-  type ReactFlowInstance,
-} from "@xyflow/react";
-import {
-  ArrowsOutSimpleIcon,
-  ArrowRightIcon,
-  ArrowsLeftRightIcon,
-  ArrowsMergeIcon,
-  ArrowsSplitIcon,
-  BankIcon,
-  CircleDashedIcon,
-  CrosshairSimpleIcon,
-  DownloadSimpleIcon,
-  GraphIcon,
-  ListBulletsIcon,
-  MinusIcon,
-  PlusIcon,
-  StackIcon,
-  XIcon,
-} from "@phosphor-icons/react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type { GraphData, GraphEdge } from "./api";
-import {
-  communityColor,
-  exactMoney,
-  money,
-  number,
-  roleColor,
-  roleLabel,
-} from "./api";
+import {compareGids} from '@/shared/api/types';
+import type {Gid} from '@/shared/api/types';
+import {memo, useCallback, useEffect, useMemo, useRef, useState, type MouseEvent} from "react";
+import {graphlib, layout} from "@dagrejs/dagre";
+import {toPng} from "html-to-image";
+import {Background, BackgroundVariant, BaseEdge, EdgeLabelRenderer, Handle, MarkerType, Position, ReactFlow, type Edge, type EdgeProps, type Node, type NodeProps, type ReactFlowInstance} from "@xyflow/react";
+import { ArrowsOutSimpleIcon } from '@phosphor-icons/react/dist/csr/ArrowsOutSimple';
+import { ArrowRightIcon } from '@phosphor-icons/react/dist/csr/ArrowRight';
+import { ArrowsLeftRightIcon } from '@phosphor-icons/react/dist/csr/ArrowsLeftRight';
+import { ArrowsMergeIcon } from '@phosphor-icons/react/dist/csr/ArrowsMerge';
+import { ArrowsSplitIcon } from '@phosphor-icons/react/dist/csr/ArrowsSplit';
+import { BankIcon } from '@phosphor-icons/react/dist/csr/Bank';
+import { CircleDashedIcon } from '@phosphor-icons/react/dist/csr/CircleDashed';
+import { CrosshairSimpleIcon } from '@phosphor-icons/react/dist/csr/CrosshairSimple';
+import { DownloadSimpleIcon } from '@phosphor-icons/react/dist/csr/DownloadSimple';
+import { GraphIcon } from '@phosphor-icons/react/dist/csr/Graph';
+import { ListBulletsIcon } from '@phosphor-icons/react/dist/csr/ListBullets';
+import { MinusIcon } from '@phosphor-icons/react/dist/csr/Minus';
+import { PlusIcon } from '@phosphor-icons/react/dist/csr/Plus';
+import { StackIcon } from '@phosphor-icons/react/dist/csr/Stack';
+import { XIcon } from '@phosphor-icons/react/dist/csr/X';
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import type {GraphData, GraphEdge} from "@/api";
+import {communityColor, exactMoney, money, number, roleColor, roleLabel} from "@/api";
 
 interface Props {
   data: GraphData;
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
   colorBy?: "role" | "cluster";
 }
 type Account = GraphData["nodes"][number];
@@ -99,8 +59,8 @@ const graphColors = {
 const fitOptions = { padding: 0.14, minZoom: 0.9, maxZoom: 1.08 };
 const edgeRank = (a: GraphEdge, b: GraphEdge) =>
   b.sum_kzt - a.sum_kzt ||
-  a.src - b.src ||
-  a.dst - b.dst ||
+  compareGids(a.src, b.src) ||
+  compareGids(a.dst, b.dst) ||
   a.id.localeCompare(b.id);
 const roleIcons = {
   consolidator: ArrowsMergeIcon,
@@ -329,7 +289,7 @@ export default function NetworkGraph({
         );
       }
       for (const account of [...data.nodes].sort(
-        (a, b) => b.priority_score - a.priority_score || a.gid - b.gid,
+        (a, b) => b.priority_score - a.priority_score || compareGids(a.gid, b.gid),
       )) {
         if (visible.size >= 25) break;
         visible.add(String(account.id));

@@ -1,62 +1,48 @@
-import { lazy, Suspense, useState } from "react";
-import {
-  CaretDownIcon,
-  CaretRightIcon,
-  ChatCircleDotsIcon,
-  DownloadSimpleIcon,
-  FingerprintIcon,
-  InfoIcon,
-  SquaresFourIcon,
-} from "@phosphor-icons/react";
-import type { NodeDetail } from "@/api";
-import { exactMoney, money, roleLabel, score } from "@/api";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Progress, ProgressLabel } from "@/components/ui/progress";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Separator } from "@/components/ui/separator";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { Failure, NoResults, Pending } from "./AsyncState";
+import type {Gid} from '@/shared/api/types';
+import {lazy, Suspense, useState} from "react";
+import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown';
+import { CaretRightIcon } from '@phosphor-icons/react/dist/csr/CaretRight';
+import { ChatCircleDotsIcon } from '@phosphor-icons/react/dist/csr/ChatCircleDots';
+import { DownloadSimpleIcon } from '@phosphor-icons/react/dist/csr/DownloadSimple';
+import { FingerprintIcon } from '@phosphor-icons/react/dist/csr/Fingerprint';
+import { InfoIcon } from '@phosphor-icons/react/dist/csr/Info';
+import { SquaresFourIcon } from '@phosphor-icons/react/dist/csr/SquaresFour';
+import type {NodeDetail} from "@/api";
+import {exactMoney, money, roleLabel, score} from "@/api";
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
+import {Badge} from "@/components/ui/badge";
+import {Button, buttonVariants} from "@/components/ui/button";
+import {Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
+import {Progress, ProgressLabel} from "@/components/ui/progress";
+import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import {Separator} from "@/components/ui/separator";
+import {Table, TableBody, TableCell, TableRow} from "@/components/ui/table";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {cn} from "@/lib/utils";
+import {Failure, NoResults, Pending} from "@/components/AsyncState";
 
 // Desktop and mobile inspectors currently host separate ephemeral runtimes.
 // Within either inspector, tab changes and mobile Sheet reopening retain history.
 const AssistantPanel = lazy(() =>
-  import("@/AssistantPanel").then((module) => ({
+  import("@/features/copilot/AssistantPanel").then((module) => ({
     default: module.AssistantPanel,
   })),
 );
 interface Props {
-  selected: number | null;
+  analysisId: string;
+  selected: Gid | null;
   node: NodeDetail | null;
   error: string;
-  cohort: number[];
-  onSelect: (gid: number) => void;
+  cohort: Gid[];
+  onSelect: (gid: Gid) => void;
   onCommunity: (id: number) => void;
   onSignals: () => void;
   retry: () => void;
 }
 
 export function EvidenceInspector({
+  analysisId,
   selected,
   node,
   error,
@@ -148,6 +134,7 @@ export function EvidenceInspector({
             ) : node && assistantOpened ? (
               <Suspense fallback={<Pending label="Opening assistant" />}>
                 <AssistantPanel
+                    analysisId={analysisId}
                   gid={node.gid}
                   gids={cohort}
                   onSelect={onSelect}
@@ -168,7 +155,7 @@ function Evidence({
   onSignals,
 }: {
   node: NodeDetail;
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
   onCommunity: (id: number) => void;
   onSignals: () => void;
 }) {
@@ -397,7 +384,7 @@ function Evidence({
       </div>
       <a
         className={buttonVariants({ variant: "default" })}
-        href={`/api/dossier/${node.gid}?format=markdown`}
+        href={`/api/v1/dossier/${node.gid}?format=markdown`}
         download
       >
         <DownloadSimpleIcon data-icon="inline-start" />

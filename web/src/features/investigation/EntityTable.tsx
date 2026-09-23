@@ -1,46 +1,23 @@
-import {
-  CaretLeftIcon,
-  CaretRightIcon,
-  FingerprintIcon,
-  XIcon,
-} from "@phosphor-icons/react";
-import type { NodeSummary } from "@/api";
-import { money, number, roleLabel, score } from "@/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Failure, NoResults, Pending } from "./AsyncState";
+import type {Gid} from '@/shared/api/types';
+import { CaretLeftIcon } from '@phosphor-icons/react/dist/csr/CaretLeft';
+import { CaretRightIcon } from '@phosphor-icons/react/dist/csr/CaretRight';
+import { FingerprintIcon } from '@phosphor-icons/react/dist/csr/Fingerprint';
+import { XIcon } from '@phosphor-icons/react/dist/csr/X';
+import type {NodeSummary} from "@/api";
+import {money, number, roleLabel, score} from "@/api";
+import {Badge} from "@/components/ui/badge";
+import {Button} from "@/components/ui/button";
+import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
+import {Field, FieldGroup, FieldLabel} from "@/components/ui/field";
+import {Input} from "@/components/ui/input";
+import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {Failure, NoResults, Pending} from "@/components/AsyncState";
 
 interface Props {
   items: NodeSummary[];
   total: number;
-  selected: number | null;
+  selected: Gid | null;
   loading: boolean;
   error: string;
   query: string;
@@ -54,7 +31,7 @@ interface Props {
   setPage: (page: number) => void;
   pageSize: number;
   setPageSize: (size: number) => void;
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
   retry: () => void;
 }
 
@@ -65,8 +42,8 @@ export function EntityRows({
   extended = true,
 }: {
   items: NodeSummary[];
-  selected: number | null;
-  onSelect: (gid: number) => void;
+  selected: Gid | null;
+  onSelect: (gid: Gid) => void;
   extended?: boolean;
 }) {
   return (

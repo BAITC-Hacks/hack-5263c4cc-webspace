@@ -1,10 +1,9 @@
-import {
-  DownloadSimpleIcon,
-  FileCsvIcon,
-  FileTextIcon,
-  FingerprintIcon,
-  ShieldCheckIcon,
-} from "@phosphor-icons/react";
+import type {Gid} from '@/shared/api/types';
+import { DownloadSimpleIcon } from '@phosphor-icons/react/dist/csr/DownloadSimple';
+import { FileCsvIcon } from '@phosphor-icons/react/dist/csr/FileCsv';
+import { FileTextIcon } from '@phosphor-icons/react/dist/csr/FileText';
+import { FingerprintIcon } from '@phosphor-icons/react/dist/csr/Fingerprint';
+import { ShieldCheckIcon } from '@phosphor-icons/react/dist/csr/ShieldCheck';
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,7 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ExportMenu({ selected }: { selected: number | null }) {
+export function ExportMenu({ selected }: { selected: Gid | null }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="outline" />}>
@@ -33,7 +32,7 @@ export function ExportMenu({ selected }: { selected: number | null }) {
           ].map(([file, label]) => (
             <DropdownMenuItem
               key={file}
-              render={<a href={`/api/exports/${file}`} download />}
+              render={<a href={`/api/v1/exports/${file}`} download />}
             >
               <FileCsvIcon />
               <span className="flex flex-col gap-0.5">
@@ -47,7 +46,7 @@ export function ExportMenu({ selected }: { selected: number | null }) {
         <DropdownMenuGroup>
           <DropdownMenuLabel>Review and reproducibility</DropdownMenuLabel>
           <DropdownMenuItem
-            render={<a href="/api/provenance" download="audit-receipt.json" />}
+            render={<a href="/api/v1/provenance" download="audit-receipt.json" />}
           >
             <ShieldCheckIcon />
             Audit receipt
@@ -57,7 +56,7 @@ export function ExportMenu({ selected }: { selected: number | null }) {
               <DropdownMenuItem
                 render={
                   <a
-                    href={`/api/dossier/${selected}?format=markdown`}
+                    href={`/api/v1/dossier/${selected}?format=markdown`}
                     download
                   />
                 }
@@ -68,7 +67,7 @@ export function ExportMenu({ selected }: { selected: number | null }) {
               <DropdownMenuItem
                 render={
                   <a
-                    href={`/api/dossier/${selected}`}
+                    href={`/api/v1/dossier/${selected}`}
                     download={`entity-${selected}.json`}
                   />
                 }

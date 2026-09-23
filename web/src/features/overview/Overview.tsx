@@ -1,70 +1,21 @@
-import { useMemo } from "react";
-import {
-  ArrowRightIcon,
-  CaretDownIcon,
-  CaretRightIcon,
-  InfoIcon,
-} from "@phosphor-icons/react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  LabelList,
-  Pie,
-  PieChart,
-  XAxis,
-  YAxis,
-} from "recharts";
-import type { Cluster, Summary } from "@/api";
-import {
-  compact,
-  communityColor,
-  exactMoney,
-  money,
-  number,
-  roleColor,
-  roleLabel,
-  score,
-} from "@/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Failure, Pending } from "@/components/AsyncState";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import type {Gid} from '@/shared/api/types';
+import {useMemo} from "react";
+import { ArrowRightIcon } from '@phosphor-icons/react/dist/csr/ArrowRight';
+import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown';
+import { CaretRightIcon } from '@phosphor-icons/react/dist/csr/CaretRight';
+import { InfoIcon } from '@phosphor-icons/react/dist/csr/Info';
+import {Bar, BarChart, CartesianGrid, Cell, LabelList, Pie, PieChart, XAxis, YAxis} from "recharts";
+import type {Cluster, Summary} from "@/api";
+import {compact, communityColor, exactMoney, money, number, roleColor, roleLabel, score} from "@/api";
+import {Badge} from "@/components/ui/badge";
+import {Button} from "@/components/ui/button";
+import {Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
+import {ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig} from "@/components/ui/chart";
+import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
+import {Empty, EmptyDescription, EmptyHeader, EmptyTitle} from "@/components/ui/empty";
+import {Skeleton} from "@/components/ui/skeleton";
+import {Failure, Pending} from "@/components/AsyncState";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 
 interface Props {
   summary: Summary | null;
@@ -72,7 +23,7 @@ interface Props {
   clustersLoading: boolean;
   clustersError: string;
   retry: () => void;
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
   onCommunity: (id: number) => void;
   onInvestigate: () => void;
 }

@@ -14,6 +14,7 @@ Installed direct runtime versions at 23 September 2026:
 | SciPy | 1.18.1 | [BSD-3-Clause and bundled third-party notices](https://github.com/scipy/scipy) |
 | OpenAI Python SDK | 2.54.0 | [Apache-2.0](https://github.com/openai/openai-python) |
 | python-dotenv | 1.2.3 | [BSD-3-Clause](https://github.com/theskumar/python-dotenv) |
+| TanStack Query React / Core | 5.103.2 | [MIT](https://github.com/TanStack/query) |
 | React / React DOM | 19.3.0 | [MIT](https://github.com/facebook/react) |
 | assistant-ui React | 0.15.21 | [MIT](https://github.com/assistant-ui/assistant-ui/tree/main/packages/react) |
 | assistant-ui React Markdown | 0.14.16 | [MIT](https://github.com/assistant-ui/assistant-ui/tree/main/packages/react-markdown) |
@@ -34,7 +35,7 @@ The official shadcn Base Nova dashboard and component sources are adapted under 
 
 Square UI is a visual reference only. No Square UI source files or templates were copied, and it is not an installed dependency. Its [custom ln-dev UI source license](https://github.com/zerostaticthemes/square-ui/blob/8985cb634cc10d57988a187441ae9c971ed890ed/LICENSE.md) is separate from the MIT licenses of Base UI and assistant-ui; the references do not imply interchangeable licenses. The visual-reference decision is documented in [the UI ecosystem research](docs/research/ui-ecosystem-2026.md).
 
-Development tools include Vite, TypeScript, pytest and HTTPX. Exact direct and transitive versions are recorded by `uv.lock` and `web/package-lock.json`; these files, not this summary, control installation. Dependency licenses remain their owners' licenses. This notice does not assign a new license to team-authored code or organizer data.
+Development tools include Vite, TypeScript, openapi-typescript 7.13.0 (MIT), pytest and HTTPX. Exact direct and transitive versions are recorded by `uv.lock` and `web/package-lock.json`; these files, not this summary, control installation. Dependency licenses remain their owners' licenses. This notice does not assign a new license to team-authored code or organizer data.
 
 Research references such as ThreatSight 360, NVIDIA AI-Q, IBM AMLSim, LangGraph, OpenAI Agents SDK and PydanticAI informed architectural comparisons; they are not installed runtime dependencies unless listed above. Their capabilities and license restrictions are detailed in [the research report](docs/research/ecosystem-2026.md).
 

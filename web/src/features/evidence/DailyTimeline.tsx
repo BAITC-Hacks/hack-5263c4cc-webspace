@@ -1,55 +1,19 @@
-import { useId, useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { CaretDownIcon, ChartBarIcon, InfoIcon } from "@phosphor-icons/react";
-import {
-  compact,
-  dateLabel,
-  number,
-  type NodeDetail,
-  type TimelineDay,
-} from "./api";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {useId, useMemo, useState} from "react";
+import {Bar, BarChart, CartesianGrid, XAxis, YAxis} from "recharts";
+import { CaretDownIcon } from '@phosphor-icons/react/dist/csr/CaretDown';
+import { ChartBarIcon } from '@phosphor-icons/react/dist/csr/ChartBar';
+import { InfoIcon } from '@phosphor-icons/react/dist/csr/Info';
+import {compact, dateLabel, number, type NodeDetail, type TimelineDay} from "../../api";
+import {Alert, AlertDescription, AlertTitle} from "@/components/ui/alert";
+import {Badge} from "@/components/ui/badge";
+import {Button} from "@/components/ui/button";
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
+import {ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig} from "@/components/ui/chart";
+import {Collapsible, CollapsibleContent, CollapsibleTrigger} from "@/components/ui/collapsible";
+import {Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle} from "@/components/ui/empty";
+import {Field, FieldGroup, FieldLabel} from "@/components/ui/field";
+import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
+import {ToggleGroup, ToggleGroupItem} from "@/components/ui/toggle-group";
 
 const chartConfig = {
   incoming: { label: "Incoming", color: "var(--chart-1)" },
@@ -60,7 +24,7 @@ const DAY_MS = 86_400_000;
 const MAX_CALENDAR_DAYS = 3660;
 type Metric = "amount" | "count";
 type WindowDays = "full" | 14 | 7;
-type Period = { start: string; end: string };
+type Period = import('../../shared/api/types').Period;
 type ChartDay = TimelineDay & {
   timestamp: number;
   recorded: boolean;
@@ -70,7 +34,7 @@ type ChartDay = TimelineDay & {
 const exactKzt = (value: number) =>
   `${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)} KZT`;
 
-function dayTimestamp(value: string | undefined): number | undefined {
+function dayTimestamp(value: string | null | undefined): number | undefined {
   if (
     typeof value !== "string" ||
     !/^\d{4}-\d{2}-\d{2}$/.test(value.slice(0, 10))

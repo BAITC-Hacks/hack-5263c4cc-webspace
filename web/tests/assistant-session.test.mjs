@@ -1,26 +1,11 @@
-const assert = require("node:assert/strict");
-const { after, afterEach, test } = require("node:test");
-const fs = require("node:fs");
-const os = require("node:os");
-const path = require("node:path");
-const ts = require("typescript");
-
-// Compile the actual browser helpers without adding a second test runtime.
-const output = fs.mkdtempSync(path.join(os.tmpdir(), "moneygraph-session-tests-"));
-for (const name of ["api", "assistant-session"]) {
-  const source = fs.readFileSync(path.join(__dirname, "../src", `${name}.ts`), "utf8");
-  fs.writeFileSync(path.join(output, `${name}.js`), ts.transpileModule(source, {
-    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
-  }).outputText);
-}
-const { AssistantSessions, publicCopilotReply } = require(path.join(output, "assistant-session.js"));
-const { ApiError, fetchApi } = require(path.join(output, "api.js"));
+import assert from 'node:assert/strict';
+import {afterEach, test} from 'node:test';
+import {AssistantSessions, publicCopilotReply} from '../src/assistant-session.ts';
+import {ApiError, api} from '../src/shared/api/client.ts';
 const originalFetch = global.fetch;
 afterEach(() => { global.fetch = originalFetch; });
-after(() => fs.rmSync(output, { recursive: true }));
-
-const scope = { gid: 1211, gids: [] };
-const memory = (id) => ({ session_id: id, turns: 0, expires_in_seconds: 86400, persistence: "process" });
+const scope = { analysisId: "analysis-a", gid: "1211", gids: [] };
+const memory = (id) => ({ analysis_id: "analysis-a", session_id: id, turns: 0, expires_in_seconds: 86400, persistence: "process" });
 function server() {
   const calls = [];
   let sequence = 0;
@@ -37,7 +22,7 @@ test("handshake contains scope only; follow-ups reuse the private capability", a
   const sessions = new AssistantSessions();
   const first = await sessions.prepare("thread", undefined, scope);
   assert.deepEqual(JSON.parse(calls[0].body), { gid: scope.gid });
-  assert.equal(calls[0].url, "/api/copilot/sessions");
+  assert.equal(calls[0].url, "/api/v1/copilot/sessions");
   await sessions.complete(first, memory(first.sessionId), "reply1");
   const next = await sessions.prepare("thread", "reply1", scope);
   assert.equal(next.sessionId, first.sessionId);
@@ -108,7 +93,7 @@ test("failed deletion retains the capability for a later deletion attempt", asyn
   await assert.rejects(() => sessions.forget("thread"), /offline/);
   const calls = server();
   await sessions.forget("thread");
-  assert.equal(calls[0].url, `/api/copilot/sessions/${first.sessionId}`);
+  assert.equal(calls[0].url, `/api/v1/copilot/sessions/${first.sessionId}`);
 });
 
 test("mismatched response context is rejected; transcripts omit capability tokens", async () => {
@@ -128,8 +113,17 @@ test("429 exposes Retry-After without retrying; DELETE accepts empty 204", async
     calls++;
     return Response.json({ detail: "Busy" }, { status: 429, headers: { "Retry-After": "17" } });
   };
-  await assert.rejects(() => fetchApi("/copilot"), error => error instanceof ApiError && error.status === 429 && error.retryAfterSeconds === 17 && error.message.includes("17 seconds"));
+  await assert.rejects(() => api.copilot({gid: "1211", question: "Explain"}), error => error instanceof ApiError && error.status === 429 && error.retryAfterSeconds === 17 && error.message.includes("17 seconds"));
   assert.equal(calls, 1);
   global.fetch = async () => new Response(null, { status: 204 });
-  assert.equal(await fetchApi("/copilot/sessions/synthetic", { method: "DELETE" }), undefined);
+  assert.equal(await api.forgetSession("synthetic"), undefined);
+});
+
+test("a changed analysis deletes its empty session before any question is sent", async () => {
+  const calls = server();
+  const sessions = new AssistantSessions();
+  await assert.rejects(() => sessions.prepare('thread', undefined, {...scope, analysisId: 'different-analysis'}), /analysis changed/);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].method, 'DELETE');
+  assert.equal('question' in JSON.parse(calls[0].body), false);
 });

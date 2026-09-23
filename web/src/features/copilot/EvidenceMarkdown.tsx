@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
-import { MarkdownTextPrimitive } from "@assistant-ui/react-markdown";
+import type {ReactNode} from "react";
+import {MarkdownTextPrimitive} from "@assistant-ui/react-markdown";
 import remarkGfm from "remark-gfm";
 
 const inertContent = {
