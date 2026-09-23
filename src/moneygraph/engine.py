@@ -350,8 +350,29 @@ class Analysis:
             if len(members) == 1 and self.G.degree(members[0]["gid"]) == 0:
                 hypothesis = "Isolated supplied account; no transfer-based cluster hypothesis is supported."
             else:
-                hypothesis = (f"Observed flow community with {seeds} seed accounts, {roles.get('consolidator', 0)} consolidation candidates "
-                              f"and {roles.get('boundary_unknown', 0)} boundary accounts. Validate shared purpose; community membership does not establish affiliation.")
+                collectors = roles.get("consolidator", 0)
+                distributors = roles.get("distributor", 0)
+                routing = roles.get("transit", 0) + roles.get("coordinator", 0)
+                boundaries = roles.get("boundary_unknown", 0)
+                if collectors and distributors:
+                    pattern = f"collection and onward distribution; {collectors} consolidation and {distributors} fan-out candidates"
+                elif distributors:
+                    pattern = (f"fan-out distribution; {distributors} distributor candidates, "
+                               f"up to {max(r['out_degree'] for r in members)} observed recipients per account")
+                elif collectors:
+                    pattern = (f"collection into shared receivers; {collectors} consolidation candidates, "
+                               f"up to {max(r['in_degree'] for r in members)} observed payers per account")
+                elif routing:
+                    pattern = f"onward routing; {routing} transit or bridge candidates"
+                elif boundaries * 2 >= len(members):
+                    pattern = f"collection-limited receiving branch; {boundaries}/{len(members)} accounts lie at the observation boundary"
+                elif roles.get("terminal", 0) * 2 >= len(members):
+                    pattern = (f"observed receiving branch; {roles.get('terminal', 0)}/{len(members)} accounts have a sink role, "
+                               "with outside activity unknown")
+                else:
+                    pattern = f"mixed transfer activity; no dominant collection or distribution rule among {len(members)} accounts"
+                hypothesis = (f"Hypothesis: {pattern}; {turnover:,.2f} KZT internal turnover and {seeds} seeds. "
+                              "Shared purpose and ownership remain unverified.")
             result.append({"cluster_id": cluster_id, "n_nodes": len(members), "n_seed": seeds,
                            "sum_kzt_internal": _number(turnover), "top_gids": [r["gid"] for r in members[:5]],
                            "hypothesis": hypothesis, "roles": roles})
@@ -436,13 +457,32 @@ class Analysis:
     def clusters(self) -> dict[str, Any]:
         return {"items": self._clusters}
 
+    @staticmethod
+    def _priority_evidence(row: dict[str, Any]) -> str:
+        """Explain review rank separately from the winning financial-role rule."""
+        if row["in_degree"] == row["out_degree"] == 0:
+            return "Priority 0.00/100: no observed transfers. Financial activity outside the supplied sample remains unknown."
+        strongest = sorted((f for f in row["score_factors"] if f["contribution"] > 0),
+                           key=lambda f: -f["contribution"])[:3]
+        labels = {"Weighted PageRank": "network influence (PageRank)",
+                  "Directed bridge position": "directed bridge position",
+                  "Distinct upstream seeds": "upstream seed reach",
+                  "Distinct incoming payers": "distinct incoming payers",
+                  "Observed volume": "visible transfer volume",
+                  "Two-day flow overlap": "two-day flow overlap"}
+        components = "; ".join(f"{labels.get(f['label'], f['label'])} +{f['contribution'] * 100:.2f} pts" for f in strongest)
+        adjustments = " ".join(f"{f['label']}: {f['contribution'] * 100:.2f} pts."
+                               for f in row["score_factors"] if f["contribution"] < 0)
+        return (f"Priority {row['priority_score'] * 100:.2f}/100. Largest contributions: {components}. "
+                f"{adjustments + ' ' if adjustments else ''}Review heuristic, not a probability.")
+
     def export_rows(self, name: str) -> tuple[tuple[str, ...], list[dict[str, Any]]]:
         if name == "nodes_roles.csv":
             return ROLE_COLUMNS, [{key: r[key] for key in ROLE_COLUMNS} for r in sorted(self._records.values(), key=lambda r: r["gid"])]
         if name == "clusters.csv":
             return CLUSTER_COLUMNS, [{key: json.dumps(r[key]) if key == "top_gids" else r[key] for key in CLUSTER_COLUMNS} for r in self._clusters]
         if name == "top_nodes.csv":
-            return TOP_COLUMNS, [{"rank": r["rank"], "gid": r["gid"], "role": r["role"], "priority_score": r["priority_score"], "why": r["evidence"]} for r in self._ranked[:max(20, min(100, len(self._ranked)))]]
+            return TOP_COLUMNS, [{"rank": r["rank"], "gid": r["gid"], "role": r["role"], "priority_score": r["priority_score"], "why": self._priority_evidence(r)} for r in self._ranked[:max(20, min(100, len(self._ranked)))]]
         raise ValueError("Unknown export")
 
     def exports(self, output_dir: str | Path) -> dict[str, str]:

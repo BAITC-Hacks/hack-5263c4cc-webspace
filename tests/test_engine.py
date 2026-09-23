@@ -153,6 +153,53 @@ def test_exports_schema_coverage_order_and_determinism(tmp_path):
     assert scores == sorted(scores, reverse=True)
 
 
+def test_rank_reasons_explain_priority_and_observation_adjustments_separately_from_role():
+    analysis = Analysis(*frames())
+    original = {gid: (row["role"], row["role_score"], row["priority_score"], row["cluster_id"])
+                for gid, row in analysis._records.items()}
+    _, ranked = analysis.export_rows("top_nodes.csv")
+    reasons = {row["gid"]: row["why"] for row in ranked}
+    # A seed can be peripheral while still having visible transfers worth review.
+    assert analysis.node(1)["role"] == "peripheral"
+    assert reasons[1] != analysis.node(1)["evidence"]
+    assert "Largest contributions:" in reasons[1] and "+" in reasons[1] and "pts" in reasons[1]
+    assert f"Priority {analysis.node(1)['priority_score'] * 100:.2f}/100" in reasons[1]
+    # Boundary reduction and the isolate's zero score must not disappear in CSV.
+    assert "Boundary uncertainty adjustment: -" in reasons[4]
+    assert "Priority 0.00/100: no observed transfers" in reasons[5]
+    assert original == {gid: (row["role"], row["role_score"], row["priority_score"], row["cluster_id"])
+                        for gid, row in analysis._records.items()}
+
+
+def test_cluster_hypotheses_distinguish_collection_distribution_cutoff_and_isolates():
+    records = [(gid, 0, True) for gid in range(1, 5)] + [(5, 1, False), (20, 0, True)]
+    records += [(gid, 4, False) for gid in range(21, 29)]
+    records += [(40, 0, True)] + [(gid, 4, False) for gid in range(41, 44)] + [(99, 0, True)]
+    nodes = pl.DataFrame(records, schema=["gid", "depth", "is_seed"], orient="row")
+    pairs = [(gid, 5) for gid in range(1, 5)] + [(20, gid) for gid in range(21, 29)]
+    pairs += [(40, gid) for gid in range(41, 44)]
+    tx = pl.DataFrame([{"src": src, "dst": dst, "date": date(2026, 7, 1), "sum_kzt": 10000.0} for src, dst in pairs])
+    edges = tx.group_by(["src", "dst"]).agg(pl.col("sum_kzt").sum(), pl.len().alias("n_tx")).with_columns(pl.lit(1).alias("depth"))
+    analysis = Analysis(nodes, edges, tx)
+    communities = {row["cluster_id"]: row for row in analysis.clusters()["items"]}
+    collection = communities[analysis.node(5)["cluster_id"]]
+    distribution = communities[analysis.node(20)["cluster_id"]]
+    cutoff = communities[analysis.node(40)["cluster_id"]]
+    isolated = communities[analysis.node(99)["cluster_id"]]
+    assert "collection into shared receivers" in collection["hypothesis"]
+    assert "4 observed payers" in collection["hypothesis"]
+    assert "40,000.00 KZT internal turnover" in collection["hypothesis"]
+    assert collection["sum_kzt_internal"] == 40000
+    assert "fan-out distribution" in distribution["hypothesis"]
+    assert "8 observed recipients" in distribution["hypothesis"]
+    assert "80,000.00 KZT internal turnover" in distribution["hypothesis"]
+    assert "collection-limited receiving branch" in cutoff["hypothesis"]
+    assert "3/4 accounts lie at the observation boundary" in cutoff["hypothesis"]
+    assert "no transfer-based cluster hypothesis" in isolated["hypothesis"]
+    assert all("Shared purpose and ownership remain unverified" in row["hypothesis"]
+               for row in (collection, distribution, cutoff))
+
+
 def test_aggregation_mismatch_is_rejected():
     nodes, edges, tx = frames()
     bad = edges.with_columns((pl.col("sum_kzt") + 5000).alias("sum_kzt"))
