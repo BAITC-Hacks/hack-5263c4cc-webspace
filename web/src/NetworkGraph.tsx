@@ -90,11 +90,11 @@ const nodeWidth = 124;
 const nodeHeight = 136;
 const glyphY = 36;
 const graphColors = {
-  ink: "#302d29",
-  incoming: "#61766d",
-  outgoing: "#a66b46",
-  related: "#b8b4ad",
-  surface: "#fbfaf8",
+  ink: "#20251f",
+  incoming: "#098830",
+  outgoing: "#677b92",
+  related: "#c0c9bb",
+  surface: "#ffffff",
 };
 const fitOptions = { padding: 0.14, minZoom: 0.9, maxZoom: 1.08 };
 const edgeRank = (a: GraphEdge, b: GraphEdge) =>
@@ -159,7 +159,7 @@ const AccountGlyph = memo(function AccountGlyph({
           marginBottom: root ? 7 : 14,
           backgroundColor: root ? graphColors.ink : "#fff",
           borderColor: root ? graphColors.ink : color,
-          color: root ? "#fffdf9" : color,
+          color: root ? "#ffffff" : color,
           borderStyle: account.truncated_by_depth ? "dashed" : "solid",
         }}
       >
@@ -172,13 +172,13 @@ const AccountGlyph = memo(function AccountGlyph({
           />
         )}
       </div>
-      <div className="max-w-[124px] bg-[#fbfaf8] px-1 text-center font-mono text-base font-semibold leading-5 tabular-nums break-all">
+      <div className="max-w-[124px] bg-[#ffffff] px-1 text-center font-mono text-base font-semibold leading-5 tabular-nums break-all">
         {account.gid}
       </div>
-      <div className="max-w-[124px] bg-[#fbfaf8] px-1 text-center text-[13px] leading-[18px] text-muted-foreground">
+      <div className="max-w-[124px] bg-[#ffffff] px-1 text-center text-[13px] leading-[18px] text-muted-foreground">
         {label}
       </div>
-      <div className="mt-0.5 flex items-center gap-1 bg-[#fbfaf8] text-[11px] leading-4 text-muted-foreground">
+      <div className="mt-0.5 flex items-center gap-1 bg-[#ffffff] text-[11px] leading-4 text-muted-foreground">
         {root && <span className="font-medium text-foreground">Selected</span>}
         {account.truncated_by_depth && (
           <span>{root ? "· Boundary" : "Boundary"}</span>
@@ -238,7 +238,7 @@ const TransferLine = memo(function TransferLine(
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               backgroundColor: selected ? graphColors.ink : graphColors.surface,
-              color: selected ? "#fffdf9" : "#57534c",
+              color: selected ? "#ffffff" : "#535c4f",
             }}
           >
             {money(data.transfer.sum_kzt)}
@@ -607,16 +607,16 @@ export default function NetworkGraph({
       <TabsContent value="flow" className="flex flex-col gap-3">
         <div
           ref={capture}
-          className="relative h-[410px] overflow-hidden rounded-xl border border-border/70 bg-[#fbfaf8] sm:h-[520px]"
+          className="relative h-[410px] overflow-hidden rounded-xl border border-border/70 bg-[#ffffff] sm:h-[520px]"
         >
           <div className="pointer-events-none absolute inset-x-5 top-4 z-10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
             <span className="flex items-center gap-2">
-              <span className="h-px w-5 bg-[#61766d]" />
+              <span className="h-px w-5 bg-[#098830]" />
               Incoming to selected
             </span>
             <span className="flex items-center gap-2">
               Outgoing from selected
-              <span className="h-px w-5 bg-[#a66b46]" />
+              <span className="h-px w-5 bg-[#677b92]" />
             </span>
           </div>
           <ReactFlow<AccountNode, TransferEdge>
@@ -676,7 +676,7 @@ export default function NetworkGraph({
               variant={BackgroundVariant.Dots}
               gap={28}
               size={0.65}
-              color="#ddd9d2"
+              color="#e0e6dc"
             />
           </ReactFlow>
           <div
@@ -710,7 +710,7 @@ export default function NetworkGraph({
             </p>
           )}
           {nodes.length === 1 && scene.transfers.length === 0 && (
-            <p className="absolute inset-x-5 bottom-20 mx-auto max-w-sm bg-[#fbfaf8] text-center text-xs leading-5 text-muted-foreground">
+            <p className="absolute inset-x-5 bottom-20 mx-auto max-w-sm bg-[#ffffff] text-center text-xs leading-5 text-muted-foreground">
               No recorded transfers for this account. The account remains part
               of the dataset.
             </p>
@@ -729,7 +729,7 @@ export default function NetworkGraph({
             Observation boundary
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-[#a66b46]" />
+            <span className="size-2 rounded-full bg-[#677b92]" />
             Seed account
           </span>
           {scene.transfers.length > 8 && (

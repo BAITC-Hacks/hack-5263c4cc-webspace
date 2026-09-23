@@ -1,22 +1,18 @@
 import {
   ActivityIcon,
   ChartPieSliceIcon,
-  DatabaseIcon,
-  FileTextIcon,
+  ChatCircleTextIcon,
   GitBranchIcon,
   GraphIcon,
-  ShieldCheckIcon,
-  SidebarSimpleIcon,
   SquaresFourIcon,
   TableIcon,
 } from "@phosphor-icons/react";
+import { useAssistantWorkspace } from "@/AssistantWorkspace";
 import type { Summary } from "@/api";
 import { number } from "@/api";
-import { Badge } from "@/components/ui/badge";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -54,44 +50,65 @@ export function AppSidebar({
   onView: (view: WorkspaceView) => void;
   summary: Summary | null;
 }) {
-  const { isMobile, setOpenMobile, toggleSidebar, open } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
+  const assistant = useAssistantWorkspace();
   function navigate(next: WorkspaceView) {
     onView(next);
     if (isMobile) setOpenMobile(false);
   }
   return (
     <Sidebar variant="sidebar" collapsible="icon">
-      <SidebarHeader className="px-3 py-4">
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               size="lg"
               onClick={() => navigate("overview")}
               tooltip="Aqsha Lens"
+              aria-label="Aqsha Lens overview"
             >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-card">
+              <span className="flex size-8 shrink-0 items-center justify-center">
                 <img
-                  src="/brand/aqsha-lens-mark.png"
+                  src="/brand/aqsha-freedom-mark.png"
                   alt=""
                   className="size-8 object-contain"
                 />
               </span>
-              <div className="flex flex-col gap-0.5">
-                <span className="text-base font-semibold tracking-tight">
-                  Aqsha Lens
-                </span>
-                <span className="text-xs text-sidebar-foreground/60">
-                  Investigation workspace
-                </span>
-              </div>
+              <span className="text-lg font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
+                Aqsha Lens
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
           <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  variant="outline"
+                  tooltip="Aqsha assistant"
+                  aria-label="Open assistant workspace"
+                  aria-expanded={assistant.open}
+                  aria-keyshortcuts="Control+j Meta+j"
+                  onClick={() => {
+                    assistant.openAssistant({ expanded: true });
+                    if (isMobile) setOpenMobile(false);
+                  }}
+                >
+                  <ChatCircleTextIcon weight="fill" aria-hidden="true" />
+                  <span className="group-data-[collapsible=icon]:hidden">
+                    Aqsha assistant
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Workspace</SidebarGroupLabel>
+          <SidebarGroupContent role="navigation" aria-label="Main navigation">
             <SidebarMenu>
               {workspaceViews.map((item) => (
                 <SidebarMenuItem key={item.id}>
@@ -99,10 +116,16 @@ export function AppSidebar({
                     isActive={view === item.id}
                     tooltip={item.label}
                     onClick={() => navigate(item.id)}
+                    aria-label={item.label}
                     aria-current={view === item.id ? "page" : undefined}
                   >
-                    <item.icon />
-                    <span>{item.label}</span>
+                    <item.icon
+                      weight={view === item.id ? "fill" : "regular"}
+                      aria-hidden="true"
+                    />
+                    <span className="group-data-[collapsible=icon]:hidden">
+                      {item.label}
+                    </span>
                   </SidebarMenuButton>
                   {item.id === "entities" && summary && (
                     <SidebarMenuBadge>
@@ -114,67 +137,7 @@ export function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupLabel>Exports</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  render={<a href="/api/exports/nodes_roles.csv" download />}
-                  tooltip="Download role assignments"
-                >
-                  <FileTextIcon />
-                  <span>Role assignments</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  render={
-                    <a href="/api/provenance" download="audit-receipt.json" />
-                  }
-                  tooltip="Download audit receipt"
-                >
-                  <ShieldCheckIcon />
-                  <span>Audit receipt</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              tooltip={summary?.dataset.name ?? "Loading dataset"}
-              onClick={() => navigate("entities")}
-            >
-              <DatabaseIcon />
-              <div className="flex min-w-0 flex-col gap-1">
-                <span className="truncate">Freedom Finance</span>
-                <Badge variant="secondary">
-                  {summary?.dataset.kind === "official"
-                    ? "Official dataset"
-                    : summary
-                      ? "Synthetic demo"
-                      : "Connecting"}
-                </Badge>
-              </div>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={toggleSidebar}
-              tooltip={open ? "Collapse sidebar" : "Expand sidebar"}
-              aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
-            >
-              <SidebarSimpleIcon />
-              <span>Collapse sidebar</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

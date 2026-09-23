@@ -116,7 +116,14 @@ export interface Cluster {
 export interface CopilotResponse {
   answer: string;
   mode: "offline" | "openai" | "fallback";
-  citations: { label?: string; gid?: number; text?: string; kind?: string; evidence_version?: string; payload_sha256?: string }[];
+  citations: {
+    label?: string;
+    gid?: number;
+    text?: string;
+    kind?: string;
+    evidence_version?: string;
+    payload_sha256?: string;
+  }[];
   limitations: string[];
   trace: { tool: string; status: string; elapsed_ms?: number }[];
   model?: string;
@@ -148,7 +155,11 @@ export class ApiError extends Error {
   readonly status: number;
   readonly retryAfterSeconds: number | null;
 
-  constructor(message: string, status: number, retryAfterSeconds: number | null = null) {
+  constructor(
+    message: string,
+    status: number,
+    retryAfterSeconds: number | null = null,
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -165,13 +176,21 @@ export async function fetchApi<T>(
     const body = await response.json().catch(() => null);
     const detail = body?.detail;
     const retryAfter = response.headers.get("Retry-After");
-    const retryDelay = retryAfter === null ? NaN : /^\d+$/.test(retryAfter.trim())
-      ? Number(retryAfter)
-      : (Date.parse(retryAfter) - Date.now()) / 1000;
-    const retryAfterSeconds = Number.isFinite(retryDelay) ? Math.max(1, Math.ceil(retryDelay)) : null;
-    const message = response.status === 429
-      ? `Too many requests. ${retryAfterSeconds === null ? "Wait a moment" : `Wait ${retryAfterSeconds} seconds`} before trying again.`
-      : typeof detail === "string" ? detail : `Request failed (${response.status}). Try again.`;
+    const retryDelay =
+      retryAfter === null
+        ? NaN
+        : /^\d+$/.test(retryAfter.trim())
+          ? Number(retryAfter)
+          : (Date.parse(retryAfter) - Date.now()) / 1000;
+    const retryAfterSeconds = Number.isFinite(retryDelay)
+      ? Math.max(1, Math.ceil(retryDelay))
+      : null;
+    const message =
+      response.status === 429
+        ? `Too many requests. ${retryAfterSeconds === null ? "Wait a moment" : `Wait ${retryAfterSeconds} seconds`} before trying again.`
+        : typeof detail === "string"
+          ? detail
+          : `Request failed (${response.status}). Try again.`;
     throw new ApiError(message, response.status, retryAfterSeconds);
   }
   if (response.status === 204) return undefined as T;
@@ -179,13 +198,13 @@ export async function fetchApi<T>(
 }
 
 export const roleColors: Record<string, string> = {
-  consolidator: "#597466",
-  transit: "#718797",
-  distributor: "#a87a55",
-  terminal: "#8c7e96",
-  coordinator: "#42473f",
-  peripheral: "#9b9f93",
-  boundary_unknown: "#a86a48",
+  consolidator: "#098830",
+  transit: "#567b94",
+  distributor: "#a37f32",
+  terminal: "#7c7192",
+  coordinator: "#26342b",
+  peripheral: "#97a394",
+  boundary_unknown: "#67875c",
 };
 export const roleLabel = (role: string) =>
   role === "boundary_unknown"
@@ -300,14 +319,14 @@ export interface Dossier {
 
 // Shared categorical identity across overview and investigation views.
 export const communityColors = [
-  "#597466",
-  "#7f8f80",
-  "#b38763",
-  "#8c7e96",
-  "#718797",
-  "#ac8483",
-  "#8f9068",
-  "#646b62",
+  "#098830",
+  "#3c6d4e",
+  "#638a52",
+  "#667787",
+  "#7c7490",
+  "#a2784f",
+  "#6c8a86",
+  "#505b54",
 ];
 export const communityColor = (id: number) =>
   communityColors[Math.abs(id) % communityColors.length];
