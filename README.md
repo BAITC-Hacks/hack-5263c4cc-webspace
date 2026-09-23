@@ -12,7 +12,9 @@ Prerequisites: Git, [uv](https://docs.astral.sh/uv/getting-started/installation/
 ./scripts/dev.sh
 ```
 
-Open [localhost:8000](http://127.0.0.1:8000). The default dataset is an original synthetic fixture; no organizer records, API key, GPU, personal account or subscription is required. The script installs locked dependencies, builds the frontend and serves the app on loopback. First setup requires network access; later launches can use `uv run --frozen moneygraph serve`.
+Open [localhost:8000](http://127.0.0.1:8000). The default dataset is a small synthetic fixture, so no organizer records, API key, GPU, personal account or subscription is needed. The script installs locked dependencies, builds the frontend and serves the app on loopback. First setup needs network access; subsequent runs can use `uv run --frozen moneygraph serve`.
+
+Tip: if port 8000 is already in use, stop the previous `moneygraph serve` process before re-running `./scripts/dev.sh`.
 
 To use the official dataset, extract its `data/` folder locally and pass the directory containing `nodes.parquet`, `edges.parquet` and `transactions.parquet`:
 
