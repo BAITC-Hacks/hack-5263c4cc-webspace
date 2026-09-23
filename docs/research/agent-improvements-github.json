@@ -1,0 +1,429 @@
+{
+  "research_date": "2026-09-23",
+  "snapshot_created_at_utc": "2026-09-23T10:54:06.962491+00:00",
+  "method": "Live authenticated GitHub REST repository metadata and default-branch HEAD; stars are popularity signals, not security or domain accuracy evidence. No repository code was executed. Commit date is reported committer date, not pushed_at. License metadata requires checking repository file when NOASSERTION.",
+  "repositories": [
+    {
+      "repository": "langchain-ai/langchain",
+      "url": "https://github.com/langchain-ai/langchain",
+      "stars": 146918,
+      "forks": 24574,
+      "default_branch": "master",
+      "archived": false,
+      "license_spdx": "MIT",
+      "head_sha": "c36e3f826fb7b66c746b8235ef83ab3910dd32be",
+      "head_url": "https://github.com/langchain-ai/langchain/commit/c36e3f826fb7b66c746b8235ef83ab3910dd32be",
+      "head_author_date": "2026-09-23T04:16:02Z",
+      "head_committer_date": "2026-09-23T04:16:02Z",
+      "head_subject": "chore(infra): remove Claude instructions and sync workflow (#40779)",
+      "fetched_at_utc": "2026-09-23T10:54:02.769803+00:00"
+    },
+    {
+      "repository": "langchain-ai/langgraph",
+      "url": "https://github.com/langchain-ai/langgraph",
+      "stars": 42172,
+      "forks": 7133,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "head_sha": "bdb85b5aa87a21de68371d2e534b81aeed398f57",
+      "head_url": "https://github.com/langchain-ai/langgraph/commit/bdb85b5aa87a21de68371d2e534b81aeed398f57",
+      "head_author_date": "2026-09-23T04:02:12Z",
+      "head_committer_date": "2026-09-23T04:02:12Z",
+      "head_subject": "chore: remove Claude-specific instructions (#9058)",
+      "fetched_at_utc": "2026-09-23T10:54:02.802293+00:00"
+    },
+    {
+      "repository": "langchain-ai/deepagents",
+      "url": "https://github.com/langchain-ai/deepagents",
+      "stars": 29683,
+      "forks": 4170,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "head_sha": "786eac5b708499f36ee7d61ed6f6e1a288b74a75",
+      "head_url": "https://github.com/langchain-ai/deepagents/commit/786eac5b708499f36ee7d61ed6f6e1a288b74a75",
+      "head_author_date": "2026-09-23T08:32:10Z",
+      "head_committer_date": "2026-09-23T08:32:10Z",
+      "head_subject": "docs(repo): update OpenWiki (#6507)",
+      "fetched_at_utc": "2026-09-23T10:54:02.728895+00:00"
+    },
+    {
+      "repository": "chroma-core/chroma",
+      "url": "https://github.com/chroma-core/chroma",
+      "stars": 29357,
+      "forks": 2527,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "Apache-2.0",
+      "head_sha": "0ca571e2c0a67514ab7a382cec8975b86dff0984",
+      "head_url": "https://github.com/chroma-core/chroma/commit/0ca571e2c0a67514ab7a382cec8975b86dff0984",
+      "head_author_date": "2026-09-21T22:56:01Z",
+      "head_committer_date": "2026-09-21T22:56:01Z",
+      "head_subject": "[ENH](foundation-api): Answer MCP on a per-Foundation path (#7714)",
+      "fetched_at_utc": "2026-09-23T10:54:02.791548+00:00"
+    },
+    {
+      "repository": "mem0ai/mem0",
+      "url": "https://github.com/mem0ai/mem0",
+      "stars": 65877,
+      "forks": 7741,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "Apache-2.0",
+      "head_sha": "f8082a7345dadd9e042ebbc40b57b1498c8f6d63",
+      "head_url": "https://github.com/mem0ai/mem0/commit/f8082a7345dadd9e042ebbc40b57b1498c8f6d63",
+      "head_author_date": "2026-09-22T14:36:21Z",
+      "head_committer_date": "2026-09-22T14:36:21Z",
+      "head_subject": "Fix grammar & typos: API casing in template heading (#7410)",
+      "fetched_at_utc": "2026-09-23T10:54:02.714014+00:00"
+    },
+    {
+      "repository": "getzep/graphiti",
+      "url": "https://github.com/getzep/graphiti",
+      "stars": 31094,
+      "forks": 3169,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "Apache-2.0",
+      "head_sha": "16cdf7045378c8d53ae01f94e2fa60d238cb0f68",
+      "head_url": "https://github.com/getzep/graphiti/commit/16cdf7045378c8d53ae01f94e2fa60d238cb0f68",
+      "head_author_date": "2026-09-21T19:48:51Z",
+      "head_committer_date": "2026-09-21T19:48:51Z",
+      "head_subject": "Add contributor guidelines and an intake bot for issues and pull requests (#1902)",
+      "fetched_at_utc": "2026-09-23T10:54:02.646613+00:00"
+    },
+    {
+      "repository": "pgvector/pgvector",
+      "url": "https://github.com/pgvector/pgvector",
+      "stars": 23132,
+      "forks": 1329,
+      "default_branch": "master",
+      "archived": false,
+      "license_spdx": "NOASSERTION",
+      "head_sha": "7db2345ed99bc77bf33cbdc8b12bd1973210dc81",
+      "head_url": "https://github.com/pgvector/pgvector/commit/7db2345ed99bc77bf33cbdc8b12bd1973210dc81",
+      "head_author_date": "2026-09-22T18:39:20Z",
+      "head_committer_date": "2026-09-22T18:39:20Z",
+      "head_subject": "Updated Postgres version check in Windows Makefile [skip ci]",
+      "fetched_at_utc": "2026-09-23T10:54:04.200831+00:00",
+      "license_file_url": "https://github.com/pgvector/pgvector/blob/7db2345ed99bc77bf33cbdc8b12bd1973210dc81/LICENSE",
+      "license_verified": "PostgreSQL license"
+    },
+    {
+      "repository": "qdrant/qdrant",
+      "url": "https://github.com/qdrant/qdrant",
+      "stars": 34760,
+      "forks": 2691,
+      "default_branch": "master",
+      "archived": false,
+      "license_spdx": "Apache-2.0",
+      "head_sha": "6ab21cac18ebb6f4ae29102c7f8f5cc11affd5de",
+      "head_url": "https://github.com/qdrant/qdrant/commit/6ab21cac18ebb6f4ae29102c7f8f5cc11affd5de",
+      "head_author_date": "2026-09-03T12:36:18Z",
+      "head_committer_date": "2026-09-03T12:36:18Z",
+      "head_subject": "Bump version to 1.19.1 (#10463)",
+      "fetched_at_utc": "2026-09-23T10:54:04.311687+00:00"
+    },
+    {
+      "repository": "UKGovernmentBEIS/inspect_ai",
+      "url": "https://github.com/UKGovernmentBEIS/inspect_ai",
+      "stars": 2847,
+      "forks": 748,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "head_sha": "f9837f6c577da1bf89223f0575d4cb218940a79f",
+      "head_url": "https://github.com/UKGovernmentBEIS/inspect_ai/commit/f9837f6c577da1bf89223f0575d4cb218940a79f",
+      "head_author_date": "2026-09-22T23:56:19Z",
+      "head_committer_date": "2026-09-22T23:56:19Z",
+      "head_subject": "update changelog for release",
+      "fetched_at_utc": "2026-09-23T10:54:04.246885+00:00"
+    },
+    {
+      "repository": "langfuse/langfuse",
+      "url": "https://github.com/langfuse/langfuse",
+      "stars": 34961,
+      "forks": 3835,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "NOASSERTION",
+      "head_sha": "16ba8566e416acc2c1420db96862d6990567ce3f",
+      "head_url": "https://github.com/langfuse/langfuse/commit/16ba8566e416acc2c1420db96862d6990567ce3f",
+      "head_author_date": "2026-09-23T10:16:09Z",
+      "head_committer_date": "2026-09-23T10:16:09Z",
+      "head_subject": "fix(web): one compact badge, primary and outline, sharper corners (#17609)",
+      "fetched_at_utc": "2026-09-23T10:54:04.378224+00:00",
+      "license_file_url": "https://github.com/langfuse/langfuse/blob/16ba8566e416acc2c1420db96862d6990567ce3f/LICENSE",
+      "license_verified": "MIT core; ee directories commercially licensed"
+    },
+    {
+      "repository": "Arize-ai/phoenix",
+      "url": "https://github.com/Arize-ai/phoenix",
+      "stars": 11584,
+      "forks": 1148,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "NOASSERTION",
+      "head_sha": "e4b8130773c7b15de11c9337d509d0eaab4883e7",
+      "head_url": "https://github.com/Arize-ai/phoenix/commit/e4b8130773c7b15de11c9337d509d0eaab4883e7",
+      "head_author_date": "2026-09-23T00:37:36Z",
+      "head_committer_date": "2026-09-23T00:37:36Z",
+      "head_subject": "chore: update sitemap.xml (#16389)",
+      "fetched_at_utc": "2026-09-23T10:54:04.424648+00:00",
+      "license_file_url": "https://github.com/Arize-ai/phoenix/blob/e4b8130773c7b15de11c9337d509d0eaab4883e7/LICENSE",
+      "license_verified": "Elastic License 2.0; inspect package-specific license before reuse"
+    },
+    {
+      "repository": "confident-ai/deepeval",
+      "url": "https://github.com/confident-ai/deepeval",
+      "stars": 18410,
+      "forks": 1970,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "Apache-2.0",
+      "head_sha": "86b6fb51cc9ac3a6b1aa4820d3e39bb4cc7db5e5",
+      "head_url": "https://github.com/confident-ai/deepeval/commit/86b6fb51cc9ac3a6b1aa4820d3e39bb4cc7db5e5",
+      "head_author_date": "2026-09-23T07:31:22Z",
+      "head_committer_date": "2026-09-23T07:31:22Z",
+      "head_subject": "Merge pull request #3349 from kimnamu/fix/anthropic-opus-5-5",
+      "fetched_at_utc": "2026-09-23T10:54:04.853515+00:00"
+    },
+    {
+      "repository": "promptfoo/promptfoo",
+      "url": "https://github.com/promptfoo/promptfoo",
+      "stars": 25392,
+      "forks": 2361,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "head_sha": "d59f045c4cda1193574380aae639d84380dbf5f2",
+      "head_url": "https://github.com/promptfoo/promptfoo/commit/d59f045c4cda1193574380aae639d84380dbf5f2",
+      "head_author_date": "2026-09-23T05:41:26Z",
+      "head_committer_date": "2026-09-23T05:41:26Z",
+      "head_subject": "fix(deps): update dependency js-yaml to v5.4.2 (#11038)",
+      "fetched_at_utc": "2026-09-23T10:54:06.962222+00:00"
+    },
+    {
+      "repository": "pydantic/pydantic-ai",
+      "url": "https://github.com/pydantic/pydantic-ai",
+      "stars": 20129,
+      "forks": 2762,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "head_sha": "ad0727bb568580992afebe77351702f8817e5476",
+      "head_url": "https://github.com/pydantic/pydantic-ai/commit/ad0727bb568580992afebe77351702f8817e5476",
+      "head_author_date": "2026-09-23T07:14:33Z",
+      "head_committer_date": "2026-09-23T07:14:33Z",
+      "head_subject": "Add `GitHubCopilotOAuthFlow` for device authorization (#8618)",
+      "fetched_at_utc": "2026-09-23T10:54:05.893801+00:00"
+    },
+    {
+      "repository": "openai/openai-agents-python",
+      "url": "https://github.com/openai/openai-agents-python",
+      "stars": 29652,
+      "forks": 4802,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "head_sha": "32edd3c3ecde37a7fb6bf4b082f35f1d8f7f086b",
+      "head_url": "https://github.com/openai/openai-agents-python/commit/32edd3c3ecde37a7fb6bf4b082f35f1d8f7f086b",
+      "head_author_date": "2026-09-22T06:49:16Z",
+      "head_committer_date": "2026-09-22T06:49:16Z",
+      "head_subject": "fix(deps): bump runloop-api-client from 1.31.0 to 1.32.0 (#5156)",
+      "fetched_at_utc": "2026-09-23T10:54:05.961494+00:00"
+    },
+    {
+      "repository": "dbos-inc/dbos-transact-py",
+      "url": "https://github.com/dbos-inc/dbos-transact-py",
+      "stars": 1586,
+      "forks": 96,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "head_sha": "8ee67815fa117c4682ea9397e9566508fdb5405b",
+      "head_url": "https://github.com/dbos-inc/dbos-transact-py/commit/8ee67815fa117c4682ea9397e9566508fdb5405b",
+      "head_author_date": "2026-09-22T23:00:29Z",
+      "head_committer_date": "2026-09-22T23:00:29Z",
+      "head_subject": "drop outputs for rewound workflows (#861)",
+      "fetched_at_utc": "2026-09-23T10:54:05.958172+00:00"
+    },
+    {
+      "repository": "mongodb-industry-solutions/fsi-aml-fraud-detection",
+      "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection",
+      "stars": 14,
+      "forks": 4,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": "MIT",
+      "head_sha": "2ba75588a36d0c8d75c186e326b440d5af537f54",
+      "head_url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection/commit/2ba75588a36d0c8d75c186e326b440d5af537f54",
+      "head_author_date": "2026-09-01T11:19:51Z",
+      "head_committer_date": "2026-09-01T11:19:51Z",
+      "head_subject": "Merge pull request #73 from mongodb-industry-solutions/fix-fraud-model-banner-and-id-parsing",
+      "fetched_at_utc": "2026-09-23T10:54:06.164617+00:00"
+    },
+    {
+      "repository": "serey-roth/aml-investigation",
+      "url": "https://github.com/serey-roth/aml-investigation",
+      "stars": 0,
+      "forks": 0,
+      "default_branch": "main",
+      "archived": false,
+      "license_spdx": null,
+      "head_sha": "e1251e598839f6c5c7fe43f351a8650552fbcb46",
+      "head_url": "https://github.com/serey-roth/aml-investigation/commit/e1251e598839f6c5c7fe43f351a8650552fbcb46",
+      "head_author_date": "2026-05-12T21:15:25Z",
+      "head_committer_date": "2026-05-12T21:15:25Z",
+      "head_subject": "Update README, add .env.example and db:check script",
+      "fetched_at_utc": "2026-09-23T10:54:06.448925+00:00"
+    }
+  ],
+  "package_snapshots": [
+    {
+      "package": "langchain",
+      "version": "1.4.2",
+      "upload_times": [
+        "2026-09-18T17:31:10.056247Z",
+        "2026-09-18T17:31:11.420630Z"
+      ],
+      "requires_python": "<4.0.0,>=3.10.0",
+      "source": "https://pypi.org/pypi/langchain/json"
+    },
+    {
+      "package": "langgraph",
+      "version": "1.2.12",
+      "upload_times": [
+        "2026-09-21T14:43:28.196799Z",
+        "2026-09-21T14:43:29.684222Z"
+      ],
+      "requires_python": ">=3.10",
+      "source": "https://pypi.org/pypi/langgraph/json"
+    },
+    {
+      "package": "langgraph-checkpoint-sqlite",
+      "version": "3.1.1",
+      "upload_times": [
+        "2026-07-30T19:19:36.424946Z",
+        "2026-07-30T19:19:37.516707Z"
+      ],
+      "requires_python": ">=3.10",
+      "source": "https://pypi.org/pypi/langgraph-checkpoint-sqlite/json"
+    },
+    {
+      "package": "langgraph-checkpoint-postgres",
+      "version": "3.1.2",
+      "upload_times": [
+        "2026-08-07T20:39:58.994834Z",
+        "2026-08-07T20:40:00.049551Z"
+      ],
+      "requires_python": ">=3.10",
+      "source": "https://pypi.org/pypi/langgraph-checkpoint-postgres/json"
+    },
+    {
+      "package": "chromadb",
+      "version": "1.5.9",
+      "upload_times": [
+        "2026-05-05T05:54:48.906852Z",
+        "2026-05-05T05:54:45.078177Z",
+        "2026-05-05T05:54:36.250931Z",
+        "2026-05-05T05:54:41.157648Z",
+        "2026-05-05T05:54:54.942211Z",
+        "2026-05-05T05:54:51.713927Z"
+      ],
+      "requires_python": ">=3.9",
+      "source": "https://pypi.org/pypi/chromadb/json"
+    },
+    {
+      "package": "mem0ai",
+      "version": "2.1.0",
+      "upload_times": [
+        "2026-09-18T11:12:07.711418Z",
+        "2026-09-18T11:12:09.901786Z"
+      ],
+      "requires_python": "<4.0,>=3.10",
+      "source": "https://pypi.org/pypi/mem0ai/json"
+    },
+    {
+      "package": "graphiti-core",
+      "version": "0.30.2",
+      "upload_times": [
+        "2026-09-08T20:39:12.422311Z",
+        "2026-09-08T20:39:14.590490Z"
+      ],
+      "requires_python": "<4,>=3.10",
+      "source": "https://pypi.org/pypi/graphiti-core/json"
+    },
+    {
+      "package": "pydantic-ai",
+      "version": "2.48.0",
+      "upload_times": [
+        "2026-09-23T02:54:52.181824Z",
+        "2026-09-23T02:55:02.544950Z"
+      ],
+      "requires_python": ">=3.10",
+      "source": "https://pypi.org/pypi/pydantic-ai/json"
+    },
+    {
+      "package": "openai-agents",
+      "version": "0.22.3",
+      "upload_times": [
+        "2026-09-17T22:20:42.768493Z",
+        "2026-09-17T22:20:44.870795Z"
+      ],
+      "requires_python": ">=3.10",
+      "source": "https://pypi.org/pypi/openai-agents/json"
+    },
+    {
+      "package": "inspect-ai",
+      "version": "0.3.268",
+      "upload_times": [
+        "2026-09-22T23:57:40.829562Z",
+        "2026-09-22T23:58:10.142926Z"
+      ],
+      "requires_python": ">=3.10",
+      "source": "https://pypi.org/pypi/inspect-ai/json"
+    },
+    {
+      "package": "langfuse",
+      "version": "4.15.4",
+      "upload_times": [
+        "2026-09-16T16:13:07.294737Z",
+        "2026-09-16T16:13:05.967621Z"
+      ],
+      "requires_python": "<4.0,>=3.10",
+      "source": "https://pypi.org/pypi/langfuse/json"
+    },
+    {
+      "package": "arize-phoenix",
+      "version": "20.15.0",
+      "upload_times": [
+        "2026-09-21T23:10:45.152208Z",
+        "2026-09-21T23:10:48.102732Z"
+      ],
+      "requires_python": "<3.15,>=3.10",
+      "source": "https://pypi.org/pypi/arize-phoenix/json"
+    },
+    {
+      "package": "deepeval",
+      "version": "4.2.5",
+      "upload_times": [
+        "2026-09-22T19:26:34.903554Z",
+        "2026-09-22T19:26:32.294126Z"
+      ],
+      "requires_python": "<4.0,>=3.9",
+      "source": "https://pypi.org/pypi/deepeval/json"
+    },
+    {
+      "package": "dbos",
+      "version": "3.0.0",
+      "upload_times": [
+        "2026-09-16T17:14:21.880570Z",
+        "2026-09-16T17:14:23.554625Z"
+      ],
+      "requires_python": ">=3.10",
+      "source": "https://pypi.org/pypi/dbos/json"
+    }
+  ]
+}
