@@ -1,0 +1,54 @@
+{
+  "repository": "mongodb-industry-solutions/fsi-aml-fraud-detection",
+  "files": [
+    {
+      "path": "aml-backend/services/agents/graph.py",
+      "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection/blob/main/aml-backend/services/agents/graph.py",
+      "blob_sha": "9a8daa8cdd88cae6046424c86140989b0d461c28",
+      "characters": 5741,
+      "source_read": true,
+      "executed": false
+    },
+    {
+      "path": "aml-backend/services/agents/chat_agent.py",
+      "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection/blob/main/aml-backend/services/agents/chat_agent.py",
+      "blob_sha": "28c88481796038124eb1c9e5e688bc5d9bad7488",
+      "characters": 11944,
+      "source_read": true,
+      "executed": false
+    },
+    {
+      "path": "aml-backend/services/agents/tools/network_tools.py",
+      "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection/blob/main/aml-backend/services/agents/tools/network_tools.py",
+      "blob_sha": "afd0ddc32ba72a7d960f97b69b487daa921cee8e",
+      "characters": 4632,
+      "source_read": true,
+      "executed": false
+    },
+    {
+      "path": "aml-backend/services/agents/tools/transaction_tools.py",
+      "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection/blob/main/aml-backend/services/agents/tools/transaction_tools.py",
+      "blob_sha": "f97df61612baa6b89401d30dac89d7aefb7e2e6b",
+      "characters": 1941,
+      "source_read": true,
+      "executed": false
+    },
+    {
+      "path": "docker/docker-compose.yml",
+      "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection/blob/main/docker/docker-compose.yml",
+      "blob_sha": "e85b2ed7ce656614c103d39a4a826886a0c4bd76",
+      "characters": 658,
+      "source_read": true,
+      "executed": false
+    },
+    {
+      "path": "docs/AGENTIC_INVESTIGATION_PIPELINE.md",
+      "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection/blob/main/docs/AGENTIC_INVESTIGATION_PIPELINE.md",
+      "blob_sha": "6204e789b454d7b1b1c6facf7f6719c80f023cfd",
+      "characters": 64301,
+      "source_read": true,
+      "executed": false
+    }
+  ],
+  "verified": "Source contains explicit LangGraph nodes and MongoDB checkpointing; tool implementations and deployment compose read. Not installed or executed. No production security/accuracy certification."
+}

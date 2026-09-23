@@ -1,0 +1,444 @@
+{
+  "reference_date": "2026-09-23",
+  "recent_30_day_cutoff": "2026-08-24",
+  "recent_90_day_cutoff": "2026-06-25",
+  "method": "Exa discovery and full-page fetch, primary documentation validation, live authenticated GitHub REST statistics and selected code inspection. Search slots are not unique reviewed sources. Third-party ranking articles excluded from technical conclusions. No candidate was installed or benchmarked in this research.",
+  "search_calls": 12,
+  "requested_search_result_slots": 81,
+  "unique_discovery_urls": 81,
+  "direct_fetch_calls": 5,
+  "searches": [
+    {
+      "workstream": "official agent frameworks",
+      "results": [
+        {
+          "title": "Agents SDK | OpenAI API",
+          "url": "https://developers.openai.com/api/docs/guides/agents"
+        },
+        {
+          "title": "Running agents - OpenAI Agents SDK",
+          "url": "https://openai.github.io/openai-agents-python/running_agents/"
+        },
+        {
+          "title": "Introducing the Agents API | OpenAI",
+          "url": "https://openai.com/index/introducing-the-agents-api/"
+        },
+        {
+          "title": "OpenAI Agents SDK",
+          "url": "https://openai.github.io/openai-agents-python/"
+        },
+        {
+          "title": "Agents - OpenAI Agents SDK",
+          "url": "https://openai.github.io/openai-agents-python/agents/"
+        },
+        {
+          "title": "Multi-agent | OpenAI API",
+          "url": "https://developers.openai.com/api/docs/guides/responses-multi-agent"
+        },
+        {
+          "title": "Model interface - OpenAI Agents SDK",
+          "url": "https://openai.github.io/openai-agents-python/ref/models/interface/"
+        },
+        {
+          "title": "openai/openai-agents-python",
+          "url": "https://github.com/openai/openai-agents-python"
+        }
+      ]
+    },
+    {
+      "workstream": "open AML solutions",
+      "results": [
+        {
+          "title": "mongodb-industry-solutions/fsi-aml-fraud-detection",
+          "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection"
+        },
+        {
+          "title": "Nirrajkadam/FIU-Sentinel",
+          "url": "https://github.com/Nirrajkadam/FIU-Sentinel-"
+        },
+        {
+          "title": "parth-shinge/FinSentry",
+          "url": "https://github.com/parth-shinge/FinSentry"
+        },
+        {
+          "title": "stelioszach03/aml-graph-investigator",
+          "url": "https://github.com/stelioszach03/aml-graph-investigator"
+        },
+        {
+          "title": "phintruong/Trace-Me-If-You-Can",
+          "url": "https://github.com/phintruong/Trace-Me-If-You-Can"
+        },
+        {
+          "title": "FalkorDB/RedThread",
+          "url": "https://github.com/FalkorDB/RedThread"
+        },
+        {
+          "title": "seekumuran/MuleNetX",
+          "url": "https://github.com/ckumuran/MuleNetX"
+        },
+        {
+          "title": "RAJARYANSINGH0059/TraceNet.exe",
+          "url": "https://github.com/RAJARYANSINGH0059/TraceNet.exe"
+        }
+      ]
+    },
+    {
+      "workstream": "NVIDIA off shelf",
+      "results": [
+        {
+          "title": "README.md at main · NVIDIA-AI-Blueprints/financial-fraud-detection",
+          "url": "https://github.com/NVIDIA-AI-Blueprints/financial-fraud-detection/blob/main/README.md"
+        },
+        {
+          "title": "NVIDIA-AI-Blueprints/aiq: The AI-Q ...",
+          "url": "https://github.com/NVIDIA-AI-Blueprints/aiq"
+        },
+        {
+          "title": "Architecture Overview — NVIDIA AI-Q Blueprint",
+          "url": "https://docs.nvidia.com/aiq-blueprint/latest/architecture/overview.html"
+        },
+        {
+          "title": "NVIDIA-AI-Blueprints/transaction-foundation-model",
+          "url": "https://github.com/NVIDIA-AI-Blueprints/transaction-foundation-model"
+        },
+        {
+          "title": "examples/README.md",
+          "url": "https://github.com/NVIDIA/NeMo-Agent-Toolkit/blob/develop/examples/README.md"
+        },
+        {
+          "title": "brev/signal-discovery-workflow.ipynb at main · NVIDIA-AI-Blueprints/quantitative-signal-discovery-agent",
+          "url": "https://github.com/NVIDIA-AI-Blueprints/quantitative-signal-discovery-agent/blob/main/brev/signal-discovery-workflow.ipynb"
+        },
+        {
+          "title": "nat.agent.tool_calling_agent.agent — NVIDIA NeMo Agent Toolkit (1.4)",
+          "url": "https://docs.nvidia.com/nemo/agent-toolkit/1.4/api/nat/agent/tool_calling_agent/agent/index.html"
+        },
+        {
+          "title": "NVIDIA/NeMo-Agent-Toolkit",
+          "url": "https://github.com/nvidia/nemo-agent-toolkit"
+        }
+      ]
+    },
+    {
+      "workstream": "agent quality security",
+      "results": [
+        {
+          "title": "N/A",
+          "url": "https://docs.langchain.com/oss/python/deepagents/human-in-the-loop"
+        },
+        {
+          "title": "langchain-ai/deepagents",
+          "url": "https://github.com/langchain-ai/deepagents?tab=readme-ov-file"
+        },
+        {
+          "title": "The Runtime Behind Production Deep Agents",
+          "url": "https://www.langchain.com/blog/runtime-behind-production-deep-agents"
+        },
+        {
+          "title": "Durable Execution | Pydantic Docs",
+          "url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/"
+        },
+        {
+          "title": "N/A",
+          "url": "http://docs.langchain.com/oss/python/deepagents/backends"
+        },
+        {
+          "title": "langchain-ai/langgraph",
+          "url": "https://github.com/langchain-ai/langgraph?tab=readme-ov-file"
+        },
+        {
+          "title": "LangGraph: Agent Orchestration Framework for Reliable AI ...",
+          "url": "https://www.langchain.com/langgraph"
+        },
+        {
+          "title": "8a8a40a feat(agents): useful defaults for the agentic workloads — bounded runs, temperature, prompt, recursion limit",
+          "url": "https://github.com/rmednitzer/ai-stack/commit/8a8a40ac5daa03da41f35c773dc9c33a2f32f249"
+        }
+      ]
+    },
+    {
+      "workstream": "ready platforms",
+      "results": [
+        {
+          "title": "N/A",
+          "url": "https://docs.dify.ai/en/self-host/use-dify/nodes/agent"
+        },
+        {
+          "title": "langgenius/dify: Build Agentic workflows, RAG pipelines ...",
+          "url": "https://github.com/langgenius/dify"
+        },
+        {
+          "title": "en/use-dify/nodes/agent.mdx at main · langgenius/dify-docs",
+          "url": "https://github.com/langgenius/dify-docs/blob/main/en/use-dify/nodes/agent.mdx"
+        },
+        {
+          "title": "Dify - The Platform for Production-Ready Agentic Workflows",
+          "url": "https://dify.ai/"
+        },
+        {
+          "title": "Dify vs LangFlow vs Flowise: which OSS LLM-app builder fits your stack? | Pondero",
+          "url": "https://pondero.ai/agents/guides/dify-vs-langflow-vs-flowise-may-2026/"
+        },
+        {
+          "title": "v0.8.0",
+          "url": "https://github.com/langgenius/dify/releases/tag/0.8.0"
+        },
+        {
+          "title": "Visual AI Agent Builders in 2026: Langflow vs Dify vs n8n | 1337skills",
+          "url": "https://1337skills.com/blog/2026-05-30-visual-ai-agent-builders-langflow-dify-n8n/"
+        },
+        {
+          "title": "FEAT: NEW WORKFLOW ENGINE · Pull Request #3160 · langgenius/dify",
+          "url": "https://github.com/langgenius/dify/pull/3160"
+        }
+      ]
+    },
+    {
+      "workstream": "evaluation memory",
+      "results": [
+        {
+          "title": "Langfuse",
+          "url": "https://langfuse.com/?tab=playground"
+        },
+        {
+          "title": "N/A",
+          "url": "https://arize.com/docs/phoenix/get-started/get-started-evaluations"
+        },
+        {
+          "title": "phoenix/packages/phoenix-evals at main · Arize-ai/phoenix · GitHub",
+          "url": "https://github.com/Arize-ai/phoenix/tree/main/packages/phoenix-evals"
+        },
+        {
+          "title": "Phoenix",
+          "url": "https://arize.com/phoenix/"
+        },
+        {
+          "title": "N/A",
+          "url": "https://arize.com/docs/phoenix/cookbook/agent-workflow-patterns/langgraph"
+        },
+        {
+          "title": "Arize vs. Langfuse",
+          "url": "https://arize.com/compare/arize-vs-langfuse/"
+        },
+        {
+          "title": "N/A",
+          "url": "https://arize.com/docs/phoenix/release-notes/06-2026/06-10-2026-pxi-agent-update"
+        },
+        {
+          "title": "Meet PXI: the AI engineering agent inside Phoenix - Arize AI",
+          "url": "https://arize.com/blog/meet-pxi/"
+        }
+      ]
+    },
+    {
+      "workstream": "MCP safety",
+      "results": [
+        {
+          "title": "N/A",
+          "url": "https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices"
+        },
+        {
+          "title": "N/A",
+          "url": "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/security-considerations"
+        },
+        {
+          "title": "N/A",
+          "url": "https://modelcontextprotocol.io/docs/tutorials/security/authorization"
+        },
+        {
+          "title": "docs/specification/2026-07-28/basic/authorization/index.mdx",
+          "url": "https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/docs/specification/2026-07-28/basic/authorization/index.mdx"
+        },
+        {
+          "title": "N/A",
+          "url": "https://modelcontextprotocol.io/specification/draft/basic/authorization.md"
+        },
+        {
+          "title": "N/A",
+          "url": "https://modelcontextprotocol.io/specification/2025-11-25/basic/index.md"
+        }
+      ]
+    },
+    {
+      "workstream": "YC AML",
+      "results": [
+        {
+          "title": "Flagright: AI-native AML compliance platform for fintechs & banks | Y Combinator",
+          "url": "https://www.ycombinator.com/companies/flagright"
+        },
+        {
+          "title": "Launch YC: Greenlite 🟢 AI compliance teams for fintechs | Y Combinator",
+          "url": "https://www.ycombinator.com/launches/ItP-greenlite-ai-compliance-teams-for-fintechs"
+        },
+        {
+          "title": "Launch YC: Flagright AI Forensics 🛡️  AI-native AML investigations for fintechs & banks | Y Combinator",
+          "url": "https://www.ycombinator.com/launches/JnS-flagright-ai-forensics-ai-native-aml-investigations-for-fintechs-banks"
+        },
+        {
+          "title": "Launch YC: Flagright AI: A GPT-powered AI toolkit for AML compliance ops | Y Combinator",
+          "url": "https://www.ycombinator.com/launches/IXY-flagright-ai-a-gpt-powered-ai-toolkit-for-aml-compliance-ops"
+        },
+        {
+          "title": "Bretton AI: AI agents for financial compliance (AML, KYC and Sanctions) | Y Combinator",
+          "url": "https://www.ycombinator.com/companies/bretton-ai"
+        },
+        {
+          "title": "Launch YC: Diligent - Automate Sanction/PEP/Adverse Media alert reviews | Y Combinator",
+          "url": "https://www.ycombinator.com/launches/P0W-diligent-automate-sanction-pep-adverse-media-alert-reviews"
+        }
+      ]
+    },
+    {
+      "workstream": "latency and privacy",
+      "results": [
+        {
+          "title": "Data controls in the OpenAI platform",
+          "url": "https://developers.openai.com/api/docs/guides/your-data"
+        },
+        {
+          "title": "Latency optimization | OpenAI API",
+          "url": "https://developers.openai.com/api/docs/guides/latency-optimization"
+        },
+        {
+          "title": "Migrate to the Responses API - OpenAI Developers",
+          "url": "https://developers.openai.com/api/docs/guides/migrate-to-responses"
+        },
+        {
+          "title": "Prompt caching | OpenAI API",
+          "url": "https://developers.openai.com/api/docs/guides/prompt-caching"
+        },
+        {
+          "title": "WebSocket Mode | OpenAI API",
+          "url": "https://developers.openai.com/api/docs/guides/websocket-mode"
+        },
+        {
+          "title": "Prompt cache diagnostics | OpenAI API",
+          "url": "https://developers.openai.com/api/docs/guides/prompt-caching/diagnostics"
+        }
+      ]
+    },
+    {
+      "workstream": "typed agent budgets",
+      "results": [
+        {
+          "title": "Agents",
+          "url": "https://pydantic.dev/docs/ai/core-concepts/"
+        },
+        {
+          "title": "N/A",
+          "url": "https://pydantic.dev/docs/ai/core-concepts/dependencies"
+        },
+        {
+          "title": "Multi-agent Applications | Pydantic Docs",
+          "url": "https://pydantic.dev/docs/ai/guides/multi-agent-applications/"
+        },
+        {
+          "title": "Agents | Pydantic Docs",
+          "url": "https://pydantic.dev/docs/ai/core-concepts/agent/"
+        },
+        {
+          "title": "Retries",
+          "url": "https://pydantic.dev/docs/ai/core-concepts/retries/"
+        }
+      ]
+    },
+    {
+      "workstream": "graph scaling",
+      "results": [
+        {
+          "title": "Backends — NetworkX 3.7 documentation",
+          "url": "https://networkx.org/documentation/stable/reference/backends.html"
+        },
+        {
+          "title": "Configs — NetworkX 3.6.1 documentation",
+          "url": "https://networkx.org/documentation/stable/reference/configs.html"
+        },
+        {
+          "title": "Backends — NetworkX 3.4 documentation",
+          "url": "https://networkx.org/documentation/networkx-3.4/reference/backends.html"
+        },
+        {
+          "title": "Backends — NetworkX 3.4.2 documentation",
+          "url": "https://networkx.org/documentation/networkx-3.4.2/reference/backends.html"
+        },
+        {
+          "title": "networkx.utils.backends — NetworkX 3.4.2 documentation",
+          "url": "https://networkx.org/documentation/networkx-3.4.2/_modules/networkx/utils/backends.html"
+        }
+      ]
+    },
+    {
+      "workstream": "ready evaluators",
+      "results": [
+        {
+          "title": "Using Agents - Inspect AI",
+          "url": "https://inspect.aisi.org.uk/agents.html"
+        },
+        {
+          "title": "Tutorial – Inspect",
+          "url": "https://inspect.aisi.org.uk/tutorial.html"
+        },
+        {
+          "title": "Custom Agents – Inspect",
+          "url": "https://inspect.aisi.org.uk/agent-custom.html"
+        },
+        {
+          "title": "Setting Limits - Inspect AI",
+          "url": "https://inspect.aisi.org.uk/setting-limits.html"
+        },
+        {
+          "title": "ReAct Agent – Inspect",
+          "url": "https://inspect.aisi.org.uk/react-agent.html"
+        }
+      ]
+    }
+  ],
+  "fetched": [
+    {
+      "workstream": "blueprints",
+      "urls": [
+        "https://github.com/NVIDIA-AI-Blueprints/financial-fraud-detection/blob/main/README.md",
+        "https://github.com/NVIDIA-AI-Blueprints/transaction-foundation-model",
+        "https://github.com/NVIDIA-AI-Blueprints/aiq",
+        "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection"
+      ]
+    },
+    {
+      "workstream": "framework docs",
+      "urls": [
+        "https://docs.langchain.com/oss/python/langgraph/durable-execution",
+        "https://ai.pydantic.dev/agents/",
+        "https://dspy.ai/learn/optimization/optimizers/",
+        "https://docs.nvidia.com/nemo/agent-toolkit/latest/"
+      ]
+    },
+    {
+      "workstream": "memory eval docs",
+      "urls": [
+        "https://github.com/getzep/graphiti",
+        "https://github.com/HKUDS/LightRAG",
+        "https://inspect.aisi.org.uk/",
+        "https://github.com/langfuse/langfuse/blob/main/LICENSE",
+        "https://github.com/Arize-ai/phoenix/blob/main/LICENSE"
+      ]
+    },
+    {
+      "workstream": "YC and DSPy",
+      "urls": [
+        "https://www.ycombinator.com/companies/flagright",
+        "https://www.ycombinator.com/companies/greenlite",
+        "https://www.ycombinator.com/companies/bretton-ai",
+        "https://dspy.ai/getting-started/gepa-optimization/"
+      ]
+    },
+    {
+      "workstream": "security fetched",
+      "urls": [
+        "https://developers.openai.com/api/docs/guides/agents-api/architecture",
+        "https://developers.openai.com/api/docs/guides/agent-builder-safety",
+        "https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/security-considerations",
+        "https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices"
+      ]
+    }
+  ]
+}
