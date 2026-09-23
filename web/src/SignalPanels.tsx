@@ -1,96 +1,1174 @@
-import {useEffect, useState} from 'react';
-import {Activity, AlertTriangle, ArrowRight, Check, ChevronRight, CircleHelp, Download, GitBranch, LoaderCircle, RefreshCw, Search, ShieldCheck, Users, X} from 'lucide-react';
-import type {CollectorReport, Dossier, ResilienceMetrics, ResilienceReport, SignalReport} from './api';
-import {dateLabel, fetchApi, money, number, roleLabel, score} from './api';
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import {
+  ArrowRightIcon,
+  ArrowsClockwiseIcon,
+  CaretDownIcon,
+  DownloadSimpleIcon,
+  GraphIcon,
+  InfoIcon,
+  MagnifyingGlassIcon,
+  PulseIcon,
+  ShieldCheckIcon,
+  UsersIcon,
+  WarningCircleIcon,
+  XIcon,
+} from "@phosphor-icons/react";
+import type {
+  CollectorReport,
+  Dossier,
+  ResilienceMetrics,
+  ResilienceReport,
+  SignalReport,
+} from "./api";
+import {
+  dateLabel,
+  exactMoney,
+  fetchApi,
+  number,
+  roleLabel,
+  score,
+} from "./api";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-function State({error, loading, retry}: {error?: string; loading?: boolean; retry?: () => void}) {
-  if (error) return <div className="error-notice" role="alert"><AlertTriangle size={18}/><div><strong>Evidence check unavailable</strong><p>{error}</p>{retry && <button className="text-button" onClick={retry}><RefreshCw size={13}/>Try again</button>}</div></div>;
-  if (loading) return <div className="loading-state" role="status"><LoaderCircle className="spin" size={20}/><span>Checking bounded evidence…</span></div>;
+function State({
+  error,
+  loading,
+  retry,
+}: {
+  error?: string;
+  loading?: boolean;
+  retry?: () => void;
+}) {
+  if (error)
+    return (
+      <Alert variant="destructive">
+        <WarningCircleIcon />
+        <AlertTitle>Evidence unavailable</AlertTitle>
+        <AlertDescription>
+          <p>{error}</p>
+          {retry && (
+            <Button variant="outline" onClick={retry}>
+              <ArrowsClockwiseIcon data-icon="inline-start" />
+              Try again
+            </Button>
+          )}
+        </AlertDescription>
+      </Alert>
+    );
+  if (loading)
+    return (
+      <div className="flex flex-col gap-4" role="status">
+        <span className="sr-only">Loading bounded evidence</span>
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-36 w-full" />
+      </div>
+    );
   return null;
 }
-function Path({gids, onSelect}: {gids: number[]; onSelect: (gid: number) => void}) {
-  return <div className="entity-path" aria-label="Directed transfer path">{gids.map((gid, index) => <span key={`${gid}-${index}`}>{index > 0 && <ArrowRight size={11}/>}<button onClick={() => onSelect(gid)} className="mono">{gid}</button></span>)}</div>;
-}
-function Caveat({children}: {children: React.ReactNode}) {return <div className="signal-caveat"><CircleHelp size={15}/><p>{children}</p></div>;}
-function Empty({children}: {children: React.ReactNode}) {return <p className="signal-empty"><Check size={14}/>{children}</p>;}
 
-export function CohortPanel({selected, gids, setGids, onSelect}: {selected: number | null; gids: number[]; setGids: (gids: number[]) => void; onSelect: (gid: number) => void}) {
-  const [text, setText] = useState('');
+function Path({
+  gids,
+  onSelect,
+}: {
+  gids: number[];
+  onSelect: (gid: number) => void;
+}) {
+  return (
+    <div
+      className="flex flex-wrap items-center gap-2"
+      aria-label="Directed transfer path"
+    >
+      {gids.map((gid, index) => (
+        <span key={`${gid}-${index}`} className="flex items-center gap-2">
+          {index > 0 && (
+            <ArrowRightIcon
+              className="size-4 text-muted-foreground"
+              aria-hidden="true"
+            />
+          )}
+          <Button variant="outline" onClick={() => onSelect(gid)}>
+            {gid}
+          </Button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function Caveat({ children }: { children: ReactNode }) {
+  return (
+    <Alert role="note">
+      <InfoIcon />
+      <AlertTitle>Interpretation limit</AlertTitle>
+      <AlertDescription>{children}</AlertDescription>
+    </Alert>
+  );
+}
+
+function EvidenceEmpty({ children }: { children: ReactNode }) {
+  return (
+    <Empty className="py-6">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <MagnifyingGlassIcon />
+        </EmptyMedia>
+        <EmptyTitle>No matching evidence returned</EmptyTitle>
+        <EmptyDescription>{children}</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  );
+}
+
+function EvidenceDisclosure({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <Collapsible>
+      <CollapsibleTrigger render={<Button variant="ghost" />}>
+        <span>{title}</span>
+        <CaretDownIcon data-icon="inline-end" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-4">{children}</CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function MeasuredValues({ values }: { values: Record<string, unknown> }) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Measure</TableHead>
+          <TableHead className="text-right">Value</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {Object.entries(values).map(([key, value]) => (
+          <TableRow key={key}>
+            <TableCell>{key.replaceAll("_", " ")}</TableCell>
+            <TableCell className="max-w-72 whitespace-normal text-right tabular-nums">
+              {typeof value === "number"
+                ? number(value)
+                : typeof value === "object"
+                  ? JSON.stringify(value)
+                  : String(value)}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+export function CohortPanel({
+  selected,
+  gids,
+  setGids,
+  onSelect,
+}: {
+  selected: number | null;
+  gids: number[];
+  setGids: (gids: number[]) => void;
+  onSelect: (gid: number) => void;
+}) {
+  const [text, setText] = useState("");
   const [result, setResult] = useState<CollectorReport | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const [inputError, setInputError] = useState("");
+  const [validating, setValidating] = useState(false);
+  const validationRequest = useRef<AbortController | null>(null);
   const [loading, setLoading] = useState(false);
   const [revision, setRevision] = useState(0);
+  const inputId = useId();
   useEffect(() => {
-    setResult(null); setError('');
-    if (!gids.length) {setLoading(false); return;}
-    const controller = new AbortController(); setLoading(true);
-    fetchApi<CollectorReport>(`/collectors?gids=${gids.join(',')}`, {signal: controller.signal}).then(setResult).catch(failure => {if (!controller.signal.aborted) setError(failure.message);}).finally(() => {if (!controller.signal.aborted) setLoading(false);});
+    setValidating(false);
+    return () => validationRequest.current?.abort();
+  }, [gids]);
+  useEffect(() => {
+    setResult(null);
+    setError("");
+    if (!gids.length) {
+      setLoading(false);
+      return;
+    }
+    const controller = new AbortController();
+    setLoading(true);
+    fetchApi<CollectorReport>(`/collectors?gids=${gids.join(",")}`, {
+      signal: controller.signal,
+    })
+      .then(setResult)
+      .catch((failure) => {
+        if (!controller.signal.aborted) setError(failure.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
     return () => controller.abort();
   }, [gids, revision]);
-  function add() {
-    const tokens = text.trim().split(/[\s,;]+/).filter(Boolean);
+  async function add(selectedGid?: number) {
+    const tokens =
+      selectedGid === undefined
+        ? text
+            .trim()
+            .split(/[\s,;]+/)
+            .filter(Boolean)
+        : [String(selectedGid)];
     if (!tokens.length) return;
-    if (tokens.some(token => !/^\d+$/.test(token) || !Number.isSafeInteger(Number(token)))) {setError('Enter whole-number entity IDs, separated by commas.'); return;}
+    if (
+      tokens.some(
+        (token) => !/^\d+$/.test(token) || !Number.isSafeInteger(Number(token)),
+      )
+    ) {
+      setInputError("Enter whole-number entity IDs, separated by commas.");
+      return;
+    }
     const next = [...new Set([...gids, ...tokens.map(Number)])];
-    if (next.length > 5) {setError('Choose up to five entities for this bounded comparison.'); return;}
-    setGids(next); setText(''); setError('');
+    if (next.length > 5) {
+      setInputError("Choose up to five entities for this bounded comparison.");
+      return;
+    }
+    validationRequest.current?.abort();
+    const controller = new AbortController();
+    validationRequest.current = controller;
+    setValidating(true);
+    setInputError("");
+    try {
+      await Promise.all(
+        next
+          .filter((gid) => !gids.includes(gid))
+          .map((gid) =>
+            fetchApi(`/nodes/${gid}`, { signal: controller.signal }),
+          ),
+      );
+      if (!controller.signal.aborted) {
+        setGids(next);
+        setText("");
+      }
+    } catch (failure) {
+      if (!controller.signal.aborted)
+        setInputError(
+          failure instanceof Error
+            ? failure.message
+            : "The selected accounts could not be verified. Try again.",
+        );
+    } finally {
+      if (!controller.signal.aborted) setValidating(false);
+    }
   }
-  return <section className="cohort-panel">
-    <div className="section-heading"><div><h2><Users size={16}/>Common collectors</h2><p>Trace converging paths from up to five entities.</p></div><span className="count-badge">{gids.length}/5</span></div>
-    <form className="cohort-form" onSubmit={event => {event.preventDefault(); add();}}><label htmlFor="cohort-ids" className="sr-only">Entity IDs to compare</label><div className="search-box"><Search size={15}/><input id="cohort-ids" value={text} onChange={event => setText(event.target.value)} placeholder="Entity IDs, separated by commas" inputMode="numeric" maxLength={110}/></div><button className="primary-button" type="submit" disabled={!text.trim() || gids.length >= 5}>Add IDs</button></form>
-    <div className="cohort-chips">{gids.map(gid => <span className="cohort-chip" key={gid}><button className="mono" onClick={() => onSelect(gid)}>{gid}</button><button aria-label={`Remove entity ${gid} from comparison`} onClick={() => setGids(gids.filter(value => value !== gid))}><X size={11}/></button></span>)}{selected !== null && !gids.includes(selected) && gids.length < 5 && <button className="text-button add-selected" onClick={() => setGids([...gids, selected])}>+ Add selected entity {selected}</button>}{!!gids.length && <button className="text-button clear-cohort" onClick={() => setGids([])}>Clear</button>}</div>
-    <State error={error} loading={loading} retry={() => setRevision(value => value + 1)}/>
-    {!loading && !error && result && <><div className="collector-results">{result.items.map(item => <article key={item.gid} className="collector-item"><div className="signal-row-heading"><button onClick={() => onSelect(item.gid)} className="text-button"><strong className="mono">{item.gid}</strong><ChevronRight size={13}/></button><span>{roleLabel(item.role)}</span><strong>{item.matched_sources}/{gids.length} sources</strong></div>{item.paths.map(path => <Path key={path.source_gid} gids={path.path} onSelect={onSelect}/>)}</article>)}</div>{!result.items.length && <Empty>No common downstream collector found within three hops.</Empty>}<Caveat>{result.caveat}{result.truncated ? ` Showing ${result.items.length} of ${number(result.total)} matches.` : ''}</Caveat></>}
-    {!gids.length && <p className="signal-empty">Add known entity IDs to find shared downstream recipients. The assistant can use this same comparison.</p>}
-  </section>;
+  return (
+    <Card id="compare-entities">
+      <CardHeader>
+        <CardTitle>Common collectors</CardTitle>
+        <CardDescription>
+          Find shared downstream recipients from up to five entities.
+        </CardDescription>
+        <CardAction>
+          <Badge variant="secondary">{gids.length} / 5</Badge>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-5">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!validating) void add();
+          }}
+        >
+          <FieldGroup>
+            <Field data-invalid={!!inputError}>
+              <FieldLabel htmlFor={inputId}>Entity IDs</FieldLabel>
+              <div className="flex flex-wrap gap-2">
+                <Input
+                  id={inputId}
+                  className="min-w-40 flex-1"
+                  value={text}
+                  onChange={(event) => {
+                    setText(event.target.value);
+                    setInputError("");
+                  }}
+                  placeholder="IDs separated by commas"
+                  inputMode="numeric"
+                  maxLength={110}
+                  disabled={validating}
+                  aria-invalid={!!inputError}
+                  aria-describedby={
+                    inputError ? `${inputId}-error` : `${inputId}-help`
+                  }
+                />
+                <Button
+                  type="submit"
+                  disabled={validating || !text.trim() || gids.length >= 5}
+                >
+                  {validating ? "Checking IDs…" : "Add IDs"}
+                </Button>
+              </div>
+              <FieldDescription id={`${inputId}-help`}>
+                Only existing accounts are accepted. Paths follow at most three
+                directed steps.
+              </FieldDescription>
+              {inputError && (
+                <FieldError id={`${inputId}-error`}>{inputError}</FieldError>
+              )}
+            </Field>
+          </FieldGroup>
+        </form>
+        <div className="flex flex-wrap items-center gap-2">
+          {gids.map((gid) => (
+            <div className="flex items-center gap-1" key={gid}>
+              <Button variant="secondary" onClick={() => onSelect(gid)}>
+                {gid}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Remove entity ${gid} from comparison`}
+                onClick={() => setGids(gids.filter((value) => value !== gid))}
+              >
+                <XIcon />
+              </Button>
+            </div>
+          ))}
+          {selected !== null && !gids.includes(selected) && gids.length < 5 && (
+            <Button
+              variant="outline"
+              disabled={validating}
+              onClick={() => void add(selected)}
+            >
+              Add selected {selected}
+            </Button>
+          )}
+          {!!gids.length && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setGids([]);
+                setInputError("");
+              }}
+            >
+              Clear selection
+            </Button>
+          )}
+        </div>
+        <State
+          error={error}
+          loading={loading}
+          retry={() => setRevision((value) => value + 1)}
+        />
+        {!loading && !error && result && (
+          <div className="flex flex-col gap-5">
+            {result.items.map((item, index) => (
+              <article className="flex flex-col gap-3" key={item.gid}>
+                {index > 0 && <Separator />}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="link" onClick={() => onSelect(item.gid)}>
+                    Entity {item.gid}
+                    <ArrowRightIcon data-icon="inline-end" />
+                  </Button>
+                  <Badge variant="outline">{roleLabel(item.role)}</Badge>
+                  <Badge variant="secondary">
+                    {item.matched_sources} / {gids.length} sources
+                  </Badge>
+                </div>
+                {item.paths.map((path) => (
+                  <Path
+                    key={path.source_gid}
+                    gids={path.path}
+                    onSelect={onSelect}
+                  />
+                ))}
+              </article>
+            ))}
+            {!result.items.length && (
+              <EvidenceEmpty>
+                No shared downstream recipient was found within three hops.
+                Longer or unobserved routes remain unknown.
+              </EvidenceEmpty>
+            )}
+          </div>
+        )}
+        {!gids.length && (
+          <Empty>
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <UsersIcon />
+              </EmptyMedia>
+              <EmptyTitle>Choose accounts to compare</EmptyTitle>
+              <EmptyDescription>
+                Add known entity IDs to inspect converging paths. The assistant
+                can use the same comparison.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        )}
+      </CardContent>
+      {result && (
+        <CardFooter>
+          <p className="text-sm text-muted-foreground">
+            {result.caveat}
+            {result.truncated
+              ? ` Showing ${result.items.length} of ${number(result.total)} matches.`
+              : ""}
+          </p>
+        </CardFooter>
+      )}
+    </Card>
+  );
 }
 
-export function SignalsPanel({gid, cohort, setCohort, onSelect}: {gid: number | null; cohort: number[]; setCohort: (gids: number[]) => void; onSelect: (gid: number) => void}) {
+export function SignalsPanel({
+  gid,
+  cohort,
+  setCohort,
+  onSelect,
+}: {
+  gid: number | null;
+  cohort: number[];
+  setCohort: (gids: number[]) => void;
+  onSelect: (gid: number) => void;
+}) {
   const [data, setData] = useState<SignalReport | null>(null);
   const [dossier, setDossier] = useState<Dossier | null>(null);
-  const [error, setError] = useState('');
-  const [dossierError, setDossierError] = useState('');
+  const [error, setError] = useState("");
+  const [dossierError, setDossierError] = useState("");
   const [revision, setRevision] = useState(0);
   useEffect(() => {
-    setData(null); setDossier(null); setError(''); setDossierError('');
+    setData(null);
+    setDossier(null);
+    setError("");
+    setDossierError("");
     if (gid === null) return;
     const controller = new AbortController();
-    fetchApi<SignalReport>(`/signals/${gid}`, {signal: controller.signal}).then(setData).catch(failure => {if (!controller.signal.aborted) setError(failure.message);});
-    fetchApi<Dossier>(`/dossier/${gid}`, {signal: controller.signal}).then(setDossier).catch(failure => {if (!controller.signal.aborted) setDossierError(failure.message);});
+    fetchApi<SignalReport>(`/signals/${gid}`, { signal: controller.signal })
+      .then(setData)
+      .catch((failure) => {
+        if (!controller.signal.aborted) setError(failure.message);
+      });
+    fetchApi<Dossier>(`/dossier/${gid}`, { signal: controller.signal })
+      .then(setDossier)
+      .catch((failure) => {
+        if (!controller.signal.aborted) setDossierError(failure.message);
+      });
     return () => controller.abort();
   }, [gid, revision]);
-  return <div className="signals-view">
-    <div className="view-heading"><div><h2><Activity size={19}/>Signals worth a closer look</h2><p>Observed patterns for entity <strong className="mono">{gid ?? '—'}</strong>. Each signal is a lead to verify.</p></div>{gid !== null && <a className="secondary-button" href={`/api/dossier/${gid}?format=markdown`} download><Download size={14}/><span>Case dossier</span></a>}</div>
-    {gid === null ? <div className="empty-inline">Select an entity in the review queue.</div> : <State error={error} loading={!data && !error} retry={() => setRevision(value => value + 1)}/>}
-    {data && <>
-      <section className="signal-section"><div className="section-heading"><div><h3>Timing and coordination</h3><p>Daily records, bounded to the observation window.</p></div><span className="signal-indicator"><strong>{score(data.temporal.overlap_2d_ratio)}%</strong> two-day overlap</span></div>
-        <div className="signal-subsection"><h4>Unusual daily volume <span className="count-badge">{data.temporal.spikes.length}</span></h4>{data.temporal.spikes.length ? <div className="signal-table-wrap"><table className="signal-table"><thead><tr><th>Date</th><th>Volume</th><th>Daily baseline</th><th>Ratio</th></tr></thead><tbody>{data.temporal.spikes.map(spike => <tr key={spike.date}><td>{dateLabel(spike.date)}</td><td>{money(spike.total_kzt)}</td><td>{money(spike.baseline_median_kzt)}</td><td>{spike.ratio.toFixed(1)}×</td></tr>)}</tbody></table></div> : <Empty>No volume spikes above the configured threshold.</Empty>}</div>
-        <div className="signal-subsection"><h4>Same-day incoming groups <span className="count-badge">{data.temporal.synchronized_inflows.length}</span></h4>{data.temporal.synchronized_inflows.map(group => <div className="sync-group" key={group.date}><div><strong>{dateLabel(group.date)}</strong><span>{group.payer_count} payers</span><strong>{money(group.sum_kzt)}</strong></div><div className="inline-entities">{group.payers.map(payer => <button key={payer} onClick={() => onSelect(payer)} className="mono">{payer}</button>)}</div></div>)}{!data.temporal.synchronized_inflows.length && <Empty>No same-day payer groups above the configured threshold.</Empty>}</div>
-        <Caveat>{data.temporal.caveat}</Caveat>
-      </section>
-      <section className="signal-section"><div className="section-heading"><div><h3>Repeated two-step routes</h3><p>Visible A → B → C transfers repeated across distinct dates.</p></div><span className="count-badge">{data.routes.length}</span></div>{data.routes.map((route, index) => <article className="pattern-item" key={index}><Path gids={route.path} onSelect={onSelect}/><div className="pattern-meta"><span>{route.occurrence_count} matched occurrences</span><span>{route.distinct_start_dates} starting dates</span></div><details><summary>Inspect dated evidence</summary><div className="signal-table-wrap"><table className="signal-table"><thead><tr><th>Incoming date</th><th>Outgoing date</th><th>In / out</th><th>Lag</th></tr></thead><tbody>{route.occurrences.map((item, itemIndex) => <tr key={itemIndex}><td>{dateLabel(item.in_date)}</td><td>{dateLabel(item.out_date)}</td><td>{money(item.in_kzt)} / {money(item.out_kzt)}</td><td>{item.lag_days}d</td></tr>)}</tbody></table></div></details></article>)}{!data.routes.length && <Empty>No repeated two-step routes found within the bounded search.</Empty>}</section>
-      <section className="signal-section"><div className="section-heading"><div><h3>Cycles and return paths</h3><p>Structural loops and any compatible dated sequence.</p></div><span className="count-badge">{data.cycles.length}</span></div>{data.cycles.map((cycle, index) => <article className="pattern-item" key={index}><Path gids={cycle.path} onSelect={onSelect}/><div className="pattern-meta"><span className={cycle.chronological_example ? 'status-positive' : ''}>{cycle.kind === 'date_consistent_cycle' ? 'Compatible dates, strictly ordered' : 'Structural loop only'}</span><span>{cycle.edges.length} directed steps</span></div><details><summary>Inspect cycle evidence</summary><div className="cycle-evidence">{cycle.edges.map((edge, edgeIndex) => <div key={edgeIndex}><span className="mono">{edge.src} → {edge.dst}</span><strong>{money(edge.sum_kzt)}</strong><span>{edge.dates.slice(0,5).map(day => dateLabel(day)).join(', ')}{edge.dates.length > 5 ? '…' : ''}</span></div>)}</div>{cycle.chronological_example && <p className="chronology-note">Compatible sequence: {cycle.chronological_example.map(edge => `${edge.src} → ${edge.dst} on ${dateLabel(edge.date)}`).join('; ')}.</p>}</details></article>)}{!data.cycles.length && <Empty>No short cycles found within the bounded search.</Empty>}</section>
-      <section className="signal-section"><div className="section-heading"><div><h3>Additional anomalies</h3><p>Deterministic checks that make the review auditable.</p></div><span className="count-badge">{data.anomalies.length}</span></div>{data.anomalies.map(anomaly => <article className="anomaly-item" key={anomaly.id}><AlertTriangle size={14}/><div><h4>{anomaly.title}</h4><p>{anomaly.evidence}</p><details><summary>Measured values</summary><dl className="measured-values">{Object.entries(anomaly.metrics).map(([key,value]) => <div key={key}><dt>{key.replaceAll('_',' ')}</dt><dd>{typeof value === 'number' ? number(value) : typeof value === 'object' ? JSON.stringify(value) : String(value)}</dd></div>)}</dl></details></div></article>)}{!data.anomalies.length && <Empty>No additional configured anomalies found.</Empty>}</section>
-      <details className="signal-limits"><summary>Search bounds and interpretation limits</summary>{data.caveats.map((caveat,index) => <p key={index}>{caveat}</p>)}<dl className="measured-values">{Object.entries(data.limits).map(([key,value]) => <div key={key}><dt>{key.replaceAll('_',' ')}</dt><dd>{String(value)}</dd></div>)}</dl></details>
-    </>}
-    <CohortPanel selected={gid} gids={cohort} setGids={setCohort} onSelect={onSelect}/>
-    {dossierError && <State error={dossierError} retry={() => setRevision(value => value + 1)}/>}
-    {dossier && <section className="signal-section dossier-section"><div className="section-heading"><div><h3><ShieldCheck size={16}/>What would resolve the uncertainty?</h3><p>Missing evidence and specific next requests.</p></div><a href={`/api/dossier/${gid}`} download={`dossier-${gid}.json`} className="text-button"><Download size={13}/>JSON</a></div><div className="missing-list">{dossier.missing_evidence.map((item,index) => <p key={index}><CircleHelp size={13}/>{item}</p>)}</div><ol className="next-requests">{dossier.next_requests.map((item,index) => <li key={index}><strong>{item.request}</strong><p>{item.reason}</p></li>)}</ol><details><summary>Evidence and hypotheses</summary><h4>Evidence</h4><ul>{dossier.evidence.map((item,index) => <li key={index}>{item}</li>)}</ul><h4>Hypotheses</h4><ul>{dossier.hypotheses.map((item,index) => <li key={index}>{item}</li>)}</ul></details></section>}
-  </div>;
+  return (
+    <div className="flex min-w-0 flex-col gap-6">
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-xl font-semibold tracking-tight">
+            Investigation signals
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Observed patterns for entity{" "}
+            <strong className="font-medium text-foreground">
+              {gid ?? "—"}
+            </strong>
+            . Each is a lead to verify.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <a
+            className={buttonVariants({ variant: "outline" })}
+            href="#compare-entities"
+          >
+            <UsersIcon data-icon="inline-start" />
+            Compare entities
+          </a>
+          {gid !== null && (
+            <a
+              className={buttonVariants({ variant: "outline" })}
+              href={`/api/dossier/${gid}?format=markdown`}
+              download
+            >
+              <DownloadSimpleIcon data-icon="inline-start" />
+              Case dossier
+            </a>
+          )}
+        </div>
+      </header>
+      {gid === null ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <PulseIcon />
+            </EmptyMedia>
+            <EmptyTitle>Select an entity</EmptyTitle>
+            <EmptyDescription>
+              Choose an account from the review queue to inspect its computed
+              signals.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <State
+          error={error}
+          loading={!data && !error}
+          retry={() => setRevision((value) => value + 1)}
+        />
+      )}
+      {data && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Timing and coordinated activity</CardTitle>
+              <CardDescription>
+                Daily records, bounded to the observation window.
+              </CardDescription>
+              <CardAction>
+                <Badge variant="secondary">
+                  {score(data.temporal.overlap_2d_ratio)}% two-day overlap
+                </Badge>
+              </CardAction>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <section className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium">Daily volume spikes</h3>
+                  <Badge variant="outline">{data.temporal.spikes.length}</Badge>
+                </div>
+                {data.temporal.spikes.length ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Volume</TableHead>
+                        <TableHead className="text-right">
+                          Daily baseline
+                        </TableHead>
+                        <TableHead className="text-right">Ratio</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.temporal.spikes.map((spike) => (
+                        <TableRow key={spike.date}>
+                          <TableCell>{dateLabel(spike.date)}</TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {exactMoney(spike.total_kzt)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {exactMoney(spike.baseline_median_kzt)}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {spike.ratio.toFixed(1)}×
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <EvidenceEmpty>
+                    No daily volume spikes crossed the configured threshold.
+                  </EvidenceEmpty>
+                )}
+              </section>
+              <Separator />
+              <section className="flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-medium">Same-day incoming groups</h3>
+                  <Badge variant="outline">
+                    {data.temporal.synchronized_inflows.length}
+                  </Badge>
+                </div>
+                {data.temporal.synchronized_inflows.map((group, index) => (
+                  <div className="flex flex-col gap-3" key={group.date}>
+                    {index > 0 && <Separator />}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-sm font-medium">
+                        {dateLabel(group.date)}
+                      </span>
+                      <Badge variant="secondary">
+                        {group.payer_count} payers
+                      </Badge>
+                      <span className="text-sm tabular-nums">
+                        {exactMoney(group.sum_kzt)}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {group.payers.map((payer) => (
+                        <Button
+                          variant="outline"
+                          key={payer}
+                          onClick={() => onSelect(payer)}
+                        >
+                          {payer}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {!data.temporal.synchronized_inflows.length && (
+                  <EvidenceEmpty>
+                    No same-day payer group crossed the configured threshold.
+                  </EvidenceEmpty>
+                )}
+              </section>
+            </CardContent>
+            <CardFooter>
+              <p className="text-sm text-muted-foreground">
+                {data.temporal.caveat}
+              </p>
+            </CardFooter>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Recurring two-step routes</CardTitle>
+              <CardDescription>
+                Observed A → B → C transfers repeated across distinct dates.
+              </CardDescription>
+              <CardAction>
+                <Badge variant="secondary">{data.routes.length} routes</Badge>
+              </CardAction>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5">
+              {data.routes.map((route, index) => (
+                <article
+                  className="flex flex-col gap-3"
+                  key={route.path.join("-")}
+                >
+                  {index > 0 && <Separator />}
+                  <Path gids={route.path} onSelect={onSelect} />
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline">
+                      {route.occurrence_count} matched occurrences
+                    </Badge>
+                    <Badge variant="outline">
+                      {route.distinct_start_dates} starting dates
+                    </Badge>
+                  </div>
+                  <EvidenceDisclosure title="Inspect dated evidence">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Incoming date</TableHead>
+                          <TableHead>Outgoing date</TableHead>
+                          <TableHead className="text-right">Incoming</TableHead>
+                          <TableHead className="text-right">Outgoing</TableHead>
+                          <TableHead className="text-right">Lag</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {route.occurrences.map((item, itemIndex) => (
+                          <TableRow key={itemIndex}>
+                            <TableCell>{dateLabel(item.in_date)}</TableCell>
+                            <TableCell>{dateLabel(item.out_date)}</TableCell>
+                            <TableCell className="text-right tabular-nums">
+                              {exactMoney(item.in_kzt)}
+                            </TableCell>
+                            <TableCell className="text-right tabular-nums">
+                              {exactMoney(item.out_kzt)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {item.lag_days} days
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </EvidenceDisclosure>
+                </article>
+              ))}
+              {!data.routes.length && (
+                <EvidenceEmpty>
+                  No recurring two-step route was found within the bounded
+                  search.
+                </EvidenceEmpty>
+              )}
+            </CardContent>
+            <CardFooter>
+              <p className="text-sm text-muted-foreground">
+                Timing and similar amounts cannot establish that the same funds
+                moved along a route.
+              </p>
+            </CardFooter>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Cycles and return paths</CardTitle>
+              <CardDescription>
+                Structural loops and compatible date sequences.
+              </CardDescription>
+              <CardAction>
+                <Badge variant="secondary">{data.cycles.length} cycles</Badge>
+              </CardAction>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5">
+              {data.cycles.map((cycle, index) => (
+                <article
+                  className="flex flex-col gap-3"
+                  key={cycle.path.join("-")}
+                >
+                  {index > 0 && <Separator />}
+                  <Path gids={cycle.path} onSelect={onSelect} />
+                  <div className="flex flex-wrap gap-2">
+                    <Badge
+                      variant={
+                        cycle.chronological_example ? "secondary" : "outline"
+                      }
+                    >
+                      {cycle.kind === "date_consistent_cycle"
+                        ? "Strictly ordered dates"
+                        : "Structural loop only"}
+                    </Badge>
+                    <Badge variant="outline">
+                      {cycle.edges.length} directed steps
+                    </Badge>
+                  </div>
+                  <EvidenceDisclosure title="Inspect cycle evidence">
+                    <div className="flex flex-col gap-4">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Directed edge</TableHead>
+                            <TableHead className="text-right">
+                              Observed amount
+                            </TableHead>
+                            <TableHead>Recorded dates</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {cycle.edges.map((edge, edgeIndex) => (
+                            <TableRow key={edgeIndex}>
+                              <TableCell>
+                                {edge.src} → {edge.dst}
+                              </TableCell>
+                              <TableCell className="text-right tabular-nums">
+                                {exactMoney(edge.sum_kzt)}
+                              </TableCell>
+                              <TableCell className="max-w-80 whitespace-normal">
+                                {edge.dates
+                                  .map((day) => dateLabel(day))
+                                  .join(", ")}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                      {cycle.chronological_example && (
+                        <p className="text-sm leading-relaxed text-muted-foreground">
+                          Compatible sequence:{" "}
+                          {cycle.chronological_example
+                            .map(
+                              (edge) =>
+                                `${edge.src} → ${edge.dst} on ${dateLabel(edge.date)}`,
+                            )
+                            .join("; ")}
+                          .
+                        </p>
+                      )}
+                    </div>
+                  </EvidenceDisclosure>
+                </article>
+              ))}
+              {!data.cycles.length && (
+                <EvidenceEmpty>
+                  No short directed cycle was found within the bounded search.
+                </EvidenceEmpty>
+              )}
+            </CardContent>
+            <CardFooter>
+              <p className="text-sm text-muted-foreground">
+                Same-day transfers cannot be ordered. A cycle does not prove a
+                return of the same funds.
+              </p>
+            </CardFooter>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Depth-peer and payment anomalies</CardTitle>
+              <CardDescription>
+                Transparent numerical checks for further review.
+              </CardDescription>
+              <CardAction>
+                <Badge variant="secondary">
+                  {data.anomalies.length} signals
+                </Badge>
+              </CardAction>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-5">
+              {data.anomalies.map((anomaly, index) => (
+                <article className="flex flex-col gap-3" key={anomaly.id}>
+                  {index > 0 && <Separator />}
+                  <h3 className="font-medium">{anomaly.title}</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {anomaly.evidence}
+                  </p>
+                  <EvidenceDisclosure title="Measured values">
+                    <MeasuredValues values={anomaly.metrics} />
+                  </EvidenceDisclosure>
+                </article>
+              ))}
+              {!data.anomalies.length && (
+                <EvidenceEmpty>
+                  No additional configured anomaly was returned.
+                </EvidenceEmpty>
+              )}
+            </CardContent>
+            <CardFooter>
+              <p className="text-sm text-muted-foreground">
+                Repeated payments alone do not establish deliberate splitting.
+                Transfers below the collection threshold are not visible.
+              </p>
+            </CardFooter>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Search bounds and interpretation</CardTitle>
+              <CardDescription>
+                What this view searched, returned and cannot establish.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EvidenceDisclosure title="View bounds and caveats">
+                <div className="flex flex-col gap-4">
+                  {data.caveats.map((caveat, index) => (
+                    <p
+                      className="text-sm leading-relaxed text-muted-foreground"
+                      key={index}
+                    >
+                      {caveat}
+                    </p>
+                  ))}
+                  <MeasuredValues values={data.limits} />
+                </div>
+              </EvidenceDisclosure>
+            </CardContent>
+          </Card>
+        </>
+      )}
+      <CohortPanel
+        selected={gid}
+        gids={cohort}
+        setGids={setCohort}
+        onSelect={onSelect}
+      />
+      {dossierError && (
+        <State
+          error={dossierError}
+          retry={() => setRevision((value) => value + 1)}
+        />
+      )}
+      {dossier && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Resolve the missing evidence</CardTitle>
+            <CardDescription>
+              Specific requests to test the account's role hypothesis.
+            </CardDescription>
+            <CardAction>
+              <a
+                href={`/api/dossier/${gid}`}
+                download={`dossier-${gid}.json`}
+                className={buttonVariants({ variant: "outline" })}
+              >
+                <DownloadSimpleIcon data-icon="inline-start" />
+                JSON
+              </a>
+            </CardAction>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-6">
+            <Alert role="note">
+              <ShieldCheckIcon />
+              <AlertTitle>Known blind spots</AlertTitle>
+              <AlertDescription>
+                <ul className="flex list-disc flex-col gap-2 pl-4">
+                  {dossier.missing_evidence.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+            <ol className="flex list-decimal flex-col gap-5 pl-5">
+              {dossier.next_requests.map((item, index) => (
+                <li key={index} className="pl-1">
+                  <p className="text-sm font-medium">{item.request}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    {item.reason}
+                  </p>
+                </li>
+              ))}
+            </ol>
+            <Separator />
+            <EvidenceDisclosure title="Evidence and hypotheses">
+              <div className="flex flex-col gap-4">
+                <h3 className="font-medium">Observed evidence</h3>
+                <ul className="flex list-disc flex-col gap-2 pl-4 text-sm leading-relaxed text-muted-foreground">
+                  {dossier.evidence.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+                <Separator />
+                <h3 className="font-medium">Hypotheses for review</h3>
+                <ul className="flex list-disc flex-col gap-2 pl-4 text-sm leading-relaxed text-muted-foreground">
+                  {dossier.hypotheses.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </EvidenceDisclosure>
+          </CardContent>
+          <CardFooter>
+            <p className="text-sm text-muted-foreground">
+              Dossiers separate observations from hypotheses. They are not
+              findings of wrongdoing.
+            </p>
+          </CardFooter>
+        </Card>
+      )}
+    </div>
+  );
 }
 
-export function ResiliencePanel({onSelect}: {onSelect: (gid: number) => void}) {
+export function ResiliencePanel({
+  onSelect,
+}: {
+  onSelect: (gid: number) => void;
+}) {
   const [topN, setTopN] = useState(5);
   const [data, setData] = useState<ResilienceReport | null>(null);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [revision, setRevision] = useState(0);
-  useEffect(() => {const controller = new AbortController(); setData(null); setError(''); fetchApi<ResilienceReport>(`/resilience?top_n=${topN}`, {signal: controller.signal}).then(setData).catch(failure => {if (!controller.signal.aborted) setError(failure.message);}); return () => controller.abort();}, [topN,revision]);
-  const metrics: {key: keyof ResilienceMetrics; label: string; explanation: string}[] = [
-    {key:'nodes',label:'Visible entities',explanation:'Entities remaining in the observed graph.'},
-    {key:'edges',label:'Transfer relationships',explanation:'Directed relationships remaining after removal.'},
-    {key:'weak_components',label:'Disconnected groups',explanation:'Components when edge direction is ignored.'},
-    {key:'largest_component_nodes',label:'Largest connected group',explanation:'Entities in the largest weakly connected component.'},
-    {key:'reachable_seed_pairs',label:'Seed-to-entity reach',explanation:'Seed/entity pairs connected within four directed hops.'},
+  useEffect(() => {
+    const controller = new AbortController();
+    setData(null);
+    setError("");
+    fetchApi<ResilienceReport>(`/resilience?top_n=${topN}`, {
+      signal: controller.signal,
+    })
+      .then(setData)
+      .catch((failure) => {
+        if (!controller.signal.aborted) setError(failure.message);
+      });
+    return () => controller.abort();
+  }, [topN, revision]);
+  const metrics: {
+    key: keyof ResilienceMetrics;
+    label: string;
+    explanation: string;
+  }[] = [
+    {
+      key: "nodes",
+      label: "Visible entities",
+      explanation: "Entities in the observed graph.",
+    },
+    {
+      key: "edges",
+      label: "Transfer relationships",
+      explanation: "Directed relationships between visible entities.",
+    },
+    {
+      key: "weak_components",
+      label: "Disconnected groups",
+      explanation: "Components when edge direction is ignored.",
+    },
+    {
+      key: "largest_component_nodes",
+      label: "Largest connected group",
+      explanation: "Entities in the largest weakly connected component.",
+    },
+    {
+      key: "reachable_seed_pairs",
+      label: "Seed-to-entity reach",
+      explanation: "Ordered seed/entity pairs within four directed hops.",
+    },
   ];
-  return <div className="resilience-view"><div className="view-heading"><div><h2><GitBranch size={20}/>Test the network’s resilience</h2><p>Remove priority entities from a copy of the graph and compare connectivity.</p></div></div><section className="resilience-controls"><div><h3>Counterfactual removal</h3><p>This scenario preserves the original data and role assignments.</p></div><label htmlFor="remove-count">Remove top <select id="remove-count" value={topN} onChange={event => setTopN(Number(event.target.value))}>{[1,3,5,10,20].map(value => <option key={value} value={value}>{value}</option>)}</select> entities</label></section><State error={error} loading={!data && !error} retry={() => setRevision(value => value + 1)}/>{data && <><section className="resilience-results"><div className="resilience-table-heading"><span>Connectivity measure</span><span>Observed</span><span>After removal</span><span>Change</span></div>{metrics.map(metric => {const before = data.baseline[metric.key]; const after = data.after[metric.key]; const change = after-before; return <div className="resilience-metric" key={metric.key}><div><h3>{metric.label}</h3><p>{metric.explanation}</p></div><strong className="mono">{number(before)}</strong><strong className="mono">{number(after)}</strong><span className={`metric-change ${change ? 'has-change' : ''}`}>{change > 0 ? '+' : ''}{number(change)}</span></div>;})}<div className="resilience-visual"><div><span>Largest connected group</span><strong>{number(data.after.largest_component_nodes)} / {number(data.baseline.largest_component_nodes)} entities remain</strong></div><div className="resilience-bar"><span style={{width:`${data.baseline.largest_component_nodes ? data.after.largest_component_nodes/data.baseline.largest_component_nodes*100 : 0}%`}}/></div><p>Observed graph, before and after removal. This is not a forecast of real-world disruption.</p></div></section><section className="removed-entities"><h3>Entities removed in this scenario</h3><div className="inline-entities">{data.removed_gids.map((gid,index) => <button key={gid} onClick={() => onSelect(gid)}><span>{index+1}</span><strong className="mono">{gid}</strong><ChevronRight size={12}/></button>)}</div></section><Caveat>{data.caveat}</Caveat></>}</div>;
+  const remaining = data?.baseline.largest_component_nodes
+    ? (data.after.largest_component_nodes /
+        data.baseline.largest_component_nodes) *
+      100
+    : 0;
+  return (
+    <div className="flex min-w-0 flex-col gap-6">
+      <header className="flex flex-col gap-2">
+        <h2 className="text-xl font-semibold tracking-tight">
+          Network resilience
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Remove priority entities from a copy of the graph and compare
+          connectivity.
+        </p>
+      </header>
+      <Card>
+        <CardHeader>
+          <CardTitle>Counterfactual removal</CardTitle>
+          <CardDescription>
+            The original graph, roles and priority scores remain unchanged.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FieldGroup>
+            <Field>
+              <FieldLabel>Number of priority entities to remove</FieldLabel>
+              <ToggleGroup
+                variant="outline"
+                value={[String(topN)]}
+                onValueChange={(values) => {
+                  if (values[0]) setTopN(Number(values[0]));
+                }}
+                aria-label="Number of priority entities to remove"
+              >
+                {[1, 3, 5, 10, 20].map((value) => (
+                  <ToggleGroupItem key={value} value={String(value)}>
+                    {value}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+              <FieldDescription>
+                Choose the top 1–20 accounts ranked by heuristic review
+                priority.
+              </FieldDescription>
+            </Field>
+          </FieldGroup>
+        </CardContent>
+      </Card>
+      <State
+        error={error}
+        loading={!data && !error}
+        retry={() => setRevision((value) => value + 1)}
+      />
+      {data && (
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Connectivity comparison</CardTitle>
+              <CardDescription>
+                Observed graph versus simulated removal of{" "}
+                {data.removed_gids.length} entities.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-6">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Measure</TableHead>
+                    <TableHead className="text-right">Observed</TableHead>
+                    <TableHead className="text-right">After removal</TableHead>
+                    <TableHead className="text-right">Change</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {metrics.map((metric) => {
+                    const before = data.baseline[metric.key];
+                    const after = data.after[metric.key];
+                    const change = after - before;
+                    return (
+                      <TableRow key={metric.key}>
+                        <TableCell className="min-w-48 whitespace-normal">
+                          <p className="font-medium">{metric.label}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {metric.explanation}
+                          </p>
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {number(before)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {number(after)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {change > 0 ? "+" : ""}
+                          {number(change)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+              <Separator />
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-medium">
+                    Largest connected group retained
+                  </h3>
+                  <span className="text-sm tabular-nums">
+                    {number(data.after.largest_component_nodes)} /{" "}
+                    {number(data.baseline.largest_component_nodes)} entities
+                  </span>
+                </div>
+                <Progress
+                  value={remaining}
+                  aria-label="Share of the largest connected group remaining"
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <p className="text-sm text-muted-foreground">
+                This structural experiment is not a forecast of real-world
+                disruption or a recommendation to block accounts.
+              </p>
+            </CardFooter>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Removed in this scenario</CardTitle>
+              <CardDescription>
+                Accounts selected by deterministic priority rank.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {data.removed_gids.map((gid, index) => (
+                  <Button
+                    variant="outline"
+                    key={gid}
+                    onClick={() => onSelect(gid)}
+                  >
+                    <GraphIcon data-icon="inline-start" />
+                    <span className="text-muted-foreground">{index + 1}.</span>
+                    {gid}
+                    <ArrowRightIcon data-icon="inline-end" />
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <Caveat>{data.caveat}</Caveat>
+        </>
+      )}
+    </div>
+  );
 }

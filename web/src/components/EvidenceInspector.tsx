@@ -1,0 +1,408 @@
+import { lazy, Suspense, useState } from "react";
+import {
+  CaretDownIcon,
+  CaretRightIcon,
+  ChatCircleDotsIcon,
+  DownloadSimpleIcon,
+  FingerprintIcon,
+  InfoIcon,
+  SquaresFourIcon,
+} from "@phosphor-icons/react";
+import type { NodeDetail } from "@/api";
+import { exactMoney, money, roleLabel, score } from "@/api";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Progress, ProgressLabel } from "@/components/ui/progress";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
+import { Failure, NoResults, Pending } from "./AsyncState";
+
+// Desktop and mobile inspectors currently host separate ephemeral runtimes.
+// Within either inspector, tab changes and mobile Sheet reopening retain history.
+const AssistantPanel = lazy(() =>
+  import("@/AssistantPanel").then((module) => ({
+    default: module.AssistantPanel,
+  })),
+);
+interface Props {
+  selected: number | null;
+  node: NodeDetail | null;
+  error: string;
+  cohort: number[];
+  onSelect: (gid: number) => void;
+  onCommunity: (id: number) => void;
+  onSignals: () => void;
+  retry: () => void;
+}
+
+export function EvidenceInspector({
+  selected,
+  node,
+  error,
+  cohort,
+  onSelect,
+  onCommunity,
+  onSignals,
+  retry,
+}: Props) {
+  const [tab, setTab] = useState("evidence");
+  const [assistantOpened, setAssistantOpened] = useState(false);
+  return (
+    <Card className="flex h-full min-h-0 flex-col overflow-hidden">
+      <CardHeader>
+        <CardTitle>Entity {selected ?? "—"}</CardTitle>
+        <CardDescription>
+          {node
+            ? `Priority ${score(node.priority_score)}/100 · Depth ${node.depth}${node.is_seed ? " · Seed" : ""}`
+            : "Select an entity to review its evidence."}
+        </CardDescription>
+        {node && (
+          <CardAction>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={`Show community ${node.cluster_id}`}
+              onClick={() => onCommunity(node.cluster_id)}
+            >
+              <SquaresFourIcon />
+            </Button>
+          </CardAction>
+        )}
+      </CardHeader>
+      <CardContent className="flex min-h-0 flex-1 flex-col px-0">
+        <Tabs
+          value={tab}
+          onValueChange={(value) => {
+            setTab(String(value));
+            if (value === "assistant") setAssistantOpened(true);
+          }}
+          className="flex min-h-0 flex-1 flex-col gap-0"
+        >
+          <TabsList className="mx-4 mb-4 w-auto">
+            <TabsTrigger value="evidence">
+              <FingerprintIcon />
+              Evidence
+            </TabsTrigger>
+            <TabsTrigger value="assistant">
+              <ChatCircleDotsIcon />
+              Assistant
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent
+            value="evidence"
+            keepMounted
+            className={cn(
+              "min-h-0 overflow-y-auto px-4 pb-4",
+              tab !== "evidence" && "hidden",
+            )}
+          >
+            {selected === null ? (
+              <NoResults
+                title="Choose an entity"
+                description="Choose an account from the graph or review queue."
+              />
+            ) : error ? (
+              <Failure message={error} retry={retry} />
+            ) : node ? (
+              <Evidence
+                node={node}
+                onSelect={onSelect}
+                onCommunity={onCommunity}
+                onSignals={onSignals}
+              />
+            ) : (
+              <Pending label="Loading selected entity" />
+            )}
+          </TabsContent>
+          <TabsContent
+            value="assistant"
+            keepMounted
+            className={cn(
+              "min-h-0 overflow-hidden",
+              tab !== "assistant" && "hidden",
+            )}
+          >
+            {error ? (
+              <Failure message={error} retry={retry} />
+            ) : node && assistantOpened ? (
+              <Suspense fallback={<Pending label="Opening assistant" />}>
+                <AssistantPanel
+                  gid={node.gid}
+                  gids={cohort}
+                  onSelect={onSelect}
+                />
+              </Suspense>
+            ) : null}
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Evidence({
+  node,
+  onSelect,
+  onCommunity,
+  onSignals,
+}: {
+  node: NodeDetail;
+  onSelect: (gid: number) => void;
+  onCommunity: (id: number) => void;
+  onSignals: () => void;
+}) {
+  // The engine's first reason repeats the role evidence verbatim; show it once.
+  const signals = node.reasons
+    .filter((reason) => reason.label !== "Observed flow")
+    .map((reason) => ({
+      ...reason,
+      value:
+        reason.label === "Temporal overlap" && typeof reason.value === "number"
+          ? `${Math.round(reason.value * 100)}%`
+          : reason.value,
+    }));
+  signals.push({
+    label: "Connected communities",
+    value: node.metrics.neighbor_clusters,
+    detail:
+      "Distinct communities among direct incoming and outgoing counterparties.",
+  });
+  return (
+    <div className="flex flex-col gap-4">
+      <section className="flex flex-col gap-2" aria-label="Role hypothesis">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Badge variant="secondary">{roleLabel(node.role)}</Badge>
+          <span className="text-xs text-muted-foreground">
+            Rule fit{" "}
+            <strong className="font-medium text-foreground tabular-nums">
+              {score(node.role_score)}/100
+            </strong>
+          </span>
+        </div>
+        <p className="text-sm leading-relaxed">{node.evidence}</p>
+      </section>
+      <Alert>
+        <InfoIcon />
+        <AlertTitle>
+          {node.truncated_by_depth
+            ? "Collection boundary"
+            : node.observability.label || "Partial observation"}
+        </AlertTitle>
+        <AlertDescription>
+          {node.truncated_by_depth
+            ? "This depth-four account is where collection stops. No visible outflow does not establish a final beneficiary."
+            : node.limitations[0] ||
+              "Only transfers in the observation window are visible."}
+        </AlertDescription>
+      </Alert>
+      <section className="flex flex-col gap-3">
+        <h3 className="text-sm font-medium">Observed signals</h3>
+        <dl className="flex flex-col gap-2.5">
+          {signals.map((reason) => (
+            <div
+              key={reason.label}
+              className="flex items-center justify-between gap-3"
+            >
+              <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                {reason.label}
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-label={`About ${reason.label.toLowerCase()}`}
+                      />
+                    }
+                  >
+                    <InfoIcon />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-64">
+                    {reason.detail}
+                  </TooltipContent>
+                </Tooltip>
+              </dt>
+              <dd className="text-sm font-medium tabular-nums">
+                {reason.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+      <Collapsible>
+        <CollapsibleTrigger
+          render={
+            <Button
+              variant="outline"
+              className="group w-full justify-between"
+            />
+          }
+        >
+          Priority factors
+          <CaretDownIcon
+            data-icon="inline-end"
+            className="group-data-panel-open:rotate-180"
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-3">
+          <p className="mb-4 text-xs leading-relaxed text-muted-foreground">
+            Contributions to {score(node.priority_score)} priority points. A
+            review heuristic, never a probability of wrongdoing.
+          </p>
+          <div className="flex flex-col gap-4">
+            {node.score_factors.map((factor, index) =>
+              factor.contribution >= 0 && factor.weight > 0 ? (
+                <Progress
+                  key={index}
+                  value={factor.contribution * 100}
+                  max={factor.weight * 100}
+                  getAriaValueText={() =>
+                    `${(factor.contribution * 100).toFixed(1)} of ${(factor.weight * 100).toFixed(0)} possible priority points`
+                  }
+                >
+                  <ProgressLabel>{factor.label}</ProgressLabel>
+                  <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+                    {(factor.contribution * 100).toFixed(1)} /{" "}
+                    {(factor.weight * 100).toFixed(0)} pts
+                  </span>
+                </Progress>
+              ) : (
+                <div
+                  key={index}
+                  className="flex items-start justify-between gap-3 text-xs"
+                >
+                  <span>{factor.label}</span>
+                  <Badge variant="outline">
+                    {(factor.contribution * 100).toFixed(1)} pts
+                  </Badge>
+                </div>
+              ),
+            )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+      <Separator />
+      <section className="flex flex-col gap-3">
+        <h3 className="text-sm font-medium">Largest counterparties</h3>
+        {(["incoming", "outgoing"] as const).map((direction) => (
+          <div key={direction} className="flex flex-col gap-1">
+            <h4 className="text-xs text-muted-foreground">
+              {direction === "incoming" ? "Incoming from" : "Outgoing to"}
+            </h4>
+            {node.counterparties[direction].length ? (
+              <Table
+                aria-label={
+                  direction === "incoming"
+                    ? "Largest incoming counterparties"
+                    : "Largest outgoing counterparties"
+                }
+              >
+                <TableBody>
+                  {node.counterparties[direction].slice(0, 4).map((party) => (
+                    <TableRow key={party.gid}>
+                      <TableCell>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => onSelect(party.gid)}
+                        >
+                          {party.gid}
+                        </Button>
+                      </TableCell>
+                      <TableCell
+                        className="text-right tabular-nums"
+                        title={exactMoney(party.sum_kzt)}
+                      >
+                        {money(party.sum_kzt)}
+                      </TableCell>
+                      <TableCell className="w-8">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={`Inspect counterparty ${party.gid}`}
+                          onClick={() => onSelect(party.gid)}
+                        >
+                          <CaretRightIcon />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <p className="py-2 text-xs text-muted-foreground">
+                No observed {direction} transfers.
+              </p>
+            )}
+          </div>
+        ))}
+      </section>
+      <Collapsible>
+        <CollapsibleTrigger
+          render={
+            <Button variant="ghost" className="group w-full justify-between" />
+          }
+        >
+          Missing evidence & limits
+          <CaretDownIcon
+            data-icon="inline-end"
+            className="group-data-panel-open:rotate-180"
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="pt-2">
+          <ul className="flex list-disc flex-col gap-2 pl-5 text-xs leading-relaxed text-muted-foreground">
+            {[
+              ...new Set([...node.limitations, ...node.observability.notes]),
+            ].map((limit, index) => (
+              <li key={index}>{limit}</li>
+            ))}
+          </ul>
+        </CollapsibleContent>
+      </Collapsible>
+      <Separator />
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={onSignals}>
+          Inspect signals
+          <CaretRightIcon data-icon="inline-end" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onCommunity(node.cluster_id)}
+        >
+          <SquaresFourIcon data-icon="inline-start" />
+          Community {node.cluster_id}
+        </Button>
+      </div>
+      <a
+        className={buttonVariants({ variant: "default" })}
+        href={`/api/dossier/${node.gid}?format=markdown`}
+        download
+      >
+        <DownloadSimpleIcon data-icon="inline-start" />
+        Download entity dossier
+      </a>
+    </div>
+  );
+}

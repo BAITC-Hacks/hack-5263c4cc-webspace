@@ -1,0 +1,270 @@
+{
+  "checked_at": "2026-09-23T11:00:03.327523+00:00",
+  "repositories": [
+    {
+      "repo": "xyflow/xyflow",
+      "stars": 38477,
+      "license": "MIT",
+      "archived": false,
+      "head": "0a1f9575b25679f2880175de8d3eae21aedde921",
+      "head_date": "2026-09-01T12:02:55Z",
+      "pushed_at": "2026-09-23T10:50:07Z",
+      "url": "https://github.com/xyflow/xyflow"
+    },
+    {
+      "repo": "kieler/elkjs",
+      "stars": 2777,
+      "license": "NOASSERTION",
+      "archived": false,
+      "head": "722f1a3f63016e64f534a8b445283d4d31a88d0e",
+      "head_date": "2026-09-17T07:07:09Z",
+      "pushed_at": "2026-09-17T07:07:09Z",
+      "url": "https://github.com/kieler/elkjs"
+    },
+    {
+      "repo": "dagrejs/dagre",
+      "stars": 5801,
+      "license": "MIT",
+      "archived": false,
+      "head": "32e7f30f97f029fbfc89ce50e072d4fc16145838",
+      "head_date": "2026-08-08T15:09:07Z",
+      "pushed_at": "2026-08-08T15:09:12Z",
+      "url": "https://github.com/dagrejs/dagre"
+    },
+    {
+      "repo": "antvis/G6",
+      "stars": 12304,
+      "license": "MIT",
+      "archived": false,
+      "head": "54ece372b40aa8ecbf09add9e09544979a4be10f",
+      "head_date": "2026-09-23T10:27:31Z",
+      "pushed_at": "2026-09-23T10:35:42Z",
+      "url": "https://github.com/antvis/G6"
+    },
+    {
+      "repo": "antvis/Graphin",
+      "stars": 1099,
+      "license": "MIT",
+      "archived": false,
+      "head": "ae679a8c578bee2315f0222837e0db5be5165b38",
+      "head_date": "2025-11-18T06:02:59Z",
+      "pushed_at": "2025-11-18T06:05:14Z",
+      "url": "https://github.com/antvis/Graphin"
+    },
+    {
+      "repo": "reaviz/reagraph",
+      "stars": 1092,
+      "license": "Apache-2.0",
+      "archived": false,
+      "head": "d2f4f0822e54c8cb0866d51ccb26f08e9fe0a3fe",
+      "head_date": "2026-06-25T13:37:16Z",
+      "pushed_at": "2026-06-25T13:37:21Z",
+      "url": "https://github.com/reaviz/reagraph"
+    },
+    {
+      "repo": "jacomyal/sigma.js",
+      "stars": 12170,
+      "license": "MIT",
+      "archived": false,
+      "head": "d32c4e5bfd4c5f49724ebc21bd786b01be555dac",
+      "head_date": "2026-04-30T12:59:23Z",
+      "pushed_at": "2026-09-16T09:47:20Z",
+      "url": "https://github.com/jacomyal/sigma.js"
+    },
+    {
+      "repo": "sim51/react-sigma",
+      "stars": 238,
+      "license": "MIT",
+      "archived": false,
+      "head": "2de61da77a5ed4458ee7f30fd726f53037aa790d",
+      "head_date": "2025-12-05T09:24:59Z",
+      "pushed_at": "2025-12-05T09:28:41Z",
+      "url": "https://github.com/sim51/react-sigma"
+    },
+    {
+      "repo": "cytoscape/cytoscape.js",
+      "stars": 11221,
+      "license": "MIT",
+      "archived": false,
+      "head": "7ba634095d8954089ee5dc09ada0030f2dca134c",
+      "head_date": "2026-09-07T15:54:51Z",
+      "pushed_at": "2026-09-16T14:47:47Z",
+      "url": "https://github.com/cytoscape/cytoscape.js"
+    },
+    {
+      "repo": "cytoscape/cytoscape.js-dagre",
+      "stars": 288,
+      "license": "MIT",
+      "archived": false,
+      "head": "6e8d4373d3b6c6034182ae32cd4a5ce633b04a7e",
+      "head_date": "2026-07-27T15:55:27Z",
+      "pushed_at": "2026-08-28T12:23:29Z",
+      "url": "https://github.com/cytoscape/cytoscape.js-dagre"
+    },
+    {
+      "repo": "cytoscape/cytoscape.js-elk",
+      "stars": 57,
+      "license": "MIT",
+      "archived": false,
+      "head": "8cf116841e241626752b6be79053217f9b9e9101",
+      "head_date": "2026-04-10T16:58:18Z",
+      "pushed_at": "2026-04-10T16:58:18Z",
+      "url": "https://github.com/cytoscape/cytoscape.js-elk"
+    },
+    {
+      "repo": "apache/echarts",
+      "stars": 67379,
+      "license": "Apache-2.0",
+      "archived": false,
+      "head": "984bf46b2f905dd0ad909a2d5e6e9d66a1b6568c",
+      "head_date": "2026-09-12T00:19:56Z",
+      "pushed_at": "2026-09-16T09:16:02Z",
+      "url": "https://github.com/apache/echarts"
+    },
+    {
+      "repo": "plouc/nivo",
+      "stars": 14102,
+      "license": "MIT",
+      "archived": false,
+      "head": "0dae2c32052a573f9f1d66ec1b453b572119b265",
+      "head_date": "2026-07-21T02:40:47Z",
+      "pushed_at": "2026-07-21T02:46:40Z",
+      "url": "https://github.com/plouc/nivo"
+    },
+    {
+      "repo": "recharts/recharts",
+      "stars": 27583,
+      "license": "MIT",
+      "archived": false,
+      "head": "89f2648a98665630cfc378f4bc8fb4eafd860788",
+      "head_date": "2026-09-22T22:23:39Z",
+      "pushed_at": "2026-09-22T22:38:33Z",
+      "url": "https://github.com/recharts/recharts"
+    }
+  ],
+  "packages": [
+    {
+      "package": "@xyflow/react",
+      "version": "12.11.6",
+      "released": "2026-09-01T12:07:53.778Z",
+      "license": "MIT",
+      "peers": {
+        "react": ">=17",
+        "react-dom": ">=17",
+        "@types/react": ">=17",
+        "@types/react-dom": ">=17"
+      }
+    },
+    {
+      "package": "elkjs",
+      "version": "0.12.0",
+      "released": "2026-07-17T08:07:54.693Z",
+      "license": "EPL-2.0 OR GPL-3.0-or-later",
+      "peers": {}
+    },
+    {
+      "package": "@dagrejs/dagre",
+      "version": "3.1.1",
+      "released": "2026-08-08T15:10:12.165Z",
+      "license": "MIT",
+      "peers": {}
+    },
+    {
+      "package": "@antv/g6",
+      "version": "5.1.1",
+      "released": "2026-05-08T10:44:58.472Z",
+      "license": "MIT",
+      "peers": {}
+    },
+    {
+      "package": "@antv/graphin",
+      "version": "3.0.5",
+      "released": "2025-04-24T09:13:10.824Z",
+      "license": "MIT",
+      "peers": {
+        "react": "^18.0.0 || ^19.1.0",
+        "react-dom": "^18.0.0 || ^19.1.0"
+      }
+    },
+    {
+      "package": "reagraph",
+      "version": "4.32.0",
+      "released": "2026-06-25T13:39:05.894Z",
+      "license": "Apache-2.0",
+      "peers": {
+        "react": ">=16",
+        "react-dom": ">=16"
+      }
+    },
+    {
+      "package": "sigma",
+      "version": "3.0.3",
+      "released": "2026-04-30T13:04:02.520Z",
+      "license": "MIT",
+      "peers": {}
+    },
+    {
+      "package": "@react-sigma/core",
+      "version": "5.0.6",
+      "released": "2025-12-01T08:55:21.979Z",
+      "license": "MIT",
+      "peers": {
+        "graphology": "^0.26.0",
+        "react": "^18.0.0 || ^19.0.0",
+        "sigma": "^3.0.2"
+      }
+    },
+    {
+      "package": "cytoscape",
+      "version": "3.34.3",
+      "released": "2026-09-07T16:01:53.123Z",
+      "license": "MIT",
+      "peers": {}
+    },
+    {
+      "package": "cytoscape-dagre",
+      "version": "4.0.1",
+      "released": "2026-08-28T12:23:25.690Z",
+      "license": "MIT",
+      "peers": {
+        "cytoscape": "^3.2.22"
+      }
+    },
+    {
+      "package": "cytoscape-elk",
+      "version": "2.3.0",
+      "released": "2024-11-26T16:36:28.523Z",
+      "license": "MIT",
+      "peers": {
+        "cytoscape": "^3.2.0"
+      }
+    },
+    {
+      "package": "echarts",
+      "version": "6.1.0",
+      "released": "2026-05-19T17:52:11.076Z",
+      "license": "Apache-2.0",
+      "peers": {}
+    },
+    {
+      "package": "@nivo/sankey",
+      "version": "0.99.0",
+      "released": "2025-05-23T14:58:04.580Z",
+      "license": "MIT",
+      "peers": {
+        "react": "^16.14 || ^17.0 || ^18.0 || ^19.0"
+      }
+    },
+    {
+      "package": "recharts",
+      "version": "3.10.1",
+      "released": "2026-07-25T15:23:05.240Z",
+      "license": "MIT",
+      "peers": {
+        "react": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
+        "react-is": "^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0",
+        "react-dom": "^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0"
+      }
+    }
+  ]
+}

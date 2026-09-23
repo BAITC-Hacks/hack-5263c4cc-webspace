@@ -79,10 +79,11 @@ def make_app(analysis: Analysis | None = None) -> FastAPI:
 
     @application.get("/api/nodes")
     def nodes(request: Request, query: str = Query("", max_length=100), search: str = Query("", max_length=100),
-              role: str | None = None, cluster_id: int | None = None, limit: int = Query(50, ge=1, le=500)):
+              role: str | None = None, cluster_id: int | None = None, limit: int = Query(50, ge=1, le=500),
+              offset: int = Query(0, ge=0, le=1_000_000)):
         if role and role not in ROLES:
             raise HTTPException(400, "Unknown role")
-        return engine(request).nodes(query=query or search, role=role, cluster_id=cluster_id, limit=limit)
+        return engine(request).nodes(query=query or search, role=role, cluster_id=cluster_id, limit=limit, offset=offset)
 
     @application.get("/api/nodes/{gid}")
     def node(gid: int, request: Request):

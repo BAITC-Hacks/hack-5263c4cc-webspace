@@ -1,0 +1,383 @@
+{
+  "research_date": "2026-09-23",
+  "date_calculation": "Current date is 2026-09-23; current-year window is 2026-01-01 through 2026-09-23; the last 30 calendar days begin 2026-08-24. Current documentation and repository/package snapshots were checked on 2026-09-23. No inference that an undated page was published in 2026.",
+  "provider": "Exa connected app; authenticated GitHub REST and public PyPI package metadata used for exact repository/release verification",
+  "searches_requested": 13,
+  "sources_reviewed_by_exa_skill_count": 69,
+  "unique_search_urls": 65,
+  "workstreams": [
+    "workflow",
+    "memory",
+    "retrieval",
+    "eval",
+    "alternatives",
+    "ready",
+    "security"
+  ],
+  "searches": [
+    {
+      "stream": "workflow",
+      "query": "Official LangGraph Python durable execution interrupt resume checkpoint SQLite Postgres and LangChain agent middleware human in the loop documentation current September 2026",
+      "num_results_requested": 6,
+      "results": [
+        {
+          "url": "https://docs.langchain.com/oss/python/langgraph/interrupts"
+        },
+        {
+          "url": "https://docs.langchain.com/oss/python/langgraph/checkpointers"
+        },
+        {
+          "url": "https://docs.langchain.com/oss/python/langgraph/persistence"
+        },
+        {
+          "url": "https://reference.langchain.com/python/langgraph/checkpoints"
+        },
+        {
+          "url": "https://docs.langchain.com/oss/python/langgraph/add-memory"
+        },
+        {
+          "url": "https://docs.langchain.com/oss/python/langchain/human-in-the-loop"
+        }
+      ]
+    },
+    {
+      "stream": "memory",
+      "query": "Official Mem0 open source memory documentation infer false add delete user_id agent_id metadata filters graph memory privacy current September 2026",
+      "num_results_requested": 6,
+      "results": [
+        {
+          "url": "https://github.com/mem0ai/mem0/blob/main/docs/core-concepts/memory-operations/add.mdx"
+        },
+        {
+          "url": "https://docs.mem0.ai/core-concepts/memory-operations/add"
+        },
+        {
+          "url": "https://docs.mem0.ai/platform/features/graph-memory"
+        },
+        {
+          "url": "https://github.com/mem0ai/mem0/blob/main/docs/core-concepts/how-it-works.mdx"
+        },
+        {
+          "url": "https://github.com/mem0ai/mem0/blob/main/LLM.md"
+        },
+        {
+          "url": "https://github.com/mem0ai/mem0/blob/2274b5ac/docs/platform/features/v2-memory-filters.mdx"
+        }
+      ]
+    },
+    {
+      "stream": "retrieval",
+      "query": "Official Chroma documentation persistent client embedding functions metadata filters tenants databases authentication production September 2026",
+      "num_results_requested": 6,
+      "results": [
+        {
+          "url": "https://docs.trychroma.com/docs/run-chroma/clients"
+        },
+        {
+          "url": "https://cookbook.chromadb.dev/core/concepts/"
+        },
+        {
+          "url": "https://docs.trychroma.com/reference/python/client"
+        },
+        {
+          "url": "https://docs.trychroma.com/docs/embeddings/embedding-functions"
+        },
+        {
+          "url": "https://cookbook.chromadb.dev/core/filters/"
+        },
+        {
+          "url": "https://cookbook.chromadb.dev/core/collections/"
+        }
+      ]
+    },
+    {
+      "stream": "eval",
+      "query": "Official Inspect AI Langfuse Phoenix DeepEval Promptfoo agent evaluation tool call correctness numerical faithfulness prompt injection September 2026",
+      "num_results_requested": 6,
+      "results": [
+        {
+          "url": "https://inspect.aisi.org.uk/"
+        },
+        {
+          "url": "https://arize.com/docs/phoenix/evaluation/pre-built-metrics/tool-calling-eval"
+        },
+        {
+          "url": "https://langfuse.com/resources/engineering/ai-agent-evaluation"
+        },
+        {
+          "url": "https://inspect.aisi.org.uk/tutorial.html"
+        },
+        {
+          "url": "https://inspect.aisi.org.uk/reference/inspect_eval.html"
+        },
+        {
+          "url": "https://github.com/Arize-ai/phoenix/tree/main/packages/phoenix-evals"
+        }
+      ]
+    },
+    {
+      "stream": "workflow",
+      "query": "Official LangChain Python middleware agents create_agent tool retry model call limit context editing summarization documentation September 2026",
+      "num_results_requested": 5,
+      "results": [
+        {
+          "url": "https://docs.langchain.com/oss/python/langchain/middleware/overview"
+        },
+        {
+          "url": "https://docs.langchain.com/oss/python/langchain/agents"
+        },
+        {
+          "url": "https://reference.langchain.com/python/langchain/agents/create_agent"
+        },
+        {
+          "url": "https://reference.langchain.com/python/langchain/agents"
+        },
+        {
+          "url": "https://docs.langchain.com/oss/python/langchain/middleware/built-in"
+        }
+      ]
+    },
+    {
+      "stream": "memory",
+      "query": "Mem0 open source Memory.from_config default OpenAI qdrant sqlite history infer false graph memory delete_all self hosted local configuration official docs September 2026",
+      "num_results_requested": 5,
+      "results": [
+        {
+          "url": "https://docs.mem0.ai/open-source/configuration"
+        },
+        {
+          "url": "https://github.com/mem0ai/mem0/blob/main/mem0/memory/main.py"
+        },
+        {
+          "url": "https://github.com/mem0ai/mem0/blob/06ee1b58/docs/open-source/python-quickstart.mdx"
+        },
+        {
+          "url": "https://docs.mem0.ai/components/llms/config"
+        },
+        {
+          "url": "https://github.com/mem0ai/mem0/blob/69a832dc/mem0/memory/graph_memory.py"
+        }
+      ]
+    },
+    {
+      "stream": "retrieval",
+      "query": "Official Chroma security authentication removed version 1.0 production proxy authorization default embedding all-MiniLM-L6-v2 download documentation",
+      "num_results_requested": 5,
+      "results": [
+        {
+          "url": "https://cookbook.chromadb.dev/security/auth-1.0.x/"
+        },
+        {
+          "url": "https://cookbook.chromadb.dev/security/legacy-auth/"
+        },
+        {
+          "url": "https://chroma-core-chroma.mintlify.app/guides/authentication"
+        },
+        {
+          "url": "https://docs.trychroma.com/docs/embeddings/embedding-functions"
+        },
+        {
+          "url": "https://chroma-core-chroma.mintlify.app/integrations/sentence-transformers"
+        }
+      ]
+    },
+    {
+      "stream": "eval",
+      "query": "Langfuse self-hosted data masking OpenTelemetry tracing agent evaluation privacy and Inspect AI custom scorers official documentation",
+      "num_results_requested": 5,
+      "results": [
+        {
+          "url": "https://langfuse.com/self-hosting/security/data-masking"
+        },
+        {
+          "url": "https://langfuse.com/docs/observability/features/masking"
+        },
+        {
+          "url": "https://langfuse.com/docs/observability/sdk/advanced-features"
+        },
+        {
+          "url": "https://langfuse.com/docs/observability/sdk/overview"
+        },
+        {
+          "url": "https://langfuse.com/docs/evaluation/evaluation-methods/code-evaluators"
+        }
+      ]
+    },
+    {
+      "stream": "alternatives",
+      "query": "Official Pydantic AI durable execution Temporal DBOS Restate and LangGraph production persistent typed agents comparison architecture",
+      "num_results_requested": 5,
+      "results": [
+        {
+          "url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/temporal/"
+        },
+        {
+          "url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/"
+        },
+        {
+          "url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/backends/"
+        },
+        {
+          "url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/dbos/"
+        },
+        {
+          "url": "https://pydantic.dev/docs/ai/capabilities/durable_execution/restate/"
+        }
+      ]
+    },
+    {
+      "stream": "ready",
+      "query": "Open source financial investigation agent transaction graph anti money laundering LangGraph evidence human review GitHub ThreatSight NVIDIA AI-Q blueprint",
+      "num_results_requested": 5,
+      "results": [
+        {
+          "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection/blob/main/docs/AGENTIC_SYSTEM_OVERVIEW.md"
+        },
+        {
+          "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection/blob/staging/docs/AGENTIC_INVESTIGATION_PIPELINE.md"
+        },
+        {
+          "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection/blob/main/README.md"
+        },
+        {
+          "url": "https://github.com/serey-roth/aml-investigation"
+        },
+        {
+          "url": "https://github.com/mongodb-industry-solutions/fsi-aml-fraud-detection"
+        }
+      ]
+    },
+    {
+      "stream": "memory",
+      "query": "Official Graphiti temporal knowledge graph episodes bitemporal edge validity provenance deletion entity resolution limitations LLM requirements September 2026",
+      "num_results_requested": 5,
+      "results": [
+        {
+          "url": "https://getzep-graphiti.mintlify.app/concepts/temporal-model"
+        },
+        {
+          "url": "https://github.com/getzep/graphiti"
+        },
+        {
+          "url": "https://github.com/getzep/graphiti/blob/main/README.md"
+        },
+        {
+          "url": "https://www.getzep.com/ai-agents/temporal-knowledge-graph/"
+        },
+        {
+          "url": "https://deepwiki.com/getzep/graphiti/5.3-edge-extraction-and-resolution"
+        }
+      ]
+    },
+    {
+      "stream": "security",
+      "query": "Official OWASP agentic AI threats memory poisoning excessive agency tool authorization defense guidelines 2026",
+      "num_results_requested": 5,
+      "results": [
+        {
+          "url": "https://genai.owasp.org/download/52117"
+        },
+        {
+          "url": "https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/"
+        },
+        {
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html"
+        },
+        {
+          "url": "https://genai.owasp.org/resource/agentic-ai-threats-and-mitigations/"
+        },
+        {
+          "url": "https://genai.owasp.org/download/49059/?tmstv=1753666640"
+        }
+      ]
+    },
+    {
+      "stream": "retrieval",
+      "query": "Chroma official documentation security authentication self hosted server cloud API keys current version September 2026",
+      "num_results_requested": 5,
+      "results": [
+        {
+          "url": "https://docs.trychroma.com/reference/server-env-vars"
+        },
+        {
+          "url": "https://docs.trychroma.com/docs/run-chroma/clients"
+        },
+        {
+          "url": "https://chroma-core-chroma.mintlify.app/guides/authentication"
+        },
+        {
+          "url": "https://docs.trychroma.com/guides/deploy/gcp"
+        },
+        {
+          "url": "https://docs.trychroma.com/reference/python/client"
+        }
+      ]
+    }
+  ],
+  "fetches": [
+    {
+      "urls": [
+        "https://docs.mem0.ai/open-source/configuration",
+        "https://docs.mem0.ai/core-concepts/memory-operations/delete",
+        "https://docs.mem0.ai/open-source/features/graph-memory",
+        "https://docs.trychroma.com/docs/embeddings/embedding-functions",
+        "https://docs.trychroma.com/reference/python/client",
+        "https://cookbook.chromadb.dev/security/auth-1.0.x/"
+      ],
+      "success": true
+    },
+    {
+      "urls": [
+        "https://docs.langchain.com/oss/python/langgraph/durable-execution",
+        "https://docs.langchain.com/oss/python/langchain/middleware/built-in",
+        "https://langfuse.com/docs/observability/features/masking",
+        "https://pydantic.dev/docs/ai/capabilities/durable_execution/overview/",
+        "https://docs.mem0.ai/open-source/python-quickstart"
+      ],
+      "success": true
+    },
+    {
+      "urls": [
+        "https://docs.trychroma.com/reference/server-env-vars",
+        "https://docs.langchain.com/oss/python/langgraph/stores",
+        "https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html",
+        "https://github.com/getzep/graphiti",
+        "https://docs.mem0.ai/core-concepts/memory-operations/add"
+      ],
+      "success": true
+    }
+  ],
+  "note": "Count is sum of requested result counts, not a claim that every candidate was authoritative. Excluded secondary, stale and marketing-only results from technical conclusions. Saved URL provenance rather than full copyrighted pages. Current live docs supersede cached snippets only after direct fetch.",
+  "direct_source_inspections": [
+    {
+      "repository": "mem0ai/mem0",
+      "commit": "f8082a7345dadd9e042ebbc40b57b1498c8f6d63",
+      "url": "https://github.com/mem0ai/mem0/blob/f8082a7345dadd9e042ebbc40b57b1498c8f6d63/mem0/configs/base.py"
+    },
+    {
+      "repository": "mem0ai/mem0",
+      "commit": "f8082a7345dadd9e042ebbc40b57b1498c8f6d63",
+      "url": "https://github.com/mem0ai/mem0/blob/f8082a7345dadd9e042ebbc40b57b1498c8f6d63/mem0/memory/main.py"
+    },
+    {
+      "repository": "langfuse/langfuse",
+      "commit": "16ba8566e416acc2c1420db96862d6990567ce3f",
+      "url": "https://github.com/langfuse/langfuse/blob/16ba8566e416acc2c1420db96862d6990567ce3f/LICENSE"
+    },
+    {
+      "repository": "langfuse/langfuse",
+      "commit": "16ba8566e416acc2c1420db96862d6990567ce3f",
+      "url": "https://github.com/langfuse/langfuse/blob/16ba8566e416acc2c1420db96862d6990567ce3f/ee/LICENSE"
+    },
+    {
+      "repository": "Arize-ai/phoenix",
+      "commit": "e4b8130773c7b15de11c9337d509d0eaab4883e7",
+      "url": "https://github.com/Arize-ai/phoenix/blob/e4b8130773c7b15de11c9337d509d0eaab4883e7/LICENSE"
+    },
+    {
+      "repository": "pgvector/pgvector",
+      "commit": "7db2345ed99bc77bf33cbdc8b12bd1973210dc81",
+      "url": "https://github.com/pgvector/pgvector/blob/7db2345ed99bc77bf33cbdc8b12bd1973210dc81/LICENSE"
+    }
+  ]
+}

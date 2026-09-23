@@ -16,7 +16,7 @@ flowchart LR
   V --> E["Polars + NetworkX deterministic analysis"]
   E --> C["Three reproducible CSV exports"]
   E --> A["FastAPI evidence endpoints"]
-  A --> U["React + Cytoscape analyst workbench"]
+  A --> U["React Flow + Base UI analyst workbench"]
   U --> Q["Optional copilot question"]
   Q --> G["Fixed-scope read tools and budgets"]
   G --> E
@@ -39,9 +39,11 @@ Polars handles typed Parquet input and column aggregation. NetworkX provides acc
 
 NetworkX is not a promised million-node production architecture. At that scale: validate and aggregate in partitioned Parquet; materialize stable node/edge features; compute communities and centrality as offline versioned jobs; serve bounded subgraphs and precomputed ranks. Benchmark igraph, graph-tool, or cuGraph against the same feature contracts. Approximate expensive centrality with measured error. Use a database only when persistent incremental queries, multi-user cases, or transactional state require one. Graph GPU acceleration requires supported algorithms, graph conversion and memory checks; it is not automatic performance portability. [NetworkX backends](https://networkx.org/documentation/stable/reference/backends.html), [nx-cugraph](https://github.com/rapidsai/nx-cugraph).
 
-## ADR 3: Cytoscape for an inspectable directed graph
+## ADR 3: readable directed account network
 
-A bounded ego graph supports explicit arrowheads, role styling, selection and neighborhood traversal. It is preferable to rendering all available edges as a dense overview. The API and UI disclose truncation. Sigma.js/WebGL is a candidate for larger exploratory views, but high rendering throughput alone does not make an investigation graph comprehensible. The top-node queue remains usable without graph interaction. [Cytoscape.js](https://js.cytoscape.org/).
+React Flow 12.11.6 and Dagre 3.1.1 render a directed left-to-right account flow map. DOM-based circular account glyphs and labels support readable labels, keyboard selection and the existing Base UI components. The default view contains the selected entity and its three largest incoming and outgoing relationships; expansion is bounded to 25 loaded accounts and discloses omitted counts. The API's separate 180-account neighborhood cap remains visible. Minimum zoom preserves readable type rather than shrinking an entire network to fit. On mobile the exact transfer table is the default, with a pannable flow view available.
+
+Edges retain their recorded direction, including cycles and self-transfers. No flow conservation or identity of funds is inferred from a path. PNG export captures the current viewport. The dated [visual investigation research](research/visual-investigation-ux-2026.md) compares React Flow, G6, Sigma, Reagraph, Cytoscape, ECharts and Nivo. GPU throughput and 3D rendering do not by themselves improve the investigator's ability to read a transfer. Supporting charts use the existing Recharts/shadcn Chart system rather than adding another general chart runtime.
 
 ## ADR 4: a bounded agent with seven read tools
 
@@ -76,3 +78,14 @@ The local service binds to loopback by default. It intentionally has no authenti
 All eight optional brief categories are implemented as inspectable analytical features: observation boundaries, daily temporal patterns, recurring routes/return cycles, depth-peer and repeated-amount signals, node-removal sensitivity, natural-language graph assistance, generated dossiers, and prioritized requests for missing evidence. The criterion matrix records concrete coverage and verification. These features run separately from role assignment, so exploratory calculations cannot silently alter required exports.
 
 The additional evidence receipt hashes canonical input records, the exact CSV bytes and the analysis source. Input-order invariance and output hashes are tested. A portable Markdown dossier carries observations, hypotheses, missing evidence and the dataset/algorithm receipt. This helps reviewers reproduce a case, but a hash alone does not authenticate the bank data or validate a hypothesis.
+
+
+## ADR 7: complete Base UI dashboard and evidence-specific interaction
+
+The application uses the official shadcn Base Nova dashboard foundation: its sidebar/inset layout, branded semantic tokens, Geist typography, cards, tables, menus, tabs, fields, tooltips and responsive sheets. The registry is configured for Phosphor icons throughout. The initial compact custom green workspace was replaced following user feedback. Square UI's Dashboard 4 is the user-selected composition reference; Emails and Dashboard 2 were also inspected, but their source is not copied because the custom license carries redistribution restrictions. The official shadcn source is MIT. [The dated UI comparison](research/ui-ecosystem-2026.md) records source inspection and current versions.
+
+Investigation keeps a large directed graph and an evidence inspector. Entities exposes the complete account set through filtered server pagination instead of a fixed first-500 list. Communities, Signals and Resilience have dedicated screens. At widths below 1,280 pixels, evidence uses an accessible side sheet. Base UI owns portal positioning, keyboard interactions and focus restoration. Aqsha Lens uses a generated logo, quiet light navigation, warm-white surfaces, graphite typography and restrained copper emphasis. Overview adds a compact community distribution chart, role composition, coverage rows and priority review queue using actual dataset values. Role colors have a visible graph legend. Community colors share one mapping across views, with community IDs shown explicitly. Both the sidebar and desktop evidence panel can collapse; hiding the evidence panel retains the assistant state. Movement is limited to a short workspace entrance, sidebar changes and component feedback; reduced-motion preferences are respected.
+
+The copilot uses assistant-ui 0.15.21 LocalRuntime with a custom adapter to the existing Python endpoint. Threads are in memory, scoped to the selected account and sorted comparison cohort, and reset when that scope changes. Hiding the tab and closing/reopening the mobile evidence sheet preserve the current local thread. Crossing the desktop/mobile breakpoint currently remounts the inspector and resets its ephemeral conversation; this is a documented UI limitation, not durable case memory. Each request sends the latest question only; visible history is not supplied as model memory. The UI states this explicitly. Retry produces a new reply version; copy and local reset are browser-only actions. Cancellation stops waiting and aborts the browser request, but does not claim that already-running server/model work has stopped.
+
+Messages render real server mode, validated evidence references and tool traces. Markdown HTML and images are disabled; generated links are inert. Only separately validated evidence citations navigate within the application. Answers are displayed after the JSON response arrives, with no simulated token streaming. The assistant and Markdown renderer are separate lazy-loaded chunks. No browser OpenAI key, client-side agent tool, managed assistant cloud, or persistence adapter is configured. assistant-ui includes Radix dependencies internally; Base UI is the application's direct primitive choice, not a claim that the complete dependency tree is Radix-free.
