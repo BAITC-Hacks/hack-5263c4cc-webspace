@@ -1,48 +1,13 @@
-"""Reproducibility receipts without serializing private records into logs."""
-from __future__ import annotations
-
-import csv
-import hashlib
-import io
-import json
-from pathlib import Path
+"""Compatibility entry points for receipts and portable analyst handoffs."""
 from typing import Any
 
-
-def _digest(value: Any) -> str:
-    encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), default=str,
-                         ensure_ascii=False, allow_nan=False).encode()
-    return hashlib.sha256(encoded).hexdigest()
+from .application.exports import ExportService
+from .application.provenance import provenance
+from .domain.models import canonical_digest as _digest
 
 
 def export_content(analysis: Any, name: str) -> str:
-    columns, rows = analysis.export_rows(name)
-    stream = io.StringIO(newline="")
-    writer = csv.DictWriter(stream, fieldnames=columns)
-    writer.writeheader()
-    writer.writerows(rows)
-    return stream.getvalue()
-
-
-def provenance(analysis: Any) -> dict:
-    """Hash canonical input rows and exact CSV bytes, independent of wall-clock time."""
-    inputs = {
-        "nodes": sorted(analysis._nodes.values(), key=lambda row: row["gid"]),
-        "edges": analysis._edges,
-        "transactions": analysis._transactions,
-    }
-    table_hashes = {name: _digest(rows) for name, rows in inputs.items()}
-    engine_path = Path(__file__).with_name("engine.py")
-    algorithm_hash = hashlib.sha256(engine_path.read_bytes()).hexdigest()
-    exports = []
-    for name in ("nodes_roles.csv", "clusters.csv", "top_nodes.csv"):
-        content = export_content(analysis, name).encode()
-        exports.append({"name": name, "sha256": hashlib.sha256(content).hexdigest(),
-                        "bytes": len(content), "rows": len(analysis.export_rows(name)[1])})
-    return {"schema_version": 1, "dataset_kind": analysis.dataset_kind,
-            "dataset_sha256": _digest(table_hashes), "canonical_table_sha256": table_hashes,
-            "algorithm_sha256": algorithm_hash, "exports": exports,
-            "interpretation": "Hashes identify canonical loaded evidence and exact export bytes; they do not prove data authenticity or analytical accuracy."}
+    return ExportService(analysis).render(name).decode("utf-8")
 
 
 def dossier_markdown(dossier: dict, receipt: dict) -> str:

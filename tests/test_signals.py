@@ -94,7 +94,7 @@ def test_resilience_is_deterministic_and_does_not_mutate_the_graph():
     signals = SignalAnalysis(engine)
     original = list(engine.G.edges)
     result = signals.resilience(1)
-    assert result["removed_gids"] == [engine._ranked[0]["gid"]]
+    assert result["removed_gids"] == [engine.ranked_records()[0]["gid"]]
     assert result["baseline"] == {"nodes": 5, "edges": 3, "weak_components": 2, "largest_component_nodes": 4, "reachable_seed_pairs": 3}
     assert result["after"]["nodes"] == 4
     assert result["after"]["reachable_seed_pairs"] < 3
@@ -143,7 +143,7 @@ def test_signals_and_dossiers_do_not_change_submission_exports():
     engine = load_analysis()
     before = {name: engine.export_rows(name) for name in ("nodes_roles.csv", "clusters.csv", "top_nodes.csv")}
     signals = SignalAnalysis(engine)
-    gid = engine._ranked[0]["gid"]
+    gid = engine.ranked_records()[0]["gid"]
     first = signals.node(gid)
     assert first == SignalAnalysis(engine).node(gid)
     signals.dossier(gid)

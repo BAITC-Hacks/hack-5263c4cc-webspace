@@ -91,11 +91,13 @@ def test_local_host_boundary_and_private_response_headers():
 
 
 def test_application_shutdown_closes_optional_conversation_memory():
-    from unittest.mock import Mock
+    import sqlite3
+    import pytest
 
     application = make_app(load_analysis())
-    memory = Mock()
     with TestClient(application):
-        application.state.conversation_memory = memory
-    memory.close.assert_called_once_with()
+        memory = application.state.context.memory
+        assert memory.db.execute("SELECT 1").fetchone() == (1,)
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        memory.db.execute("SELECT 1")
     assert application.state.conversation_memory is None

@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import os
 
 import pytest
 from fastapi.testclient import TestClient
@@ -25,7 +26,8 @@ def test_memory_scope_expiry_capacity_and_no_token_on_disk(tmp_path):
         memory.begin('another account')
     assert error.value.status == 429
     assert token.encode() not in path.read_bytes()
-    assert path.stat().st_mode & 0o777 == 0o600
+    if os.name == "posix":
+        assert path.stat().st_mode & 0o777 == 0o600
     memory.close()
     reopened = ConversationMemory(str(path), ttl=10, clock=lambda: now[0])
     _, revision, history = reopened.begin('dataset-a/account-7', token)

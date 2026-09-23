@@ -224,7 +224,11 @@ class LocalSecurityMiddleware:
             await send(message)
 
         async def reject(status: int, detail: str, extra_headers: dict[str, str] | None = None) -> None:
-            await JSONResponse({"detail": detail}, status_code=status, headers=extra_headers)(scope, receive, secured_send)
+            payload = {"detail": detail}
+            if path.startswith("/api/v1/"):
+                payload = {"error": {"code": "request_failed", "message": detail,
+                                     "request_id": scope.get("state", {}).get("request_id", "")}}
+            await JSONResponse(payload, status_code=status, headers=extra_headers)(scope, receive, secured_send)
 
         if not is_api:
             await self.app(scope, receive, secured_send)
@@ -255,7 +259,7 @@ class LocalSecurityMiddleware:
             # Deliberately ignore Forwarded and X-Forwarded-* headers.
             client = scope.get("client")
             peer = str(client[0]) if client else "unknown"
-            retry_after = self.limiter.check(peer, copilot=method == "POST" and path.rstrip("/") == "/api/copilot")
+            retry_after = self.limiter.check(peer, copilot=method == "POST" and path.rstrip("/") in {"/api/copilot", "/api/v1/copilot"})
             if retry_after is not None:
                 await reject(429, "Request limit reached. Retry after the indicated delay.",
                              {"Retry-After": str(retry_after)})

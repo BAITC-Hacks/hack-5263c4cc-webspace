@@ -16,7 +16,6 @@ import sqlite3
 import threading
 import time
 from typing import Callable
-from weakref import WeakKeyDictionary
 
 from .contracts import MAX_HISTORY_CHARACTERS, MAX_HISTORY_TURNS
 
@@ -28,24 +27,8 @@ class MemoryUnavailable(Exception):
         super().__init__(detail)
 
 
-_versions: WeakKeyDictionary = WeakKeyDictionary()
-_version_lock = threading.Lock()
-
-
 def evidence_version(engine) -> str | None:
-    # Non-Analysis adapters used by offline tests need no fabricated dataset digest.
-    if not hasattr(engine, "_transactions"):
-        return None
-    with _version_lock:
-        if engine not in _versions:
-            from ..audit import provenance
-            receipt = provenance(engine)
-            sources = [Path(__file__).parent.parent / "signals.py"]
-            sources += sorted(Path(__file__).parent.glob("*.py"))
-            source_hash = hashlib.sha256(b"".join(p.read_bytes() for p in sources)).hexdigest()
-            encoded = json.dumps([receipt["dataset_sha256"], receipt["algorithm_sha256"], source_hash])
-            _versions[engine] = hashlib.sha256(encoded.encode()).hexdigest()
-        return _versions[engine]
+    return getattr(engine, "analysis_id", None)
 
 
 def scope_key(engine, gid: int, gids: list[int] | None) -> str:
@@ -67,9 +50,14 @@ class ConversationMemory:
             file = Path(path).expanduser().absolute()
             file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
             # Never follow a database symlink or silently create a world-readable file.
-            descriptor = os.open(file, os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
-            os.fchmod(descriptor, 0o600)
-            os.close(descriptor)
+            if file.is_symlink() or (file.exists() and getattr(file.lstat(), "st_file_attributes", 0) & 0x400):
+                raise OSError("Conversation storage must be a regular file")
+            descriptor = os.open(file, os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0), 0o600)
+            try:
+                if os.name == "posix":
+                    os.fchmod(descriptor, 0o600)
+            finally:
+                os.close(descriptor)
             path = str(file)
         self.db = sqlite3.connect(path or ":memory:", check_same_thread=False, timeout=2)
         self.db.execute("PRAGMA secure_delete=ON")
