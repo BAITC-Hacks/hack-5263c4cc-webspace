@@ -38,6 +38,10 @@ def main() -> None:
     else:
         analysis = load_analysis(options.data)
         files = analysis.exports(options.out)
+        from .audit import provenance
+        receipt_path = Path(options.out) / "provenance.json"
+        receipt_path.write_text(json.dumps(provenance(analysis), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        files["provenance.json"] = str(receipt_path)
         summary = analysis.summary()
         print(json.dumps({"dataset": summary["dataset"]["kind"], "counts": summary["counts"],
                           "runtime_ms": summary["runtime_ms"], "exports": files}, indent=2))
