@@ -17,3 +17,6 @@ artifacts/
 .private/
 *.log
 .DS_Store
+
+# Source event research and downloaded organizer materials stay local.
+exa-results/
