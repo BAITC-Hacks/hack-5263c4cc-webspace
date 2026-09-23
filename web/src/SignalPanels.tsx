@@ -35,7 +35,7 @@ export function CohortPanel({selected, gids, setGids, onSelect}: {selected: numb
     if (next.length > 5) {setError('Choose up to five entities for this bounded comparison.'); return;}
     setGids(next); setText(''); setError('');
   }
-  return <section className="cohort-panel">
+  return <section className="cohort-panel" id="compare-entities">
     <div className="section-heading"><div><h2><Users size={16}/>Common collectors</h2><p>Trace converging paths from up to five entities.</p></div><span className="count-badge">{gids.length}/5</span></div>
     <form className="cohort-form" onSubmit={event => {event.preventDefault(); add();}}><label htmlFor="cohort-ids" className="sr-only">Entity IDs to compare</label><div className="search-box"><Search size={15}/><input id="cohort-ids" value={text} onChange={event => setText(event.target.value)} placeholder="Entity IDs, separated by commas" inputMode="numeric" maxLength={110}/></div><button className="primary-button" type="submit" disabled={!text.trim() || gids.length >= 5}>Add IDs</button></form>
     <div className="cohort-chips">{gids.map(gid => <span className="cohort-chip" key={gid}><button className="mono" onClick={() => onSelect(gid)}>{gid}</button><button aria-label={`Remove entity ${gid} from comparison`} onClick={() => setGids(gids.filter(value => value !== gid))}><X size={11}/></button></span>)}{selected !== null && !gids.includes(selected) && gids.length < 5 && <button className="text-button add-selected" onClick={() => setGids([...gids, selected])}>+ Add selected entity {selected}</button>}{!!gids.length && <button className="text-button clear-cohort" onClick={() => setGids([])}>Clear</button>}</div>
@@ -60,7 +60,7 @@ export function SignalsPanel({gid, cohort, setCohort, onSelect}: {gid: number | 
     return () => controller.abort();
   }, [gid, revision]);
   return <div className="signals-view">
-    <div className="view-heading"><div><h2><Activity size={19}/>Signals worth a closer look</h2><p>Observed patterns for entity <strong className="mono">{gid ?? '—'}</strong>. Each signal is a lead to verify.</p></div>{gid !== null && <a className="secondary-button" href={`/api/dossier/${gid}?format=markdown`} download><Download size={14}/><span>Case dossier</span></a>}</div>
+    <div className="view-heading"><div><h2><Activity size={19}/>Signals worth a closer look</h2><p>Observed patterns for entity <strong className="mono">{gid ?? '—'}</strong>. Each signal is a lead to verify.</p></div><a className="text-button compare-shortcut" href="#compare-entities"><Users size={14}/>Compare entities</a>{gid !== null && <a className="secondary-button" href={`/api/dossier/${gid}?format=markdown`} download><Download size={14}/><span>Case dossier</span></a>}</div>
     {gid === null ? <div className="empty-inline">Select an entity in the review queue.</div> : <State error={error} loading={!data && !error} retry={() => setRevision(value => value + 1)}/>}
     {data && <>
       <section className="signal-section"><div className="section-heading"><div><h3>Timing and coordination</h3><p>Daily records, bounded to the observation window.</p></div><span className="signal-indicator"><strong>{score(data.temporal.overlap_2d_ratio)}%</strong> two-day overlap</span></div>

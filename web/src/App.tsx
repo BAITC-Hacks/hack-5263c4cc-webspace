@@ -1,9 +1,13 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowDownLeft, ArrowUpRight, ChevronDown, ChevronRight, CircleHelp, Download, ExternalLink, Fingerprint, GitBranch, Layers, LoaderCircle, MessageSquare, Network, RefreshCw, Search, Send, ShieldCheck, SlidersHorizontal, Sparkles, X, AlertTriangle, Check, Database } from 'lucide-react';
-import type { Cluster, CopilotResponse, NodeDetail, NodeSummary, Summary, GraphData } from './api';
+import { Activity, ArrowDownLeft, ArrowUpRight, ChevronDown, ChevronRight, CircleHelp, Fingerprint, GitBranch, Layers, LoaderCircle, MessageSquare, Network, RefreshCw, Search, ShieldCheck, SlidersHorizontal, X, AlertTriangle, Database } from 'lucide-react';
+import type { Cluster, NodeDetail, NodeSummary, Summary, GraphData } from './api';
 import { compact, dateLabel, exactMoney, fetchApi, money, number, roleColor, roleLabel, score } from './api';
 import { ResiliencePanel, SignalsPanel } from './SignalPanels';
+import { Tabs } from '@base-ui/react/tabs';
+import { Tooltip } from '@base-ui/react/tooltip';
+import { ExportMenu, PriorityHelp } from './WorkspaceControls';
 const NetworkGraph = lazy(() => import('./NetworkGraph'));
+const AssistantPanel = lazy(() => import('./AssistantPanel').then(module => ({default: module.AssistantPanel})));
 
 function ErrorNotice({message, retry}: {message: string; retry?: () => void}) {
   return <div className="error-notice" role="alert"><AlertTriangle size={19} /><div><strong>Unable to load evidence</strong><p>{message}</p>{retry && <button className="text-button" onClick={retry}><RefreshCw size={13} /> Try again</button>}</div></div>;
@@ -22,48 +26,30 @@ function QueueRow({node, selected, onSelect}: {node: NodeSummary; selected: bool
 }
 
 function Timeline({node}: {node: NodeDetail}) {
+  const first = node.timeline[0]?.date;
+  const last = node.timeline[node.timeline.length - 1]?.date;
+  const span = first && last ? Math.round((Date.parse(last) - Date.parse(first)) / 86_400_000) + 1 : 0;
+  // Preserve true calendar spacing within a bounded year; longer windows disclose omitted gaps.
+  const calendar = span > 0 && span <= 366;
+  const observed = new Map(node.timeline.map(day => [day.date, day]));
+  const days = calendar ? Array.from({length: span}, (_, index) => {
+    const date = new Date(Date.parse(first!) + index * 86_400_000).toISOString().slice(0, 10);
+    return observed.get(date) ?? {date, in_kzt: 0, out_kzt: 0};
+  }) : node.timeline;
   const max = Math.max(1, ...node.timeline.flatMap(day => [day.in_kzt, day.out_kzt]));
   return <section className="timeline-panel" aria-labelledby="activity-title">
     <div className="section-heading"><div><h2 id="activity-title">Daily transfer activity</h2><p>Observed flows for entity <span className="mono">{node.gid}</span></p></div><div className="chart-key"><span><i className="in-key" /> Incoming</span><span><i className="out-key" /> Outgoing</span></div></div>
     {node.timeline.length ? <><div className="timeline-chart" aria-label="Daily incoming and outgoing transfer amounts">
       <div className="chart-guide"><span>{money(max)}</span><span>0</span></div>
-      <div className="chart-columns">{node.timeline.map(day => <div className="day-column" key={day.date} tabIndex={0} aria-label={`${dateLabel(day.date)}: incoming ${exactMoney(day.in_kzt)}, outgoing ${exactMoney(day.out_kzt)}`}>
+      <div className="chart-columns">{days.map(day => <div className="day-column" key={day.date} tabIndex={0} aria-label={`${dateLabel(day.date)}: incoming ${exactMoney(day.in_kzt)}, outgoing ${exactMoney(day.out_kzt)}`}>
         <div className="day-bars"><span className="in-bar" style={{height: `${Math.max(day.in_kzt > 0 ? 2 : 0, day.in_kzt / max * 100)}%`}} /><span className="out-bar" style={{height: `${Math.max(day.out_kzt > 0 ? 2 : 0, day.out_kzt / max * 100)}%`}} /></div>
         <span className="day-tooltip"><strong>{dateLabel(day.date)}</strong><span>In {money(day.in_kzt)}</span><span>Out {money(day.out_kzt)}</span></span>
       </div>)}</div>
     </div><div className="chart-dates mono"><span>{dateLabel(node.timeline[0].date)}</span><span>{dateLabel(node.timeline[node.timeline.length - 1].date)}</span></div></> : <div className="empty-inline">No dated transfers in this observation window.</div>}
-    <div className="timeline-footer"><span><strong>{number(node.metrics.active_days)}</strong> active days</span><span>Date-level evidence. No intraday timing is inferred.</span></div>
+    <div className="timeline-footer"><span><strong>{number(node.metrics.active_days)}</strong> active days</span><span>{calendar ? 'Calendar days; gaps show no observed transfers.' : 'Active dates only; calendar gaps omitted.'} No intraday timing.</span></div>
   </section>;
 }
 
-function Copilot({gid, gids, onSelect}: {gid: number; gids: number[]; onSelect: (gid: number) => void}) {
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState<CopilotResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const controller = useRef<AbortController | null>(null);
-  useEffect(() => {controller.current?.abort(); setAnswer(null); setError(''); setQuestion(''); setLoading(false); return () => controller.current?.abort();}, [gid, gids]);
-  async function ask(text: string) {
-    if (!text.trim() || loading) return;
-    controller.current?.abort(); const active = new AbortController(); controller.current = active;
-    setQuestion(text); setLoading(true); setError('');
-    try {setAnswer(await fetchApi<CopilotResponse>('/copilot', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({gid, ...(gids.length ? {gids} : {}), question: text}), signal: active.signal}));}
-    catch (failure) {if (!active.signal.aborted) setError(failure instanceof Error ? failure.message : 'Assistant unavailable. The evidence panel is still available.');}
-    finally {if (!active.signal.aborted) setLoading(false);}
-  }
-  return <div className="copilot-content">
-    <div className="assistant-intro"><span className="assistant-mark"><Sparkles size={19} /></span><h3>A second look at the evidence</h3><p>Explore this entity using computed metrics and visible transfers. Conclusions remain hypotheses.</p></div>
-    <div className="assistant-scope"><Fingerprint size={12}/><span>Entity {gid}{gids.length ? ` / ${gids.length} comparison entities` : ' / selected evidence'}</span></div><div className="question-suggestions">{['Why is this entity prioritized?', 'What evidence is missing?', 'Explain the observed money flow.', ...(gids.length ? ['Find common collectors for my comparison.'] : [])].map(text => <button key={text} disabled={loading} onClick={() => void ask(text)}>{text}<ChevronRight size={14} /></button>)}</div>
-    <form className="question-form" onSubmit={event => {event.preventDefault(); void ask(question);}}><label htmlFor="copilot-question" className="sr-only">Ask about entity {gid}</label><textarea id="copilot-question" maxLength={1200} value={question} onChange={event => setQuestion(event.target.value)} placeholder="Ask about this entity…" rows={3} /><div><small>{question.length}/1,200</small><button type="submit" className="send-button" disabled={loading || !question.trim()} aria-label="Ask evidence assistant">{loading ? <LoaderCircle size={15} className="spin" /> : <Send size={15} />}</button></div></form>
-    {loading && <Loading label="Reviewing available evidence…" />}
-    {error && <ErrorNotice message={error} />}
-    {answer && <div className="assistant-answer" aria-live="polite"><div className="answer-heading"><Sparkles size={14} /><strong>Evidence assistant</strong><span className={`mode-tag ${answer.mode === 'openai' ? 'live' : ''}`}>{answer.mode === 'openai' ? 'AI assisted' : answer.mode === 'fallback' ? 'Local fallback' : 'Local evidence'}</span></div><div className="answer-text">{answer.answer}</div>
-      {!!answer.citations?.length && <div className="citations"><h4>Evidence references</h4>{answer.citations.map((citation, index) => <div key={index}>{citation.gid !== undefined ? <button className="text-button" onClick={() => onSelect(citation.gid!)}><Fingerprint size={12} />{citation.label || `Entity ${citation.gid}`}</button> : <strong>{citation.label || `Reference ${index + 1}`}</strong>}{citation.text && <p>{citation.text}</p>}</div>)}</div>}
-      {!!answer.limitations?.length && <div className="answer-limits">{answer.limitations.map((limit, index) => <p key={index}>{limit}</p>)}</div>}
-      {!!answer.trace?.length && <details className="tool-trace"><summary>Evidence checks ({answer.trace.length})</summary>{answer.trace.map((step, index) => <div key={index}><Check size={12} /><span>{step.tool}</span><small>{step.status}</small></div>)}</details>}
-    </div>}
-  </div>;
-}
 
 function Evidence({node, onSelect}: {node: NodeDetail; onCluster: (id: number) => void; onSelect: (gid: number) => void}) {
   return <div className="evidence-content">
@@ -105,6 +91,7 @@ export default function App() {
   const [clustersLoading, setClustersLoading] = useState(true);
   const [view, setView] = useState<'network' | 'communities' | 'signals' | 'resilience'>('network');
   const [tab, setTab] = useState<'evidence' | 'copilot'>('evidence');
+  const [assistantOpened, setAssistantOpened] = useState(false);
   const [showLimits, setShowLimits] = useState(false);
   const [colorBy, setColorBy] = useState<'role' | 'cluster'>('role');
   const [cohort, setCohort] = useState<number[]>([]);
@@ -146,18 +133,18 @@ export default function App() {
   function selectNode(gid: number) {setSelected(gid); if (view === 'communities' || view === 'resilience') setView('network');}
   function selectCluster(cluster: Cluster) {setClusterFilter(cluster.cluster_id); setRole(''); setQuery(''); setView('network'); if (cluster.top_gids[0] !== undefined) setSelected(cluster.top_gids[0]);}
 
-  return <div className="app-shell">
+  return <Tooltip.Provider delay={450}><div className="app-shell">
     <a className="skip-link" href="#review-queue">Skip to review queue</a>
     <header className="app-header"><a className="brand" href="/" aria-label="EvidenceGraph home"><span className="brand-mark"><svg width="25" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="m7 8 18 8-18 8V8Z" fill="none" stroke="currentColor" strokeWidth="1.7"/><circle cx="7" cy="8" r="3.5" fill="currentColor"/><circle cx="25" cy="16" r="3.5" fill="#b8d99c"/><circle cx="7" cy="24" r="3.5" fill="currentColor"/></svg></span><span>Evidence<span className="brand-light">Graph</span><small>Financial investigation workspace</small></span></a>
       <nav className="main-nav" aria-label="Workspace"><button className={view === 'network' ? 'active' : ''} onClick={() => setView('network')}><Network size={16} />Investigation</button><button className={view === 'communities' ? 'active' : ''} onClick={() => setView('communities')}><Layers size={16} />Communities</button><button className={view === 'signals' ? 'active' : ''} onClick={() => setView('signals')}><Activity size={16}/>Signals</button><button className={view === 'resilience' ? 'active' : ''} onClick={() => setView('resilience')}><GitBranch size={16}/>Resilience</button></nav>
-      <div className="header-actions">{summary && <span className="dataset-badge"><span />{summary.dataset.kind === 'synthetic' ? 'Synthetic demo' : 'Official dataset'}</span>}<details className="export-menu"><summary><Download size={15} /><span>Export evidence</span><ChevronDown size={13} /></summary><div><p>Required analysis outputs</p>{[['nodes_roles.csv', 'All entity roles'], ['clusters.csv', 'Community analysis'], ['top_nodes.csv', 'Priority review list']].map(([file, label]) => <a key={file} href={`/api/exports/${file}`} download><Download size={13} /><span>{label}<small>{file}</small></span><ExternalLink size={12} /></a>)}<a href="/api/provenance" download="audit-receipt.json"><ShieldCheck size={13}/><span>Reproducibility receipt<small>Dataset and export fingerprints</small></span><ExternalLink size={12}/></a>{selected !== null && <a href={`/api/dossier/${selected}?format=markdown`} download><Fingerprint size={13}/><span>Selected entity dossier<small>Evidence, hypotheses, next requests</small></span><ExternalLink size={12}/></a>}</div></details></div>
+      <div className="header-actions">{summary && <span className="dataset-badge"><span />{summary.dataset.kind === 'synthetic' ? 'Synthetic demo' : 'Official dataset'}</span>}<ExportMenu selected={selected}/></div>
     </header>
 
-    <div className="case-bar"><div className="case-title"><span className="case-symbol"><GitBranch size={19} /></span><div><h1>Follow the money. Check the evidence.</h1><p>{summary ? `${dateLabel(summary.period.start)} – ${dateLabel(summary.period.end, true)} / ${summary.dataset.name}` : 'Connecting to the investigation dataset…'}</p></div></div><div className="case-stats">{[{label: 'Entities', value: summary && number(summary.counts.nodes)}, {label: 'Transfers', value: summary && number(summary.counts.transactions)}, {label: 'Visible turnover', value: summary && money(summary.total_kzt)}, {label: 'Boundary entities', value: summary && number(summary.counts.boundary_nodes)}].map(item => <div key={item.label}><strong className="mono">{item.value ?? '—'}</strong><span>{item.label}</span></div>)}</div></div>
+    <div className="case-bar"><div className="case-title"><span className="case-symbol"><GitBranch size={19} /></span><div><h1>Transaction investigation</h1><p>{summary ? `${dateLabel(summary.period.start)} – ${dateLabel(summary.period.end, true)} / ${summary.dataset.name}` : 'Connecting to the investigation dataset…'}</p></div></div><div className="case-stats">{[{label: 'Entities', value: summary && number(summary.counts.nodes)}, {label: 'Transfers', value: summary && number(summary.counts.transactions)}, {label: 'Visible turnover', value: summary && money(summary.total_kzt)}, {label: 'Boundary entities', value: summary && number(summary.counts.boundary_nodes)}].map(item => <div key={item.label}><strong className="mono">{item.value ?? '—'}</strong><span>{item.label}</span></div>)}</div></div>
     {summaryError && <div className="global-error"><ErrorNotice message={summaryError} retry={() => setReload(value => value + 1)} /><p>Start the API server, then retry. No generated evidence is substituted for missing data.</p></div>}
 
     <main className="workspace">
-      <aside className="review-queue" id="review-queue" aria-labelledby="queue-title"><div className="queue-heading"><div><h2 id="queue-title">Review queue</h2><span className="count-badge mono">{number(nodeTotal)}</span></div><p>Ranked by relative investigation priority</p></div><div className="queue-filters"><div className="search-box"><Search size={16} /><input ref={searchInput} aria-label="Search entity identifier" placeholder="Search entity ID…" value={query} onChange={event => setQuery(event.target.value)} />{query && <button aria-label="Clear search" onClick={() => setQuery('')}><X size={13} /></button>}<kbd>/</kbd></div><div className="role-filter"><SlidersHorizontal size={13} /><select aria-label="Filter by role hypothesis" value={role} onChange={event => setRole(event.target.value)}><option value="">All role hypotheses</option>{Object.keys(summary?.role_counts ?? {}).map(item => <option key={item} value={item}>{roleLabel(item)}</option>)}</select><ChevronDown size={12} /></div>{clusterFilter !== null && <button className="filter-chip" onClick={() => setClusterFilter(null)}>Community {clusterFilter}<X size={12} /></button>}</div><div className="queue-column-head"><span>Rank / Entity</span><span title="Heuristic score; not a probability">Priority <CircleHelp size={11} /></span></div>
+      <aside className="review-queue" id="review-queue" aria-labelledby="queue-title"><div className="queue-heading"><div><h2 id="queue-title">Review queue</h2><span className="count-badge mono">{number(nodeTotal)}</span></div><p>Ranked by relative investigation priority</p></div><div className="queue-filters"><div className="search-box"><Search size={16} /><input ref={searchInput} aria-label="Search entity identifier" placeholder="Search entity ID…" value={query} onChange={event => setQuery(event.target.value)} />{query && <button aria-label="Clear search" onClick={() => setQuery('')}><X size={13} /></button>}<kbd>/</kbd></div><div className="role-filter"><SlidersHorizontal size={13} /><select aria-label="Filter by role hypothesis" value={role} onChange={event => setRole(event.target.value)}><option value="">All role hypotheses</option>{Object.keys(summary?.role_counts ?? {}).map(item => <option key={item} value={item}>{roleLabel(item)}</option>)}</select><ChevronDown size={12} /></div>{clusterFilter !== null && <button className="filter-chip" onClick={() => setClusterFilter(null)}>Community {clusterFilter}<X size={12} /></button>}</div><div className="queue-column-head"><span>Rank / Entity</span><span title="Heuristic score; not a probability">Priority <PriorityHelp/></span></div>
         <div className="queue-list" aria-busy={queueLoading}>{queueError ? <ErrorNotice message={queueError} retry={() => setReload(value => value + 1)} /> : queueLoading && nodes.length === 0 ? <Loading label="Loading queue…" /> : nodes.length ? nodes.map(node => <QueueRow key={node.gid} node={node} selected={selected === node.gid} onSelect={() => selectNode(node.gid)} />) : <div className="empty-queue"><Search size={22} /><strong>No matching entities</strong><p>Try another identifier or clear the active filters.</p><button className="text-button" onClick={() => {setQuery(''); setRole(''); setClusterFilter(null);}}>Clear filters</button></div>}</div><div className="queue-footer"><ShieldCheck size={13} /><span>Scores guide review. They do not establish guilt.</span>{nodeTotal > nodes.length && <small>Showing first {nodes.length}. Search or filter to narrow.</small>}</div></aside>
 
       <div className="analysis-main">{view === 'communities' ? <Communities clusters={clusters} error={clustersError} loading={clustersLoading} retry={() => setReload(value => value + 1)} onSelect={selectCluster} /> : view === 'signals' ? <SignalsPanel gid={selected} cohort={cohort} setCohort={setCohort} onSelect={selectNode}/> : view === 'resilience' ? <ResiliencePanel onSelect={selectNode}/> : <><section className="graph-panel" aria-labelledby="graph-title"><div className="graph-heading"><div><h2 id="graph-title">The visible money trail</h2><p>{graph ? `${number(graph.nodes.length)} entities / ${number(graph.edges.length)} directed relationships` : 'Exploring the selected entity’s neighbourhood'}</p></div><div className="graph-controls"><div className="graph-scope"><label htmlFor="graph-colors">Color</label><select id="graph-colors" value={colorBy} onChange={event => setColorBy(event.target.value as 'role' | 'cluster')}><option value="role">Role</option><option value="cluster">Community</option></select></div><div className="graph-scope"><label htmlFor="graph-hops">Scope</label><select id="graph-hops" value={hops} onChange={event => setHops(Number(event.target.value))}><option value={1}>1 hop</option><option value={2}>2 hops</option></select></div></div></div>
@@ -167,7 +154,18 @@ export default function App() {
       </section>{detail && <Timeline node={detail} />}</>}
       <footer className="workspace-footer"><span><Database size={12} />{summary?.dataset.kind === 'synthetic' ? 'Synthetic demonstration data' : 'Local dataset'}<span className="footer-divider" />KZT / date-level records</span><span>{summary ? `Analysis ${compact(summary.runtime_ms)} ms` : 'Analysis loading'}</span></footer></div>
 
-      <aside className="detail-panel" aria-label="Selected entity evidence"><div className="detail-heading"><span className="field-label">Selected entity</span><div><h2 className="mono">{selected ?? '—'}</h2>{detail && <span className="depth-label">Depth {detail.depth}{detail.is_seed && ' / Seed'}</span>}</div>{detail && <button className="community-link" onClick={() => {setView('communities');}}><Layers size={12} />Community {detail.cluster_id}<ChevronRight size={12} /></button>}</div><div className="detail-tabs" role="tablist" aria-label="Entity analysis" onKeyDown={event => {if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {event.preventDefault(); const next = tab === 'evidence' ? 'copilot' : 'evidence'; setTab(next); document.getElementById(`tab-${next}`)?.focus();}}}><button id="tab-evidence" role="tab" aria-controls="entity-tabpanel" tabIndex={tab === 'evidence' ? 0 : -1} aria-selected={tab === 'evidence'} className={tab === 'evidence' ? 'active' : ''} onClick={() => setTab('evidence')}><Fingerprint size={14} />Evidence</button><button id="tab-copilot" role="tab" aria-controls="entity-tabpanel" tabIndex={tab === 'copilot' ? 0 : -1} aria-selected={tab === 'copilot'} className={tab === 'copilot' ? 'active' : ''} onClick={() => setTab('copilot')}><MessageSquare size={14} />Ask assistant<span className="tiny-spark"><Sparkles size={10} /></span></button></div><div className="detail-body" id="entity-tabpanel" role="tabpanel" aria-labelledby={`tab-${tab}`}>{detailError ? <ErrorNotice message={detailError} retry={() => setReload(value => value + 1)} /> : detail ? tab === 'evidence' ? <Evidence node={detail} onSelect={selectNode} onCluster={id => setClusterFilter(id)} /> : <Copilot gid={detail.gid} gids={cohort} onSelect={selectNode} /> : <Loading label={selected ? 'Loading entity evidence…' : 'Select an entity to inspect'} />}</div></aside>
+      <aside className="detail-panel" aria-label="Selected entity evidence"><div className="detail-heading"><span className="field-label">Selected entity</span><div><h2 className="mono">{selected ?? '—'}</h2>{detail && <span className="depth-label">Depth {detail.depth}{detail.is_seed && ' / Seed'}</span>}</div>{detail && <button className="community-link" onClick={() => {setView('communities');}}><Layers size={12} />Community {detail.cluster_id}<ChevronRight size={12} /></button>}</div><Tabs.Root className="detail-tabs-root" value={tab} onValueChange={value => {if (value === 'evidence' || value === 'copilot') {setTab(value); if (value === 'copilot') setAssistantOpened(true);}}}>
+        <Tabs.List className="detail-tabs" aria-label="Entity analysis">
+          <Tabs.Tab value="evidence"><Fingerprint size={14}/>Evidence</Tabs.Tab>
+          <Tabs.Tab value="copilot"><MessageSquare size={14}/>Ask assistant</Tabs.Tab>
+        </Tabs.List>
+        <Tabs.Panel value="evidence" className="detail-body" keepMounted>
+          {detailError ? <ErrorNotice message={detailError} retry={() => setReload(value => value + 1)}/> : detail ? <Evidence node={detail} onSelect={selectNode} onCluster={id => setClusterFilter(id)}/> : <Loading label={selected ? 'Loading entity evidence…' : 'Select an entity to inspect'}/>}
+        </Tabs.Panel>
+        <Tabs.Panel value="copilot" className="detail-body assistant-tab-body" keepMounted>
+          {detailError ? <ErrorNotice message={detailError} retry={() => setReload(value => value + 1)}/> : detail && assistantOpened ? <Suspense fallback={<Loading label="Opening evidence assistant…"/>}><AssistantPanel gid={detail.gid} gids={cohort} onSelect={selectNode}/></Suspense> : null}
+        </Tabs.Panel>
+      </Tabs.Root></aside>
     </main>
-  </div>;
+  </div></Tooltip.Provider>;
 }
