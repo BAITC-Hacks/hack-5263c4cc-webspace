@@ -45,16 +45,24 @@ def run(live: bool) -> dict:
         }
         if name == 'boundary_uncertainty':
             checks['mentions_observation_limit'] = any(term in text for term in ['boundary', 'depth', 'cutoff', 'cut-off', 'observation limit'])
-        if name == 'cohort_collectors' and result['mode'] == 'openai':
+        if live:
+            checks['model_completed'] = result['mode'] == 'openai' and result['execution']['model_rounds'] > 0
+        if name == 'factual_evidence':
+            checks['retrieves_account_evidence'] = any(step['tool'] in {'inspect_selected_node', 'inspect_investigation_brief'} for step in result['trace'])
+        if name == 'cohort_collectors':
             checks['retrieves_collectors'] = any(step['tool'] == 'find_common_collectors' for step in result['trace'])
-        if name == 'temporal_patterns' and result['mode'] == 'openai':
+        if name == 'temporal_patterns':
             checks['retrieves_patterns'] = any(step['tool'] == 'inspect_patterns' for step in result['trace'])
-        if name == 'resilience' and result['mode'] == 'openai':
+        if name == 'resilience':
             checks['retrieves_simulation'] = any(step['tool'] == 'simulate_top_removal' for step in result['trace'])
         results.append({'case': name, 'mode': result['mode'], 'seconds': round(perf_counter()-start,3),
                         'checks': checks, 'trace': result['trace'], 'response': result})
         print(json.dumps({'case':name,'mode':result['mode'],'checks':checks}), flush=True)
+    completed = sum(case['mode'] == 'openai' and case['response']['execution']['model_rounds'] > 0 for case in results)
+    passed = all(all(case['checks'].values()) for case in results)
+    status = 'not_evaluated' if live and completed == 0 else 'passed' if passed else 'failed'
     return {'dataset':'original synthetic fixture', 'live_requested':live,
+            'status': status, 'passed': passed, 'model_completed_cases': completed,
             'warning':'These are contract smoke checks, not financial role accuracy or a complete semantic-safety evaluation.',
             'cases':results}
 
@@ -67,4 +75,4 @@ if __name__ == '__main__':
     report=run(args.live)
     target=Path(args.out);target.parent.mkdir(parents=True,exist_ok=True)
     target.write_text(json.dumps(report,indent=2))
-    raise SystemExit(0 if all(all(case['checks'].values()) for case in report['cases']) else 1)
+    raise SystemExit(0 if report['passed'] else 1)

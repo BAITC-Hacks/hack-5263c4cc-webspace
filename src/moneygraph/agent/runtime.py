@@ -1,7 +1,6 @@
 """Provider-neutral bounded execution over the fixed evidence registry."""
 from __future__ import annotations
 
-import hashlib
 import json
 import os
 import secrets
@@ -14,7 +13,9 @@ from pydantic import ValidationError
 
 from .contracts import CopilotRequest, ModelAnswer, SYSTEM, FORMAT, MAX_ROUNDS, MAX_TOOL_CALLS
 from .evidence import TOOLS, evidence_tool
+from .grounding import GroundingError, ground_answer
 from .memory import evidence_version
+from .offline import local_workflow, source_citation
 
 MAX_RUN_SECONDS = 45.0
 MAX_CONTEXT_CHARACTERS = 80000
@@ -73,7 +74,33 @@ def run_investigation(engine: Any, request: CopilotRequest, client: Any = None, 
         return seconds
 
     if client is None and not enabled:
-        return finish(offline_answer(node))
+        local_citations = []
+
+        def read_local(tool: str) -> dict:
+            remaining()
+            if execution["tool_calls"] >= MAX_TOOL_CALLS:
+                raise RunLimit("tool_budget_exhausted")
+            tool_started = clock()
+            execution["tool_calls"] += 1
+            result = evidence_tool(tool, "{}", engine, request.gid, request.gids)
+            citation = source_citation(result, tool, request.gid, execution["evidence_version"])
+            remaining()
+            local_citations.append(citation)
+            trace.append({"tool": tool, "status": "complete", "elapsed_ms": round((clock() - tool_started) * 1000)})
+            return result
+
+        try:
+            result = local_workflow(request.question, read_local)
+            if result is None:
+                read_local("inspect_selected_node")
+                result = offline_answer(node)
+                result["local_workflow"] = {"action": "summary", "action_label": "Local account summary", "recognized": False}
+            result["citations"] = local_citations
+            return finish(result)
+        except RunLimit as exc:
+            return fallback(str(exc))
+        except (ValueError, TypeError):
+            return fallback("local_evidence_failed")
     with _cooldown_lock:
         cooling = client is None and time.monotonic() < _cooldown_until
     if cooling:
@@ -128,7 +155,13 @@ def run_investigation(engine: Any, request: CopilotRequest, client: Any = None, 
                 result = ModelAnswer.model_validate_json(response.output_text)
                 if any(c not in citations for c in result.citations):
                     raise ValueError("Unretrieved citation")
+                if any(observation.evidence_id not in result.citations for observation in result.observations):
+                    raise GroundingError("uncited_observation")
+                checked = ground_answer(answer=result.answer, observations=result.observations,
+                                        evidence_by_id={c: citations[c]["source"] for c in result.citations})
+                remaining()
                 return finish({"answer": result.answer, "mode": "openai", "model": model,
+                               **checked,
                                "citations": [citations[c] for c in dict.fromkeys(result.citations)],
                                "limitations": list(dict.fromkeys(result.limitations + list(node.get("limitations", [])) + [
                                    "AI interpretation requires human review. Scores are not probabilities."]))})
@@ -159,11 +192,7 @@ def run_investigation(engine: Any, request: CopilotRequest, client: Any = None, 
                     raise RunLimit("context_budget_exhausted")
                 remaining()
                 evidence_id = result["evidence_id"]
-                citations[evidence_id] = {"label": evidence_id, "gid": request.gid,
-                                         "text": f"Retrieved by {call.name}",
-                                         "kind": evidence_id.split(":", 1)[0],
-                                         "evidence_version": execution["evidence_version"],
-                                         "payload_sha256": hashlib.sha256(encoded.encode()).hexdigest()}
+                citations[evidence_id] = source_citation(result, call.name, request.gid, execution["evidence_version"])
                 trace.append({"tool": call.name, "status": "cached" if cached else "complete",
                               "elapsed_ms": round((clock() - tool_started) * 1000)})
                 inputs.append({"type": "function_call_output", "call_id": call.call_id, "output": encoded})
@@ -176,6 +205,8 @@ def run_investigation(engine: Any, request: CopilotRequest, client: Any = None, 
         return fallback(str(exc))
     except OpenAIError:
         return fallback("provider_error")
+    except GroundingError:
+        return fallback("grounding_failed")
     except (ValidationError, ValueError, TypeError):
         return fallback("validation_failed")
     finally:

@@ -88,3 +88,58 @@ def test_blank_answer_is_rejected_even_with_valid_citation():
     result = run_investigation(Engine(), CopilotRequest(gid=7, question='Explain'), FakeClient([tool_response(), answer]))
     assert result['mode'] == 'fallback'
     assert result['execution']['fallback_code'] == 'validation_failed'
+
+
+def test_fabricated_amount_with_valid_citation_fails_grounding_without_echo():
+    answer = answer_response()
+    answer.output_text = json.dumps({'answer': 'Visible incoming flow is 999999999 KZT.',
+                                    'citations': ['node:7'], 'limitations': [], 'observations': []})
+    result = run_investigation(Engine(), CopilotRequest(gid=7, question='Explain'), FakeClient([tool_response(), answer]))
+    assert result['mode'] == 'fallback'
+    assert result['execution']['fallback_code'] == 'grounding_failed'
+    assert '999999999' not in json.dumps(result)
+    assert '9000' in result['answer']
+    assert 'observations' not in result
+
+
+def test_valid_observations_return_server_values_and_honest_coverage():
+    answer = answer_response()
+    content = json.loads(answer.output_text)
+    content['observations'] = [
+        {'evidence_id': 'node:7', 'path': '/data/depth', 'value': '4.00'},
+        {'evidence_id': 'node:7', 'path': '/data/gid', 'value': '7'},
+    ]
+    answer.output_text = json.dumps(content)
+    result = run_investigation(Engine(), CopilotRequest(gid=7, question='Explain'), FakeClient([tool_response(), answer]))
+    assert result['mode'] == 'openai'
+    assert result['observations'] == [
+        {'evidence_id': 'node:7', 'path': '/data/depth', 'label': 'Observed depth', 'value': '4'},
+        {'evidence_id': 'node:7', 'path': '/data/gid', 'label': 'Account ID', 'value': '7'},
+    ]
+    assert result['grounding']['typed_observations_checked'] == 2
+    assert result['grounding']['numeric_literals_checked'] == 2
+    assert result['grounding']['prose_entailment'] == 'not_checked'
+
+
+def test_observation_source_must_be_in_final_citations_even_if_retrieved():
+    second = tool_response('inspect_neighborhood')
+    second.output[0].call_id = 'call2'
+    answer = answer_response()
+    answer.output_text = json.dumps({'answer': 'Visible evidence is incomplete.',
+        'citations': ['node:7'], 'limitations': [],
+        'observations': [{'evidence_id': 'graph:7', 'path': '/data/nodes/0/gid', 'value': '7'}]})
+    result = run_investigation(Engine(), CopilotRequest(gid=7, question='Explain'),
+                               FakeClient([tool_response(), second, answer]))
+    assert result['mode'] == 'fallback'
+    assert result['execution']['fallback_code'] == 'grounding_failed'
+    assert len(result['trace']) == 2
+
+
+def test_wrong_typed_value_fails_even_when_its_number_exists_elsewhere():
+    answer = answer_response()
+    answer.output_text = json.dumps({'answer': 'Visible evidence is incomplete.',
+        'citations': ['node:7'], 'limitations': [],
+        'observations': [{'evidence_id': 'node:7', 'path': '/data/depth', 'value': '7'}]})
+    result = run_investigation(Engine(), CopilotRequest(gid=7, question='Explain'), FakeClient([tool_response(), answer]))
+    assert result['mode'] == 'fallback'
+    assert result['execution']['fallback_code'] == 'grounding_failed'
