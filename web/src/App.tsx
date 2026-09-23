@@ -1,171 +1,895 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Activity, ArrowDownLeft, ArrowUpRight, ChevronDown, ChevronRight, CircleHelp, Fingerprint, GitBranch, Layers, LoaderCircle, MessageSquare, Network, RefreshCw, Search, ShieldCheck, SlidersHorizontal, X, AlertTriangle, Database } from 'lucide-react';
-import type { Cluster, NodeDetail, NodeSummary, Summary, GraphData } from './api';
-import { compact, dateLabel, exactMoney, fetchApi, money, number, roleColor, roleLabel, score } from './api';
-import { ResiliencePanel, SignalsPanel } from './SignalPanels';
-import { Tabs } from '@base-ui/react/tabs';
-import { Tooltip } from '@base-ui/react/tooltip';
-import { ExportMenu, PriorityHelp } from './WorkspaceControls';
-const NetworkGraph = lazy(() => import('./NetworkGraph'));
-const AssistantPanel = lazy(() => import('./AssistantPanel').then(module => ({default: module.AssistantPanel})));
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import type { CSSProperties, FormEvent } from "react";
+import {
+  ArrowsClockwiseIcon,
+  ArrowElbowDownLeftIcon,
+  CaretDownIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
+  DatabaseIcon,
+  FingerprintIcon,
+  InfoIcon,
+  MagnifyingGlassIcon,
+  SquaresFourIcon,
+} from "@phosphor-icons/react";
+import type {
+  Cluster,
+  GraphData,
+  NodeDetail,
+  NodeSummary,
+  Summary,
+} from "@/api";
+import {
+  dateLabel,
+  exactMoney,
+  fetchApi,
+  money,
+  number,
+  roleLabel,
+  score,
+} from "@/api";
+import { AppSidebar, workspaceViews } from "@/components/app-sidebar";
+import type { WorkspaceView } from "@/components/app-sidebar";
+import { EntityRows, EntityTable } from "@/components/EntityTable";
+import { EvidenceInspector } from "@/components/EvidenceInspector";
+import { ExportMenu } from "@/components/ExportMenu";
+import { Failure, NoResults, Pending } from "@/components/AsyncState";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 
-function ErrorNotice({message, retry}: {message: string; retry?: () => void}) {
-  return <div className="error-notice" role="alert"><AlertTriangle size={19} /><div><strong>Unable to load evidence</strong><p>{message}</p>{retry && <button className="text-button" onClick={retry}><RefreshCw size={13} /> Try again</button>}</div></div>;
-}
+const Overview = lazy(() => import("@/Overview"));
+const NetworkGraph = lazy(() => import("@/NetworkGraph"));
+const DailyTimeline = lazy(() =>
+  import("@/DailyTimeline").then((module) => ({
+    default: module.DailyTimeline,
+  })),
+);
+const SignalsPanel = lazy(() =>
+  import("@/SignalPanels").then((module) => ({ default: module.SignalsPanel })),
+);
+const ResiliencePanel = lazy(() =>
+  import("@/SignalPanels").then((module) => ({
+    default: module.ResiliencePanel,
+  })),
+);
 
-function Loading({label = 'Loading evidence…'}: {label?: string}) {return <div className="loading-state" role="status"><LoaderCircle size={20} className="spin" /><span>{label}</span></div>;}
-
-function RoleTag({role}: {role: string}) {return <span className="role-tag"><span className="role-dot" style={{background: roleColor(role)}} />{roleLabel(role)}</span>;}
-
-function QueueRow({node, selected, onSelect}: {node: NodeSummary; selected: boolean; onSelect: () => void}) {
-  return <button className={`queue-row ${selected ? 'selected' : ''}`} onClick={onSelect} aria-pressed={selected}>
-    <span className="rank-number mono">{String(node.rank).padStart(2, '0')}</span>
-    <span className="queue-entity"><span className="entity-id mono">{node.gid}{node.is_seed && <span className="seed-mini" title="Seed entity">◆</span>}</span><span className="queue-role">{roleLabel(node.role)}</span></span>
-    <span className="queue-priority"><strong className="mono">{score(node.priority_score)}</strong><span className="priority-track"><span style={{width: `${score(node.priority_score)}%`, background: selected ? '#215742' : roleColor(node.role)}} /></span></span>
-  </button>;
-}
-
-function Timeline({node}: {node: NodeDetail}) {
-  const first = node.timeline[0]?.date;
-  const last = node.timeline[node.timeline.length - 1]?.date;
-  const span = first && last ? Math.round((Date.parse(last) - Date.parse(first)) / 86_400_000) + 1 : 0;
-  // Preserve true calendar spacing within a bounded year; longer windows disclose omitted gaps.
-  const calendar = span > 0 && span <= 366;
-  const observed = new Map(node.timeline.map(day => [day.date, day]));
-  const days = calendar ? Array.from({length: span}, (_, index) => {
-    const date = new Date(Date.parse(first!) + index * 86_400_000).toISOString().slice(0, 10);
-    return observed.get(date) ?? {date, in_kzt: 0, out_kzt: 0};
-  }) : node.timeline;
-  const max = Math.max(1, ...node.timeline.flatMap(day => [day.in_kzt, day.out_kzt]));
-  return <section className="timeline-panel" aria-labelledby="activity-title">
-    <div className="section-heading"><div><h2 id="activity-title">Daily transfer activity</h2><p>Observed flows for entity <span className="mono">{node.gid}</span></p></div><div className="chart-key"><span><i className="in-key" /> Incoming</span><span><i className="out-key" /> Outgoing</span></div></div>
-    {node.timeline.length ? <><div className="timeline-chart" aria-label="Daily incoming and outgoing transfer amounts">
-      <div className="chart-guide"><span>{money(max)}</span><span>0</span></div>
-      <div className="chart-columns">{days.map(day => <div className="day-column" key={day.date} tabIndex={0} aria-label={`${dateLabel(day.date)}: incoming ${exactMoney(day.in_kzt)}, outgoing ${exactMoney(day.out_kzt)}`}>
-        <div className="day-bars"><span className="in-bar" style={{height: `${Math.max(day.in_kzt > 0 ? 2 : 0, day.in_kzt / max * 100)}%`}} /><span className="out-bar" style={{height: `${Math.max(day.out_kzt > 0 ? 2 : 0, day.out_kzt / max * 100)}%`}} /></div>
-        <span className="day-tooltip"><strong>{dateLabel(day.date)}</strong><span>In {money(day.in_kzt)}</span><span>Out {money(day.out_kzt)}</span></span>
-      </div>)}</div>
-    </div><div className="chart-dates mono"><span>{dateLabel(node.timeline[0].date)}</span><span>{dateLabel(node.timeline[node.timeline.length - 1].date)}</span></div></> : <div className="empty-inline">No dated transfers in this observation window.</div>}
-    <div className="timeline-footer"><span><strong>{number(node.metrics.active_days)}</strong> active days</span><span>{calendar ? 'Calendar days; gaps show no observed transfers.' : 'Active dates only; calendar gaps omitted.'} No intraday timing.</span></div>
-  </section>;
-}
-
-
-function Evidence({node, onSelect}: {node: NodeDetail; onCluster: (id: number) => void; onSelect: (gid: number) => void}) {
-  return <div className="evidence-content">
-    <div className="role-hypothesis"><div><span className="field-label">Role hypothesis</span><RoleTag role={node.role} /></div><div className="rule-strength"><span className="mono">{score(node.role_score)}<small>/100</small></span><span>Rule strength</span></div></div>
-    <p className="evidence-summary">{node.evidence}</p>
-    <div className="metric-grid"><div><span><ArrowDownLeft size={13} /> Inflow</span><strong title={exactMoney(node.metrics.in_kzt)}>{money(node.metrics.in_kzt)}</strong><small>{number(node.metrics.in_degree)} payers / {number(node.metrics.in_tx)} transfers</small></div><div><span><ArrowUpRight size={13} /> Outflow</span><strong title={exactMoney(node.metrics.out_kzt)}>{money(node.metrics.out_kzt)}</strong><small>{number(node.metrics.out_degree)} recipients / {number(node.metrics.out_tx)} transfers</small></div></div>
-    {(node.truncated_by_depth || node.limitations.length > 0) && <div className="observation-note"><CircleHelp size={16} /><div><strong>{node.truncated_by_depth ? 'The trail continues beyond this view' : node.observability.label || 'Observation limits'}</strong><p>{node.truncated_by_depth ? 'Depth 4 is the collection boundary. Missing outgoing transfers do not prove this is a final beneficiary.' : node.limitations[0]}</p></div></div>}
-    <section className="evidence-section"><h3>Why review this entity</h3>{node.reasons.length ? node.reasons.map((reason, index) => <div className="reason-row" key={index}><span className="reason-marker" /><div><strong>{reason.label}<span>{reason.value}</span></strong><p>{reason.detail}</p></div></div>) : <p className="quiet-text">No strong role indicators in the visible network.</p>}</section>
-    <details className="scoring-details"><summary>Priority score breakdown <span className="mono">{score(node.priority_score)}/100</span></summary><p>Relative review priority, not a probability of wrongdoing.</p>{node.score_factors.map((factor, index) => <div className="score-factor" key={index}><span>{factor.label}</span><span className="factor-bar"><i style={{width: `${Math.min(100, Math.max(0, factor.value * 100))}%`}} /></span><strong className="mono">{(factor.contribution * 100).toFixed(1)}</strong></div>)}</details>
-    <section className="evidence-section counterparties"><h3>Largest observed counterparties</h3>{(['incoming', 'outgoing'] as const).map(direction => <div key={direction}><h4>{direction === 'incoming' ? 'Incoming from' : 'Outgoing to'}</h4>{node.counterparties[direction].slice(0, 4).map(party => <button key={party.gid} onClick={() => onSelect(party.gid)}><span className="mono">{party.gid}</span><span>{money(party.sum_kzt)}</span><ChevronRight size={13} /></button>)}{node.counterparties[direction].length === 0 && <p className="quiet-text">No observed {direction} transfers.</p>}</div>)}</section>
-    <details className="all-limitations"><summary>Coverage and limitations</summary>{[...new Set([...node.limitations, ...(node.observability.notes ?? [])])].map((note, index) => <p key={index}>{note}</p>)}</details>
-  </div>;
-}
-
-function Communities({clusters, error, loading, retry, onSelect}: {clusters: Cluster[]; error: string; loading: boolean; retry: () => void; onSelect: (cluster: Cluster) => void}) {
-  return <section className="communities-panel"><div className="section-heading"><div><h2>Network communities</h2><p>Connected patterns to inspect, not established organizations.</p></div><span className="count-badge mono">{number(clusters.length)}</span></div><div className="community-list">{error ? <ErrorNotice message={error} retry={retry}/> : loading ? <Loading label="Loading communities…"/> : clusters.map(cluster => <button key={cluster.cluster_id} className="community-row" onClick={() => onSelect(cluster)}><span className="community-symbol"><Layers size={18} /></span><div><h3>Community {cluster.cluster_id}<ChevronRight size={14} /></h3><p>{cluster.hypothesis}</p><div className="community-meta"><span>{number(cluster.n_nodes)} entities</span><span>{number(cluster.n_seed)} seeds</span><strong>{money(cluster.sum_kzt_internal)} internal</strong></div></div></button>)}</div>{!error && !loading && clusters.length === 0 && <div className="empty-inline">No communities available for this dataset.</div>}</section>;
+function useWideInspector() {
+  const [wide, setWide] = useState(
+    () => window.matchMedia("(min-width: 1280px)").matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1280px)");
+    const update = () => setWide(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  return wide;
 }
 
 export default function App() {
   const [summary, setSummary] = useState<Summary | null>(null);
-  const [summaryError, setSummaryError] = useState('');
-  const [reload, setReload] = useState(0);
+  const [summaryError, setSummaryError] = useState("");
+  const [revision, setRevision] = useState(0);
+  const [view, setView] = useState<WorkspaceView>("overview");
   const [nodes, setNodes] = useState<NodeSummary[]>([]);
-  const [nodeTotal, setNodeTotal] = useState(0);
+  const [total, setTotal] = useState(0);
   const [queueLoading, setQueueLoading] = useState(true);
-  const [queueError, setQueueError] = useState('');
-  const [query, setQuery] = useState('');
-  const [search, setSearch] = useState('');
-  const [role, setRole] = useState('');
+  const [queueError, setQueueError] = useState("");
+  const [query, setQuery] = useState("");
+  const [search, setSearch] = useState("");
+  const [role, setRole] = useState("");
   const [clusterFilter, setClusterFilter] = useState<number | null>(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(25);
   const [selected, setSelected] = useState<number | null>(null);
   const [detail, setDetail] = useState<NodeDetail | null>(null);
-  const [detailError, setDetailError] = useState('');
+  const [detailError, setDetailError] = useState("");
   const [graph, setGraph] = useState<GraphData | null>(null);
-  const [graphError, setGraphError] = useState('');
+  const [graphError, setGraphError] = useState("");
   const [hops, setHops] = useState(1);
+  const [colorBy, setColorBy] = useState<"role" | "cluster">("role");
   const [clusters, setClusters] = useState<Cluster[]>([]);
-  const [clustersError, setClustersError] = useState('');
   const [clustersLoading, setClustersLoading] = useState(true);
-  const [view, setView] = useState<'network' | 'communities' | 'signals' | 'resilience'>('network');
-  const [tab, setTab] = useState<'evidence' | 'copilot'>('evidence');
-  const [assistantOpened, setAssistantOpened] = useState(false);
-  const [showLimits, setShowLimits] = useState(false);
-  const [colorBy, setColorBy] = useState<'role' | 'cluster'>('role');
+  const [clustersError, setClustersError] = useState("");
   const [cohort, setCohort] = useState<number[]>([]);
-  const searchInput = useRef<HTMLInputElement>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [inspectorOpen, setInspectorOpen] = useState(true);
+  const [jump, setJump] = useState("");
+  const jumpInput = useRef<HTMLInputElement>(null);
+  const mainContent = useRef<HTMLElement>(null);
   useEffect(() => {
-    function shortcut(event: KeyboardEvent) {
-      if (event.key === '/' && !(event.target instanceof HTMLElement && (['INPUT','TEXTAREA','SELECT'].includes(event.target.tagName) || event.target.isContentEditable))) {event.preventDefault(); searchInput.current?.focus();}
-    }
-    document.addEventListener('keydown', shortcut); return () => document.removeEventListener('keydown', shortcut);
+    mainContent.current?.scrollTo(0, 0);
+  }, [view]);
+  const wide = useWideInspector();
+  const inspectorVisible = view === "network" || view === "signals";
+  const refresh = () => setRevision((value) => value + 1);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearch(query), 180);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+  useEffect(() => {
+    const keydown = (event: KeyboardEvent) => {
+      if (
+        event.key === "/" &&
+        !(
+          event.target instanceof HTMLElement &&
+          (["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName) ||
+            event.target.isContentEditable)
+        )
+      ) {
+        event.preventDefault();
+        jumpInput.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", keydown);
+    return () => document.removeEventListener("keydown", keydown);
   }, []);
-
-  useEffect(() => {const timer = window.setTimeout(() => setSearch(query), 180); return () => window.clearTimeout(timer);}, [query]);
   useEffect(() => {
-    const controller = new AbortController(); setSummaryError('');
-    fetchApi<Summary>('/summary', {signal: controller.signal}).then(data => {setSummary(data); setSelected(current => current ?? data.top_nodes[0]?.gid ?? null);}).catch(error => {if (!controller.signal.aborted) setSummaryError(error.message);});
-    setClustersLoading(true); setClustersError('');
-    fetchApi<{items: Cluster[]}>('/clusters', {signal: controller.signal}).then(data => setClusters(data.items)).catch(error => {if (!controller.signal.aborted) setClustersError(error.message);}).finally(() => {if (!controller.signal.aborted) setClustersLoading(false);});
+    const controller = new AbortController();
+    setSummaryError("");
+    setClustersLoading(true);
+    setClustersError("");
+    fetchApi<Summary>("/summary", { signal: controller.signal })
+      .then((value) => {
+        setSummary(value);
+        setSelected((current) => current ?? value.top_nodes[0]?.gid ?? null);
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setSummaryError(error.message);
+      });
+    fetchApi<{ items: Cluster[] }>("/clusters", { signal: controller.signal })
+      .then((value) => setClusters(value.items))
+      .catch((error) => {
+        if (!controller.signal.aborted) setClustersError(error.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setClustersLoading(false);
+      });
     return () => controller.abort();
-  }, [reload]);
+  }, [revision]);
   useEffect(() => {
-    const controller = new AbortController(); setQueueLoading(true); setQueueError('');
-    const parameters = new URLSearchParams({limit: '120'}); if (search) parameters.set('query', search); if (role) parameters.set('role', role); if (clusterFilter !== null) parameters.set('cluster_id', String(clusterFilter));
-    fetchApi<{items: NodeSummary[]; total: number}>(`/nodes?${parameters}`, {signal: controller.signal}).then(data => {setNodes(data.items); setNodeTotal(data.total); setSelected(current => current ?? data.items[0]?.gid ?? null);}).catch(error => {if (!controller.signal.aborted) setQueueError(error.message);}).finally(() => {if (!controller.signal.aborted) setQueueLoading(false);});
+    const controller = new AbortController();
+    setQueueLoading(true);
+    setQueueError("");
+    const parameters = new URLSearchParams({
+      limit: String(pageSize),
+      offset: String(page * pageSize),
+    });
+    if (search) parameters.set("query", search);
+    if (role) parameters.set("role", role);
+    if (clusterFilter !== null)
+      parameters.set("cluster_id", String(clusterFilter));
+    fetchApi<{ items: NodeSummary[]; total: number }>(`/nodes?${parameters}`, {
+      signal: controller.signal,
+    })
+      .then((value) => {
+        setNodes(value.items);
+        setTotal(value.total);
+        if (page > 0 && page * pageSize >= value.total) setPage(0);
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setQueueError(error.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setQueueLoading(false);
+      });
     return () => controller.abort();
-  }, [search, role, clusterFilter, reload]);
+  }, [search, role, clusterFilter, page, pageSize, revision]);
   useEffect(() => {
     if (selected === null) return;
-    const controller = new AbortController(); setDetail(null); setDetailError('');
-    fetchApi<NodeDetail>(`/nodes/${selected}`, {signal: controller.signal}).then(setDetail).catch(error => {if (!controller.signal.aborted) setDetailError(error.message);});
+    const controller = new AbortController();
+    setDetail(null);
+    setDetailError("");
+    fetchApi<NodeDetail>(`/nodes/${selected}`, { signal: controller.signal })
+      .then(setDetail)
+      .catch((error) => {
+        if (!controller.signal.aborted) setDetailError(error.message);
+      });
     return () => controller.abort();
-  }, [selected, reload]);
+  }, [selected, revision]);
   useEffect(() => {
     if (selected === null) return;
-    const controller = new AbortController(); setGraph(null); setGraphError('');
-    fetchApi<GraphData>(`/graph?gid=${selected}&hops=${hops}&limit=180`, {signal: controller.signal}).then(setGraph).catch(error => {if (!controller.signal.aborted) setGraphError(error.message);});
+    const controller = new AbortController();
+    setGraph(null);
+    setGraphError("");
+    fetchApi<GraphData>(`/graph?gid=${selected}&hops=${hops}&limit=180`, {
+      signal: controller.signal,
+    })
+      .then(setGraph)
+      .catch((error) => {
+        if (!controller.signal.aborted) setGraphError(error.message);
+      });
     return () => controller.abort();
-  }, [selected, hops, reload]);
+  }, [selected, hops, revision]);
 
-  function selectNode(gid: number) {setSelected(gid); if (view === 'communities' || view === 'resilience') setView('network');}
-  function selectCluster(cluster: Cluster) {setClusterFilter(cluster.cluster_id); setRole(''); setQuery(''); setView('network'); if (cluster.top_gids[0] !== undefined) setSelected(cluster.top_gids[0]);}
+  function selectNode(gid: number) {
+    setSelected(gid);
+    if (view !== "signals") setView("network");
+    if (!wide) setSheetOpen(true);
+  }
+  function changeView(next: WorkspaceView) {
+    setView(next);
+    setSheetOpen(false);
+  }
+  function showCommunity(id: number) {
+    setClusterFilter(id);
+    setRole("");
+    setQuery("");
+    setPage(0);
+    setView("entities");
+    setSheetOpen(false);
+  }
+  function jumpToEntity(event: FormEvent) {
+    event.preventDefault();
+    const value = jump.trim();
+    if (!value) return;
+    if (/^\d+$/.test(value) && Number.isSafeInteger(Number(value))) {
+      setView("network");
+      setSelected(Number(value));
+      if (!wide) setSheetOpen(true);
+    } else {
+      setQuery(value);
+      setPage(0);
+      setView("entities");
+    }
+    setJump("");
+  }
+  const inspector = (
+    <EvidenceInspector
+      selected={selected}
+      node={detail}
+      error={detailError}
+      cohort={cohort}
+      onSelect={selectNode}
+      onCommunity={showCommunity}
+      onSignals={() => {
+        setView("signals");
+        setSheetOpen(false);
+      }}
+      retry={refresh}
+    />
+  );
+  const pageTitle =
+    workspaceViews.find((item) => item.id === view)?.label ?? "Investigation";
 
-  return <Tooltip.Provider delay={450}><div className="app-shell">
-    <a className="skip-link" href="#review-queue">Skip to review queue</a>
-    <header className="app-header"><a className="brand" href="/" aria-label="EvidenceGraph home"><span className="brand-mark"><svg width="25" height="26" viewBox="0 0 32 32" aria-hidden="true"><path d="m7 8 18 8-18 8V8Z" fill="none" stroke="currentColor" strokeWidth="1.7"/><circle cx="7" cy="8" r="3.5" fill="currentColor"/><circle cx="25" cy="16" r="3.5" fill="#b8d99c"/><circle cx="7" cy="24" r="3.5" fill="currentColor"/></svg></span><span>Evidence<span className="brand-light">Graph</span><small>Financial investigation workspace</small></span></a>
-      <nav className="main-nav" aria-label="Workspace"><button className={view === 'network' ? 'active' : ''} onClick={() => setView('network')}><Network size={16} />Investigation</button><button className={view === 'communities' ? 'active' : ''} onClick={() => setView('communities')}><Layers size={16} />Communities</button><button className={view === 'signals' ? 'active' : ''} onClick={() => setView('signals')}><Activity size={16}/>Signals</button><button className={view === 'resilience' ? 'active' : ''} onClick={() => setView('resilience')}><GitBranch size={16}/>Resilience</button></nav>
-      <div className="header-actions">{summary && <span className="dataset-badge"><span />{summary.dataset.kind === 'synthetic' ? 'Synthetic demo' : 'Official dataset'}</span>}<ExportMenu selected={selected}/></div>
-    </header>
+  return (
+    <SidebarProvider
+      className="h-svh overflow-hidden"
+      defaultOpen={!document.cookie.split("; ").includes("sidebar_state=false")}
+      style={{ "--sidebar-width": "14rem" } as CSSProperties}
+    >
+      <a href="#main-content" className="sr-only focus:not-sr-only">
+        Skip to workspace
+      </a>
+      <AppSidebar view={view} onView={changeView} summary={summary} />
+      <SidebarInset className="min-h-0 min-w-0 overflow-hidden">
+        <header className="workspace-header flex min-h-14 shrink-0 flex-wrap items-center gap-3 border-b px-4 py-2.5 lg:px-7">
+          <SidebarTrigger title="Toggle sidebar" />
+          <Separator orientation="vertical" className="h-5" />
+          <span className="text-sm text-muted-foreground">Freedom Finance</span>
+          <form
+            onSubmit={jumpToEntity}
+            className="order-last w-full sm:order-none sm:ml-auto sm:w-64"
+          >
+            <Field>
+              <FieldLabel htmlFor="jump-entity" className="sr-only">
+                Find entity by ID
+              </FieldLabel>
+              <InputGroup>
+                <InputGroupInput
+                  ref={jumpInput}
+                  id="jump-entity"
+                  value={jump}
+                  onChange={(event) => setJump(event.target.value)}
+                  placeholder="Find an entity…"
+                  inputMode="numeric"
+                  maxLength={100}
+                  aria-keyshortcuts="/"
+                />
+                <InputGroupAddon>
+                  <MagnifyingGlassIcon />
+                </InputGroupAddon>
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton type="submit" aria-label="Find entity">
+                    <ArrowElbowDownLeftIcon />
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
+            </Field>
+          </form>
+          <div className="ml-auto flex items-center gap-2 sm:ml-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={refresh}
+              aria-label="Reload dataset evidence"
+            >
+              <ArrowsClockwiseIcon />
+            </Button>
+            <ExportMenu selected={selected} />
+          </div>
+        </header>
+        <section
+          ref={mainContent}
+          aria-label="Workspace content"
+          id="main-content"
+          className="workspace-enter min-h-0 min-w-0 flex-1 overflow-y-auto bg-background p-4 lg:p-7"
+        >
+          <div className="flex min-w-0 flex-col gap-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex flex-col gap-2">
+                <h1 className="text-[26px] font-semibold tracking-[-0.025em]">
+                  {view === "network"
+                    ? `Entity ${selected ?? "—"}`
+                    : view === "overview"
+                      ? "Overview"
+                      : pageTitle}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {summary
+                    ? `${dateLabel(summary.period.start)} – ${dateLabel(summary.period.end, true)} · ${number(summary.counts.nodes)} entities`
+                    : "Loading the observation window…"}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary">
+                  <DatabaseIcon />
+                  {summary?.dataset.kind === "official"
+                    ? "Official dataset"
+                    : summary
+                      ? "Synthetic demo"
+                      : "Connecting"}
+                </Badge>
+                {view === "network" && detail && (
+                  <Badge variant="outline">{roleLabel(detail.role)}</Badge>
+                )}
+                {inspectorVisible && (
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      wide
+                        ? setInspectorOpen((value) => !value)
+                        : setSheetOpen(true)
+                    }
+                    disabled={selected === null}
+                  >
+                    <FingerprintIcon data-icon="inline-start" />
+                    {wide && inspectorOpen ? "Hide evidence" : "Show evidence"}
+                  </Button>
+                )}
+              </div>
+            </div>
+            {summaryError && <Failure message={summaryError} retry={refresh} />}
+            {view === "network" && detail && <EntityMetrics node={detail} />}
+            <div
+              className={cn(
+                "grid min-w-0 gap-6",
+                inspectorVisible &&
+                  inspectorOpen &&
+                  "xl:grid-cols-[minmax(0,1fr)_320px]",
+              )}
+            >
+              <div className="flex min-w-0 flex-col gap-6">
+                {view === "overview" && (summary || !summaryError) && (
+                  <Suspense fallback={<Pending label="Opening overview" />}>
+                    <Overview
+                      summary={summary}
+                      clusters={clusters}
+                      clustersLoading={clustersLoading}
+                      clustersError={clustersError}
+                      retry={refresh}
+                      onSelect={selectNode}
+                      onCommunity={showCommunity}
+                      onInvestigate={() => changeView("network")}
+                    />
+                  </Suspense>
+                )}
+                {view === "network" && (
+                  <>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Transaction network</CardTitle>
+                        <CardDescription>
+                          {selected !== null
+                            ? `Entity ${selected} / ${graph ? `${number(graph.nodes.length)} entities and ${number(graph.edges.length)} relationships` : "Loading neighborhood"}`
+                            : "Select an entity to start an investigation."}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex flex-col gap-4">
+                        <FieldGroup className="flex-row flex-wrap gap-3">
+                          <Field className="w-auto">
+                            <FieldLabel className="sr-only">
+                              Graph colors
+                            </FieldLabel>
+                            <ToggleGroup
+                              variant="outline"
+                              spacing={0}
+                              value={[colorBy]}
+                              onValueChange={(values) => {
+                                if (
+                                  values[0] === "role" ||
+                                  values[0] === "cluster"
+                                )
+                                  setColorBy(values[0]);
+                              }}
+                              aria-label="Graph colors"
+                            >
+                              <ToggleGroupItem value="role">
+                                Roles
+                              </ToggleGroupItem>
+                              <ToggleGroupItem value="cluster">
+                                Communities
+                              </ToggleGroupItem>
+                            </ToggleGroup>
+                          </Field>
+                          <Field className="w-auto">
+                            <FieldLabel className="sr-only">
+                              Neighborhood
+                            </FieldLabel>
+                            <ToggleGroup
+                              variant="outline"
+                              spacing={0}
+                              value={[String(hops)]}
+                              onValueChange={(values) => {
+                                if (values[0]) setHops(Number(values[0]));
+                              }}
+                              aria-label="Graph hop distance"
+                            >
+                              {[1, 2, 3].map((value) => (
+                                <ToggleGroupItem
+                                  key={value}
+                                  value={String(value)}
+                                >
+                                  {value} {value === 1 ? "hop" : "hops"}
+                                </ToggleGroupItem>
+                              ))}
+                            </ToggleGroup>
+                          </Field>
+                        </FieldGroup>
+                        <div className="min-w-0">
+                          {selected === null && summary ? (
+                            <NoResults
+                              title="No entity selected"
+                              description="Open an entity from the review queue to inspect its observed transfers."
+                            />
+                          ) : graphError ? (
+                            <Failure message={graphError} retry={refresh} />
+                          ) : graph ? (
+                            <Suspense
+                              fallback={
+                                <Pending label="Opening directed graph" />
+                              }
+                            >
+                              <NetworkGraph
+                                data={graph}
+                                onSelect={selectNode}
+                                colorBy={colorBy}
+                              />
+                            </Suspense>
+                          ) : (
+                            <Pending label="Mapping observed transfers" />
+                          )}
+                        </div>
+                      </CardContent>
+                      <CardFooter className="flex flex-wrap justify-between gap-2">
+                        <p className="text-sm text-muted-foreground">
+                          Recorded transfers only. Select a connection for
+                          amounts.
+                        </p>
+                        <Badge variant="outline">
+                          {graph?.truncated
+                            ? "Display capped at 180 entities"
+                            : "Bounded neighborhood"}
+                        </Badge>
+                      </CardFooter>
+                    </Card>
+                    {detail && (
+                      <Suspense
+                        fallback={
+                          <Card>
+                            <CardContent>
+                              <Pending label="Opening daily activity" />
+                            </CardContent>
+                          </Card>
+                        }
+                      >
+                        <DailyTimeline node={detail} period={summary?.period} />
+                      </Suspense>
+                    )}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Priority review queue</CardTitle>
+                        <CardDescription>
+                          The twenty highest-priority entities in the observed
+                          network.
+                        </CardDescription>
+                        <CardAction>
+                          <Button
+                            variant="outline"
+                            onClick={() => setView("entities")}
+                          >
+                            View all
+                            <CaretRightIcon data-icon="inline-end" />
+                          </Button>
+                        </CardAction>
+                      </CardHeader>
+                      <CardContent>
+                        {summary ? (
+                          <EntityRows
+                            items={summary.top_nodes}
+                            selected={selected}
+                            onSelect={selectNode}
+                            extended={false}
+                          />
+                        ) : (
+                          <Pending label="Loading priorities" />
+                        )}
+                      </CardContent>
+                      <CardFooter>
+                        <p className="text-sm text-muted-foreground">
+                          Priority supports human review. It is not a
+                          probability of wrongdoing.
+                        </p>
+                      </CardFooter>
+                    </Card>
+                    <DatasetCoverage summary={summary} />
+                  </>
+                )}
+                {view === "entities" && (
+                  <EntityTable
+                    items={nodes}
+                    total={total}
+                    selected={selected}
+                    loading={queueLoading}
+                    error={queueError}
+                    query={query}
+                    setQuery={setQuery}
+                    role={role}
+                    setRole={setRole}
+                    roles={Object.keys(summary?.role_counts ?? {})}
+                    cluster={clusterFilter}
+                    clearCluster={() => setClusterFilter(null)}
+                    page={page}
+                    setPage={setPage}
+                    pageSize={pageSize}
+                    setPageSize={setPageSize}
+                    onSelect={selectNode}
+                    retry={refresh}
+                  />
+                )}
+                {view === "communities" && (
+                  <Communities
+                    items={clusters}
+                    loading={clustersLoading}
+                    error={clustersError}
+                    onSelect={showCommunity}
+                    retry={refresh}
+                  />
+                )}
+                {view === "signals" && (
+                  <Suspense
+                    fallback={<Pending label="Opening signal analysis" />}
+                  >
+                    <SignalsPanel
+                      gid={selected}
+                      cohort={cohort}
+                      setCohort={setCohort}
+                      onSelect={selectNode}
+                    />
+                  </Suspense>
+                )}
+                {view === "resilience" && (
+                  <Suspense
+                    fallback={<Pending label="Opening resilience analysis" />}
+                  >
+                    <ResiliencePanel onSelect={selectNode} />
+                  </Suspense>
+                )}
+              </div>
+              {inspectorVisible && wide && (
+                <aside
+                  className={cn(
+                    "sticky top-0 h-[calc(100svh-7rem)] min-h-[540px] max-h-[1000px] min-w-0 self-start",
+                    !inspectorOpen && "hidden",
+                  )}
+                  aria-label="Selected entity evidence"
+                >
+                  {inspector}
+                </aside>
+              )}
+            </div>
+            <footer className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+              <span>Aqsha Lens · Freedom Finance · KZT</span>
+              <span>
+                {summary
+                  ? `Analysis completed in ${number(Math.round(summary.runtime_ms))} ms`
+                  : ""}
+              </span>
+            </footer>
+          </div>
+        </section>
+      </SidebarInset>
+      {!wide && (
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetContent keepMounted className="w-full! max-w-[440px]! gap-0">
+            <SheetHeader>
+              <SheetTitle>Entity investigation</SheetTitle>
+              <SheetDescription>
+                Observed evidence and scoped assistant
+              </SheetDescription>
+            </SheetHeader>
+            <div className="min-h-0 flex-1 px-3 pb-3">{inspector}</div>
+          </SheetContent>
+        </Sheet>
+      )}
+    </SidebarProvider>
+  );
+}
 
-    <div className="case-bar"><div className="case-title"><span className="case-symbol"><GitBranch size={19} /></span><div><h1>Transaction investigation</h1><p>{summary ? `${dateLabel(summary.period.start)} – ${dateLabel(summary.period.end, true)} / ${summary.dataset.name}` : 'Connecting to the investigation dataset…'}</p></div></div><div className="case-stats">{[{label: 'Entities', value: summary && number(summary.counts.nodes)}, {label: 'Transfers', value: summary && number(summary.counts.transactions)}, {label: 'Visible turnover', value: summary && money(summary.total_kzt)}, {label: 'Boundary entities', value: summary && number(summary.counts.boundary_nodes)}].map(item => <div key={item.label}><strong className="mono">{item.value ?? '—'}</strong><span>{item.label}</span></div>)}</div></div>
-    {summaryError && <div className="global-error"><ErrorNotice message={summaryError} retry={() => setReload(value => value + 1)} /><p>Start the API server, then retry. No generated evidence is substituted for missing data.</p></div>}
+function DatasetCoverage({ summary }: { summary: Summary | null }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Data coverage</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Alert>
+          <InfoIcon />
+          <AlertTitle>Observation is incomplete</AlertTitle>
+          <AlertDescription>
+            Depth-four entities are collection boundaries. Unseen activity can
+            change role and flow interpretations.
+          </AlertDescription>
+        </Alert>
+        <Collapsible className="mt-4">
+          <CollapsibleTrigger render={<Button variant="ghost" />}>
+            Dataset limitations
+            <CaretDownIcon data-icon="inline-end" />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3">
+            <ul className="flex list-disc flex-col gap-3 pl-5 text-sm leading-relaxed text-muted-foreground">
+              {summary?.limitations.map((limit, index) => (
+                <li key={index}>{limit}</li>
+              ))}
+            </ul>
+          </CollapsibleContent>
+        </Collapsible>
+      </CardContent>
+      <CardFooter>
+        <div className="flex flex-wrap gap-3">
+          <Badge variant="outline">{number(summary?.counts.seeds)} seeds</Badge>
+          <Badge variant="outline">
+            {number(summary?.counts.boundary_nodes)} boundary entities
+          </Badge>
+          <Badge variant="outline">
+            {number(summary?.counts.isolated_nodes)} isolated entities retained
+          </Badge>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
 
-    <main className="workspace">
-      <aside className="review-queue" id="review-queue" aria-labelledby="queue-title"><div className="queue-heading"><div><h2 id="queue-title">Review queue</h2><span className="count-badge mono">{number(nodeTotal)}</span></div><p>Ranked by relative investigation priority</p></div><div className="queue-filters"><div className="search-box"><Search size={16} /><input ref={searchInput} aria-label="Search entity identifier" placeholder="Search entity ID…" value={query} onChange={event => setQuery(event.target.value)} />{query && <button aria-label="Clear search" onClick={() => setQuery('')}><X size={13} /></button>}<kbd>/</kbd></div><div className="role-filter"><SlidersHorizontal size={13} /><select aria-label="Filter by role hypothesis" value={role} onChange={event => setRole(event.target.value)}><option value="">All role hypotheses</option>{Object.keys(summary?.role_counts ?? {}).map(item => <option key={item} value={item}>{roleLabel(item)}</option>)}</select><ChevronDown size={12} /></div>{clusterFilter !== null && <button className="filter-chip" onClick={() => setClusterFilter(null)}>Community {clusterFilter}<X size={12} /></button>}</div><div className="queue-column-head"><span>Rank / Entity</span><span title="Heuristic score; not a probability">Priority <PriorityHelp/></span></div>
-        <div className="queue-list" aria-busy={queueLoading}>{queueError ? <ErrorNotice message={queueError} retry={() => setReload(value => value + 1)} /> : queueLoading && nodes.length === 0 ? <Loading label="Loading queue…" /> : nodes.length ? nodes.map(node => <QueueRow key={node.gid} node={node} selected={selected === node.gid} onSelect={() => selectNode(node.gid)} />) : <div className="empty-queue"><Search size={22} /><strong>No matching entities</strong><p>Try another identifier or clear the active filters.</p><button className="text-button" onClick={() => {setQuery(''); setRole(''); setClusterFilter(null);}}>Clear filters</button></div>}</div><div className="queue-footer"><ShieldCheck size={13} /><span>Scores guide review. They do not establish guilt.</span>{nodeTotal > nodes.length && <small>Showing first {nodes.length}. Search or filter to narrow.</small>}</div></aside>
+function Communities({
+  items,
+  loading,
+  error,
+  onSelect,
+  retry,
+}: {
+  items: Cluster[];
+  loading: boolean;
+  error: string;
+  onSelect: (id: number) => void;
+  retry: () => void;
+}) {
+  const [page, setPage] = useState(0);
+  const perPage = 20;
+  const currentPage = Math.min(
+    page,
+    Math.max(0, Math.ceil(items.length / perPage) - 1),
+  );
+  const shown = items.slice(currentPage * perPage, (currentPage + 1) * perPage);
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Network communities</CardTitle>
+        <CardDescription>
+          Structural groups in the observed network, not established
+          organizations.
+        </CardDescription>
+        <CardAction>
+          <Badge variant="outline">
+            <SquaresFourIcon />
+            {number(items.length)}
+          </Badge>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        {error ? (
+          <Failure message={error} retry={retry} />
+        ) : loading ? (
+          <Pending label="Loading communities" />
+        ) : shown.length ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Community</TableHead>
+                <TableHead className="text-right">Entities</TableHead>
+                <TableHead className="text-right">Seeds</TableHead>
+                <TableHead className="text-right">Internal turnover</TableHead>
+                <TableHead>Working hypothesis</TableHead>
+                <TableHead>
+                  <span className="sr-only">Actions</span>
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {shown.map((cluster) => (
+                <TableRow key={cluster.cluster_id}>
+                  <TableCell>
+                    <Button
+                      variant="link"
+                      onClick={() => onSelect(cluster.cluster_id)}
+                    >
+                      Community {cluster.cluster_id}
+                    </Button>
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {number(cluster.n_nodes)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {number(cluster.n_seed)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {money(cluster.sum_kzt_internal)}
+                  </TableCell>
+                  <TableCell className="max-w-md whitespace-normal leading-relaxed">
+                    {cluster.hypothesis}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      onClick={() => onSelect(cluster.cluster_id)}
+                    >
+                      Explore
+                      <CaretRightIcon data-icon="inline-end" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <NoResults
+            title="No communities available"
+            description="Load a validated dataset to inspect its structural groups."
+          />
+        )}
+      </CardContent>
+      <CardFooter className="flex justify-between gap-3">
+        <span className="text-sm text-muted-foreground">
+          {items.length
+            ? `${currentPage * perPage + 1}–${Math.min((currentPage + 1) * perPage, items.length)} of ${items.length} communities`
+            : "No results"}
+        </span>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            disabled={loading || currentPage === 0}
+            onClick={() => setPage(currentPage - 1)}
+            aria-label="Previous community page"
+          >
+            <CaretLeftIcon />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            disabled={loading || (currentPage + 1) * perPage >= items.length}
+            onClick={() => setPage(currentPage + 1)}
+            aria-label="Next community page"
+          >
+            <CaretRightIcon />
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
+  );
+}
 
-      <div className="analysis-main">{view === 'communities' ? <Communities clusters={clusters} error={clustersError} loading={clustersLoading} retry={() => setReload(value => value + 1)} onSelect={selectCluster} /> : view === 'signals' ? <SignalsPanel gid={selected} cohort={cohort} setCohort={setCohort} onSelect={selectNode}/> : view === 'resilience' ? <ResiliencePanel onSelect={selectNode}/> : <><section className="graph-panel" aria-labelledby="graph-title"><div className="graph-heading"><div><h2 id="graph-title">The visible money trail</h2><p>{graph ? `${number(graph.nodes.length)} entities / ${number(graph.edges.length)} directed relationships` : 'Exploring the selected entity’s neighbourhood'}</p></div><div className="graph-controls"><div className="graph-scope"><label htmlFor="graph-colors">Color</label><select id="graph-colors" value={colorBy} onChange={event => setColorBy(event.target.value as 'role' | 'cluster')}><option value="role">Role</option><option value="cluster">Community</option></select></div><div className="graph-scope"><label htmlFor="graph-hops">Scope</label><select id="graph-hops" value={hops} onChange={event => setHops(Number(event.target.value))}><option value={1}>1 hop</option><option value={2}>2 hops</option></select></div></div></div>
-        <div className="graph-content">{graphError ? <ErrorNotice message={graphError} retry={() => setReload(value => value + 1)} /> : graph ? <Suspense fallback={<Loading label="Opening network view…"/>}><NetworkGraph data={graph} onSelect={selectNode} colorBy={colorBy}/></Suspense> : <Loading label={selected === null ? 'Waiting for an entity…' : 'Mapping observed transfers…'} />}</div>
-        <div className="graph-legend"><span><i className="legend-seed" />Seed entity</span><span><i className="legend-boundary" />Depth 4 boundary</span><span><i className="legend-line" />Transfer direction</span><span className="graph-limit-label">{graph?.truncated ? 'Display limited to 180 entities' : 'Neighbourhood view'}</span></div>
-        <div className="coverage-strip"><CircleHelp size={16} /><span>Observed up to four hops. Unseen transfers can change the interpretation.</span><button onClick={() => setShowLimits(value => !value)} aria-expanded={showLimits} aria-label="Show dataset observation limits"><ChevronDown size={15} className={showLimits ? 'rotated' : ''} /></button></div>{showLimits && <div className="dataset-limits">{summary?.limitations.map((limit, index) => <p key={index}>{limit}</p>)}</div>}
-      </section>{detail && <Timeline node={detail} />}</>}
-      <footer className="workspace-footer"><span><Database size={12} />{summary?.dataset.kind === 'synthetic' ? 'Synthetic demonstration data' : 'Local dataset'}<span className="footer-divider" />KZT / date-level records</span><span>{summary ? `Analysis ${compact(summary.runtime_ms)} ms` : 'Analysis loading'}</span></footer></div>
-
-      <aside className="detail-panel" aria-label="Selected entity evidence"><div className="detail-heading"><span className="field-label">Selected entity</span><div><h2 className="mono">{selected ?? '—'}</h2>{detail && <span className="depth-label">Depth {detail.depth}{detail.is_seed && ' / Seed'}</span>}</div>{detail && <button className="community-link" onClick={() => {setView('communities');}}><Layers size={12} />Community {detail.cluster_id}<ChevronRight size={12} /></button>}</div><Tabs.Root className="detail-tabs-root" value={tab} onValueChange={value => {if (value === 'evidence' || value === 'copilot') {setTab(value); if (value === 'copilot') setAssistantOpened(true);}}}>
-        <Tabs.List className="detail-tabs" aria-label="Entity analysis">
-          <Tabs.Tab value="evidence"><Fingerprint size={14}/>Evidence</Tabs.Tab>
-          <Tabs.Tab value="copilot"><MessageSquare size={14}/>Ask assistant</Tabs.Tab>
-        </Tabs.List>
-        <Tabs.Panel value="evidence" className="detail-body" keepMounted>
-          {detailError ? <ErrorNotice message={detailError} retry={() => setReload(value => value + 1)}/> : detail ? <Evidence node={detail} onSelect={selectNode} onCluster={id => setClusterFilter(id)}/> : <Loading label={selected ? 'Loading entity evidence…' : 'Select an entity to inspect'}/>}
-        </Tabs.Panel>
-        <Tabs.Panel value="copilot" className="detail-body assistant-tab-body" keepMounted>
-          {detailError ? <ErrorNotice message={detailError} retry={() => setReload(value => value + 1)}/> : detail && assistantOpened ? <Suspense fallback={<Loading label="Opening evidence assistant…"/>}><AssistantPanel gid={detail.gid} gids={cohort} onSelect={selectNode}/></Suspense> : null}
-        </Tabs.Panel>
-      </Tabs.Root></aside>
-    </main>
-  </div></Tooltip.Provider>;
+function EntityMetrics({ node }: { node: NodeDetail }) {
+  const items = [
+    {
+      label: "Inflow",
+      value: money(node.metrics.in_kzt),
+      detail: `${number(node.metrics.in_tx)} transfers`,
+      title: exactMoney(node.metrics.in_kzt),
+    },
+    {
+      label: "Outflow",
+      value: money(node.metrics.out_kzt),
+      detail: `${number(node.metrics.out_tx)} transfers`,
+      title: exactMoney(node.metrics.out_kzt),
+    },
+    {
+      label: "Counterparties",
+      value: `${node.metrics.in_degree} / ${node.metrics.out_degree}`,
+      detail: "Incoming / outgoing",
+      title: "Distinct counterparties by direction",
+    },
+    {
+      label: "Review priority",
+      value: `${score(node.priority_score)}`,
+      detail: "of 100 · heuristic score",
+      title: "Review priority, not probability of crime",
+    },
+  ];
+  return (
+    <Card className="shrink-0 py-0">
+      <CardContent className="entity-metrics grid grid-cols-2 p-0 sm:grid-cols-4">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="flex flex-col gap-1 px-4 py-3.5 sm:px-5"
+          >
+            <span className="text-xs text-muted-foreground">{item.label}</span>
+            <span
+              className="text-2xl font-semibold tracking-tight tabular-nums"
+              title={item.title}
+            >
+              {item.value}
+            </span>
+            <span className="text-xs text-muted-foreground">{item.detail}</span>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
 }
