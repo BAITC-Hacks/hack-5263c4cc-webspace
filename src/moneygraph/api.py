@@ -18,6 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .engine import Analysis, ROLES, load_analysis
+from .identifiers import AccountJSONResponse
 from .signals import SignalAnalysis
 from .security import LocalSecurityMiddleware, RequestLimiter, SecurityConfig
 
@@ -46,7 +47,8 @@ def make_app(analysis: Analysis | None = None, *, security_config: SecurityConfi
                 memory.close()
                 application.state.conversation_memory = None
 
-    application = FastAPI(title="Money Graph", version="0.1.0", lifespan=lifespan)
+    application = FastAPI(title="Money Graph", version="0.1.0", lifespan=lifespan,
+                          default_response_class=AccountJSONResponse)
     application.state.analysis = analysis
     security = security_config or SecurityConfig.from_env()
     application.state.request_limiter = RequestLimiter(security, clock)

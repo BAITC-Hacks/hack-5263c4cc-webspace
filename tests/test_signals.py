@@ -155,7 +155,7 @@ def test_signals_and_dossiers_do_not_change_submission_exports():
 def test_signal_api_contract_bounds_and_provenance_download():
     engine = model([(1, 3, 10000, 1), (2, 3, 10000, 1), (3, 4, 10000, 2)])
     with TestClient(make_app(engine)) as client:
-        assert client.get("/api/signals/3").json()["gid"] == 3
+        assert client.get("/api/signals/3").json()["gid"] == "3"
         assert client.get("/api/signals/999").status_code == 404
         assert client.get("/api/resilience?top_n=21").status_code == 422
         assert client.get("/api/resilience?top_n=1").json()["top_n"] == 1

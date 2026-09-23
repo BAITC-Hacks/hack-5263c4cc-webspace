@@ -2,6 +2,8 @@
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from ..identifiers import parse_account_id
+
 MAX_ROUNDS = 3
 MAX_TOOL_CALLS = 4
 MAX_HISTORY_TURNS = 6
@@ -45,12 +47,22 @@ class CopilotRequest(BaseModel):
     remember: bool = Field(default=False, strict=True)
     session_id: str | None = Field(default=None, pattern=r"^[a-f0-9]{32}$")
 
-    @field_validator("gids", mode="before")
+    @field_validator("gid", mode="before", json_schema_input_type=int | str)
+    @classmethod
+    def valid_gid(cls, gid):
+        return parse_account_id(gid)
+
+    @field_validator("gids", mode="before", json_schema_input_type=list[int | str] | None)
     @classmethod
     def valid_cohort(cls, gids):
-        if gids is not None and (not isinstance(gids, list) or any(type(gid) is not int or gid < 0 for gid in gids) or len(set(gids)) != len(gids)):
-            raise ValueError("Cohort IDs must be unique nonnegative integers.")
-        return gids
+        if gids is None:
+            return None
+        if not isinstance(gids, list):
+            raise ValueError("Cohort IDs must be a list.")
+        parsed = [parse_account_id(gid) for gid in gids]
+        if len(set(parsed)) != len(parsed):
+            raise ValueError("Cohort IDs must be unique.")
+        return parsed
 
     @model_validator(mode="after")
     def bounded_history(self):
@@ -69,7 +81,12 @@ class SessionCreateRequest(BaseModel):
     gid: int = Field(ge=0, strict=True)
     gids: list[int] | None = Field(default=None, min_length=1, max_length=5)
 
-    @field_validator("gids", mode="before")
+    @field_validator("gid", mode="before", json_schema_input_type=int | str)
+    @classmethod
+    def valid_gid(cls, gid):
+        return parse_account_id(gid)
+
+    @field_validator("gids", mode="before", json_schema_input_type=list[int | str] | None)
     @classmethod
     def valid_cohort(cls, gids):
         return CopilotRequest.valid_cohort(gids)

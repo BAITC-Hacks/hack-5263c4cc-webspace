@@ -19,6 +19,7 @@ def test_complete_analyst_workflow(client):
     assert summary["dataset"]["kind"] == "synthetic"
     top = summary["top_nodes"][0]
     gid = top["gid"]
+    assert isinstance(gid, str) and gid.isdecimal()
     found = client.get("/api/nodes", params={"query": gid, "role": top["role"]}).json()
     assert gid in [n["gid"] for n in found["items"]]
     detail = client.get(f"/api/nodes/{gid}").json()
