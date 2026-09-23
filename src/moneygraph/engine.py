@@ -6,10 +6,8 @@ role fit and investigation priority, never calibrated probabilities.
 
 from __future__ import annotations
 
-from bisect import bisect_right
 from collections import Counter, defaultdict, deque
 from datetime import date, timedelta
-import csv
 import json
 import math
 from pathlib import Path
@@ -20,7 +18,8 @@ from typing import Any
 import networkx as nx
 import polars as pl
 
-ROLES = ("consolidator", "transit", "distributor", "terminal", "coordinator", "peripheral", "boundary_unknown")
+from .rules import ROLES, evaluate_role_rules, percentiles, priority_values, score_priority
+
 ROLE_COLUMNS = ("gid", "role", "role_score", "cluster_id", "priority_score", "evidence")
 CLUSTER_COLUMNS = ("cluster_id", "n_nodes", "n_seed", "sum_kzt_internal", "top_gids", "hypothesis")
 TOP_COLUMNS = ("rank", "gid", "role", "priority_score", "why")
@@ -231,54 +230,17 @@ class Analysis:
                 "matched_2d_ratio": _number(temporal), "active_days": active,
                 "visible_volume": in_kzt + out_kzt,
             }
-        distributions = {key: sorted(row[key] for row in raw.values()) for key in ("pagerank", "betweenness", "visible_volume")}
-
-        def percentile(key: str, value: float) -> float:
-            return bisect_right(distributions[key], value) / len(raw) if value > 0 else 0.0
+        percentile = percentiles(raw.values())
 
         records = {}
         for gid, node in self._nodes.items():
             m = raw[gid]
             boundary = node["depth"] >= 4 and m["out_degree"] == 0
             isolated = m["in_degree"] == m["out_degree"] == 0
-            scores = {role: 0.0 for role in ROLES}
-            scores["peripheral"] = 0.2
-            if boundary:
-                scores["boundary_unknown"] = 1.0
-            else:
-                if m["in_degree"] >= 3:
-                    scores["consolidator"] = min(0.95, 0.55 + 0.35 * min(m["in_degree"] / 12, 1) + 0.05 * min(m["seed_reach"] / 4, 1))
-                if m["out_degree"] >= 8:
-                    scores["distributor"] = min(0.95, 0.65 + 0.3 * min(m["out_degree"] / 60, 1))
-                ratio = m["pass_through"]
-                if not node["is_seed"] and ratio is not None and m["out_degree"] > 0 and 0.65 <= ratio <= 1.35:
-                    scores["transit"] = 0.55 + 0.2 * (1 - abs(1 - ratio) / 0.35) + 0.2 * m["matched_2d_ratio"]
-                if not node["is_seed"] and m["in_degree"] > 0 and m["out_degree"] == 0:
-                    scores["terminal"] = min(0.75, 0.5 + 0.05 * m["in_degree"])
-                if (not node["is_seed"] and m["in_degree"] >= 2 and m["out_degree"] >= 2
-                    and m["neighbor_clusters"] >= 2 and m["seed_reach"] >= 2
-                    and percentile("betweenness", m["betweenness"]) >= 0.9 and m["betweenness"] > 0):
-                    scores["coordinator"] = min(0.9, 0.55 + 0.2 * percentile("betweenness", m["betweenness"]) + 0.15 * min(m["seed_reach"] / 8, 1))
+            scores = {rule["role"]: rule["score"] for rule in
+                      evaluate_role_rules(node, m, percentile("betweenness", m["betweenness"]))}
             role = max(ROLES, key=lambda name: scores[name])
-            factors = [
-                {"label": "Weighted PageRank", "value": percentile("pagerank", m["pagerank"]), "weight": 0.2},
-                {"label": "Directed bridge position", "value": percentile("betweenness", m["betweenness"]), "weight": 0.2},
-                {"label": "Distinct upstream seeds", "value": min(m["seed_reach"] / 8, 1), "weight": 0.2},
-                {"label": "Distinct incoming payers", "value": min(m["in_degree"] / 12, 1), "weight": 0.15},
-                {"label": "Observed volume", "value": percentile("visible_volume", m["visible_volume"]), "weight": 0.15},
-                {"label": "Two-day flow overlap", "value": m["matched_2d_ratio"] if not node["is_seed"] else 0.0, "weight": 0.1},
-            ]
-            for factor in factors:
-                factor["contribution"] = _number(factor["value"] * factor["weight"])
-                factor["value"] = _number(factor["value"])
-            priority = sum(f["contribution"] for f in factors)
-            # Show observability adjustments instead of silently hiding them.
-            if boundary:
-                factors.append({"label": "Boundary uncertainty adjustment", "value": 0.65, "weight": 0.0, "contribution": _number(-0.35 * priority)})
-                priority *= 0.65
-            if isolated:
-                factors.append({"label": "No observed transfers", "value": 0.0, "weight": 0.0, "contribution": _number(-priority)})
-                priority = 0.0
+            priority, factors = score_priority(node, m, priority_values(node, m, percentile))
             evidence = self._evidence(role, m, node)
             limitations = [LIMITATIONS[0], LIMITATIONS[4]]
             if boundary:
@@ -410,16 +372,13 @@ class Analysis:
         raise ValueError("Unknown export")
 
     def exports(self, output_dir: str | Path) -> dict[str, str]:
+        from .exports import EXPORT_NAMES, export_bytes
         output = Path(output_dir)
         output.mkdir(parents=True, exist_ok=True)
         paths = {}
-        for name in ("nodes_roles.csv", "clusters.csv", "top_nodes.csv"):
-            columns, rows = self.export_rows(name)
+        for name in EXPORT_NAMES:
             path = output / name
-            with path.open("w", newline="", encoding="utf-8") as stream:
-                writer = csv.DictWriter(stream, fieldnames=columns)
-                writer.writeheader()
-                writer.writerows(rows)
+            path.write_bytes(export_bytes(self, name))
             paths[name] = str(path)
         return paths
 

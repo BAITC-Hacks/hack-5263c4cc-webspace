@@ -1,27 +1,18 @@
 """Reproducibility receipts without serializing private records into logs."""
 from __future__ import annotations
 
-import csv
 import hashlib
-import io
 import json
 from pathlib import Path
 from typing import Any
+
+from .exports import export_content
 
 
 def _digest(value: Any) -> str:
     encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), default=str,
                          ensure_ascii=False, allow_nan=False).encode()
     return hashlib.sha256(encoded).hexdigest()
-
-
-def export_content(analysis: Any, name: str) -> str:
-    columns, rows = analysis.export_rows(name)
-    stream = io.StringIO(newline="")
-    writer = csv.DictWriter(stream, fieldnames=columns)
-    writer.writeheader()
-    writer.writerows(rows)
-    return stream.getvalue()
 
 
 def provenance(analysis: Any) -> dict:
@@ -32,8 +23,10 @@ def provenance(analysis: Any) -> dict:
         "transactions": analysis._transactions,
     }
     table_hashes = {name: _digest(rows) for name, rows in inputs.items()}
-    engine_path = Path(__file__).with_name("engine.py")
-    algorithm_hash = hashlib.sha256(engine_path.read_bytes()).hexdigest()
+    # Include extracted scoring and serialization code, with portable line endings.
+    sources = {name: hashlib.sha256(Path(__file__).with_name(name).read_text(encoding="utf-8").encode()).hexdigest()
+               for name in ("engine.py", "rules.py", "exports.py")}
+    algorithm_hash = _digest(sources)
     exports = []
     for name in ("nodes_roles.csv", "clusters.csv", "top_nodes.csv"):
         content = export_content(analysis, name).encode()
