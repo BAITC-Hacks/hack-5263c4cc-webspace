@@ -1,5 +1,8 @@
 # Freedom Finance architecture and agent hardening review
 
+> Integration note: this is the upstream research record. The current implementation consolidates execution under `copilot/` and app-owned services; the `agent/` imports remain compatible. The shipped UI asks independent scoped questions; session endpoints and browser helpers are tested but retained-history UX is not enabled. Structured numeric claim verification is now implemented. See [current architecture](../architecture.md) and [verification](../architecture-verification.md).
+
+
 Research and source-code audit: **23 September 2026**. Scope: Freedom Finance only. This report combines a fresh read of the official brief, the current repository, primary technical documentation, and the hardening work undertaken with this review. It supersedes older recommendations where implementation status differs; it does not establish production readiness or financial detection accuracy.
 
 The engineering priority is a reproducible evidence system with useful case continuity. Keep the deterministic graph authoritative, make the assistant a bounded consumer of typed evidence, and put memory, provider execution and security behind explicit module boundaries. LangGraph is the preferred extension when recoverable workflows become necessary. Chroma and Mem0 have useful but different roles; neither is needed to compute or remember transaction facts in this dataset.

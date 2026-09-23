@@ -1,7 +1,6 @@
-# Verified validation results
+# Historical validation results
 
-Verified on 23 September 2026 against the local Freedom Finance implementation. Only aggregate statistics are recorded here. Organizer records, generated CSVs, credentials and live response artifacts remain outside Git. The hardening verification immediately below is current; later sections retain earlier measurements and their original scope.
-
+Current architecture-refactor results are in [architecture-verification.md](architecture-verification.md). The records below came from earlier upstream work (including `c2eb471`) and retain their original test counts, dataset access and machine scope. They are not new official-data or paid-provider measurements by this refactor. Organizer records, generated CSVs, credentials and live response artifacts remain outside Git.
 
 ## Architecture and agent hardening verification
 

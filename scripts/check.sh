@@ -1,8 +1,3 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "$0")/.."
-uv sync --frozen --extra dev
-uv run --frozen pytest -q
-npm --prefix web ci --no-audit --no-fund
-node --test web/tests/*.test.cjs
-npm --prefix web run build
+exec uv run --project "$(dirname "$0")/.." --frozen --extra dev python "$(dirname "$0")/check.py" "$@"

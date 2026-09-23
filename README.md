@@ -12,6 +12,8 @@ Prerequisites: Git, [uv](https://docs.astral.sh/uv/getting-started/installation/
 ./scripts/dev.sh
 ```
 
+Windows PowerShell: `.\scripts\dev.ps1`. Both wrappers use the same Python launcher; see the [cross-platform setup guide](docs/setup.md). After the first install, add `--skip-install` to reuse locked dependencies.
+
 Open [localhost:8000](http://127.0.0.1:8000). The default dataset is an original synthetic fixture; no organizer records, API key, GPU, personal account or subscription is required. The script installs locked dependencies, builds the frontend and serves the app on loopback. First setup requires network access; later launches can use `uv run --frozen moneygraph serve`.
 
 To use the official dataset, extract its `data/` folder locally and pass the directory containing `nodes.parquet`, `edges.parquet` and `transactions.parquet`:
@@ -69,6 +71,8 @@ At one million nodes, replace per-request exploration with partitioned aggregati
 ```bash
 ./scripts/check.sh
 ```
+
+Windows PowerShell: `.\scripts\check.ps1`. The checks cover backend behavior, OpenAPI and generated TypeScript drift, client contracts and the production build. Browser code consumes `/api/v1` with exact string account IDs and a dataset-scoped query cache; legacy `/api` routes retain numeric IDs. Current results: [architecture verification](docs/architecture-verification.md). See the [architecture refactor design](docs/superpowers/specs/2026-09-23-moneygraph-architecture-design.md).
 
 For separate development processes:
 
