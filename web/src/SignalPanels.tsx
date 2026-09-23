@@ -1,3 +1,5 @@
+import type { Gid } from "@/api";
+import { isGid } from "@/api";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import {
   ArrowRightIcon,
@@ -114,8 +116,8 @@ function Path({
   gids,
   onSelect,
 }: {
-  gids: number[];
-  onSelect: (gid: number) => void;
+  gids: Gid[];
+  onSelect: (gid: Gid) => void;
 }) {
   return (
     <div
@@ -214,10 +216,10 @@ export function CohortPanel({
   setGids,
   onSelect,
 }: {
-  selected: number | null;
-  gids: number[];
-  setGids: (gids: number[]) => void;
-  onSelect: (gid: number) => void;
+  selected: Gid | null;
+  gids: Gid[];
+  setGids: (gids: Gid[]) => void;
+  onSelect: (gid: Gid) => void;
 }) {
   const [text, setText] = useState("");
   const [result, setResult] = useState<CollectorReport | null>(null);
@@ -253,7 +255,7 @@ export function CohortPanel({
       });
     return () => controller.abort();
   }, [gids, revision]);
-  async function add(selectedGid?: number) {
+  async function add(selectedGid?: Gid) {
     const tokens =
       selectedGid === undefined
         ? text
@@ -264,13 +266,13 @@ export function CohortPanel({
     if (!tokens.length) return;
     if (
       tokens.some(
-        (token) => !/^\d+$/.test(token) || !Number.isSafeInteger(Number(token)),
+        (token) => !isGid(token),
       )
     ) {
       setInputError("Enter whole-number entity IDs, separated by commas.");
       return;
     }
-    const next = [...new Set([...gids, ...tokens.map(Number)])];
+    const next = [...new Set([...gids, ...tokens])];
     if (next.length > 5) {
       setInputError("Choose up to five entities for this bounded comparison.");
       return;
@@ -477,10 +479,10 @@ export function SignalsPanel({
   setCohort,
   onSelect,
 }: {
-  gid: number | null;
-  cohort: number[];
-  setCohort: (gids: number[]) => void;
-  onSelect: (gid: number) => void;
+  gid: Gid | null;
+  cohort: Gid[];
+  setCohort: (gids: Gid[]) => void;
+  onSelect: (gid: Gid) => void;
 }) {
   const [data, setData] = useState<SignalReport | null>(null);
   const [dossier, setDossier] = useState<Dossier | null>(null);
@@ -976,7 +978,7 @@ export function SignalsPanel({
 export function ResiliencePanel({
   onSelect,
 }: {
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
 }) {
   const [topN, setTopN] = useState(5);
   const [data, setData] = useState<ResilienceReport | null>(null);

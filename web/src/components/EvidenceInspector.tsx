@@ -1,3 +1,4 @@
+import type { Gid } from "@/api";
 import { useAssistantWorkspace } from "@/AssistantWorkspace";
 import {
   CaretDownIcon,
@@ -32,15 +33,22 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Failure, NoResults, Pending } from "./AsyncState";
 
 interface Props {
-  selected: number | null;
+  selected: Gid | null;
   node: NodeDetail | null;
   error: string;
-  cohort: number[];
-  onSelect: (gid: number) => void;
+  cohort: Gid[];
+  onSelect: (gid: Gid) => void;
   onCommunity: (id: number) => void;
   onSignals: () => void;
   retry: () => void;
@@ -130,7 +138,7 @@ function Evidence({
   onSignals,
 }: {
   node: NodeDetail;
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
   onCommunity: (id: number) => void;
   onSignals: () => void;
 }) {
@@ -163,6 +171,7 @@ function Evidence({
           </span>
         </div>
         <p className="text-sm leading-relaxed">{node.evidence}</p>
+        <RoleCandidates node={node} />
       </section>
       <Alert>
         <InfoIcon />
@@ -366,5 +375,122 @@ function Evidence({
         Download entity dossier
       </a>
     </div>
+  );
+}
+
+// Eligibility copy follows docs/methodology.md; scores remain engine-owned.
+// Keep this order aligned with the engine's documented tie-breaking order.
+const ROLE_RULES = [
+  {
+    role: "consolidator",
+    criteria: "At least 3 distinct incoming payers.",
+  },
+  {
+    role: "transit",
+    criteria:
+      "Not a seed; visible outflow; outgoing / incoming amount between 0.65 and 1.35, inclusive.",
+  },
+  {
+    role: "distributor",
+    criteria: "At least 8 distinct outgoing recipients.",
+  },
+  {
+    role: "terminal",
+    criteria:
+      "Not a seed or collection boundary; visible inflow and no visible outflow. An observed sink only.",
+  },
+  {
+    role: "coordinator",
+    criteria:
+      "Not a seed; at least 2 payers, 2 recipients, 2 neighboring communities and 2 reachable upstream seeds; positive betweenness at or above its 90th percentile.",
+  },
+  {
+    role: "peripheral",
+    criteria: "Baseline score of 20; selected when no stronger rule wins.",
+  },
+  {
+    role: "boundary_unknown",
+    criteria:
+      "Depth 4 or greater with no visible outflow. Overrides other role rules; financial purpose remains unknown.",
+  },
+] as const;
+
+function RoleCandidates({ node }: { node: NodeDetail }) {
+  return (
+    <Collapsible>
+      <CollapsibleTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="sm"
+            className="group w-full justify-between"
+          />
+        }
+      >
+        Compare role rules
+        <CaretDownIcon
+          data-icon="inline-end"
+          className="group-data-panel-open:rotate-180"
+        />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="pt-2">
+        <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
+          Rule fit describes observed structure, never the probability of
+          wrongdoing. Scores come from the deterministic engine.
+        </p>
+        <Table aria-label={`Role candidates for entity ${node.gid}`}>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="pl-0">Candidate & eligibility</TableHead>
+              <TableHead className="pr-0 text-right">Fit / 100</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {ROLE_RULES.map(({ role, criteria }) => {
+              const candidateScore = node.role_scores[role];
+              const available = Number.isFinite(candidateScore);
+              const selected = node.role === role;
+              const status = !available
+                ? "Score unavailable"
+                : selected
+                  ? role === "boundary_unknown"
+                    ? "Boundary override"
+                    : "Selected"
+                  : role === "peripheral"
+                    ? "Baseline"
+                    : node.truncated_by_depth
+                      ? "Skipped at boundary"
+                      : candidateScore > 0
+                        ? "Eligible"
+                        : "Not eligible";
+              return (
+                <TableRow key={role} data-state={selected ? "selected" : undefined}>
+                  <TableCell className="max-w-0 py-3 pl-0 align-top whitespace-normal">
+                    <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                      <span className="text-sm font-medium">{roleLabel(role)}</span>
+                      <span className="text-xs text-muted-foreground">{status}</span>
+                    </div>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {criteria}
+                    </p>
+                  </TableCell>
+                  <TableCell
+                    className="w-16 py-3 pr-0 text-right align-top tabular-nums"
+                    title={available ? `Raw rule-fit score: ${candidateScore}` : undefined}
+                  >
+                    {available ? (candidateScore * 100).toFixed(1) : "—"}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+        <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+          Highest score wins. Exact ties use the order shown; displayed scores
+          are rounded. Seeds cannot receive transit, terminal or coordinator
+          roles because their incoming coverage is incomplete.
+        </p>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

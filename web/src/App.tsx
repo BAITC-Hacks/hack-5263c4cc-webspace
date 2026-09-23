@@ -1,3 +1,5 @@
+import type { Gid } from "@/api";
+import { isGid } from "@/api";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import {
@@ -130,7 +132,7 @@ export default function App() {
   const [clusterFilter, setClusterFilter] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(25);
-  const [selected, setSelected] = useState<number | null>(null);
+  const [selected, setSelected] = useState<Gid | null>(null);
   const [detail, setDetail] = useState<NodeDetail | null>(null);
   const [detailError, setDetailError] = useState("");
   const [graph, setGraph] = useState<GraphData | null>(null);
@@ -140,7 +142,7 @@ export default function App() {
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const [clustersLoading, setClustersLoading] = useState(true);
   const [clustersError, setClustersError] = useState("");
-  const [cohort, setCohort] = useState<number[]>([]);
+  const [cohort, setCohort] = useState<Gid[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const [jump, setJump] = useState("");
@@ -252,7 +254,7 @@ export default function App() {
     return () => controller.abort();
   }, [selected, hops, revision]);
 
-  function selectNode(gid: number) {
+  function selectNode(gid: Gid) {
     setSelected(gid);
     if (view !== "signals") setView("network");
     if (!wide) setSheetOpen(true);
@@ -273,9 +275,9 @@ export default function App() {
     event.preventDefault();
     const value = jump.trim();
     if (!value) return;
-    if (/^\d+$/.test(value) && Number.isSafeInteger(Number(value))) {
+    if (isGid(value)) {
       setView("network");
-      setSelected(Number(value));
+      setSelected(value);
       if (!wide) setSheetOpen(true);
     } else {
       setQuery(value);
@@ -318,7 +320,7 @@ export default function App() {
           !document.cookie.split("; ").includes("sidebar_state=false")
         }
       >
-        <a href="#main-content" className="sr-only focus:not-sr-only">
+        <a href="#main-content" className="workspace-skip-link sr-only focus:not-sr-only">
           Skip to workspace
         </a>
         <AppSidebar view={view} onView={changeView} summary={summary} />
@@ -376,12 +378,13 @@ export default function App() {
             ref={mainContent}
             aria-label="Workspace content"
             id="main-content"
-            className="workspace-enter min-h-0 min-w-0 flex-1 overflow-y-auto bg-background p-4 lg:p-7"
+            tabIndex={-1}
+            className="workspace-enter outline-none min-h-0 min-w-0 flex-1 overflow-y-auto bg-background p-4 lg:p-7"
           >
             <div className="flex min-w-0 flex-col gap-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="flex flex-col gap-2">
-                  <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-[-0.025em]">
+                <div className="flex min-w-0 flex-1 flex-col gap-2">
+                  <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-[-0.025em] [overflow-wrap:anywhere]">
                     {view === "network"
                       ? `Entity ${selected ?? "—"}`
                       : view === "overview"

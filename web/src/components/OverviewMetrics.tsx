@@ -64,7 +64,7 @@ function MetricCard({
   footer: ReactNode;
 }) {
   return (
-    <Card className="min-w-0 gap-3" aria-label={`${label}: ${exact ?? value}`}>
+    <Card className="metric-card min-w-0 gap-3" aria-label={`${label}: ${exact ?? value}`}>
       <CardHeader className="px-4">
         <CardTitle>{label}</CardTitle>
         <CardAction>
@@ -79,12 +79,12 @@ function MetricCard({
         >
           {value}
         </p>
-        <CardDescription className="min-h-10 text-xs leading-5 sm:min-h-5">
+        <CardDescription className="metric-scope min-h-10 text-xs leading-5 sm:min-h-5">
           {note}
         </CardDescription>
-        <div className="mt-2 h-[76px] min-w-0">{children}</div>
+        <div className="mt-2 h-14 min-w-0 sm:h-[76px]">{children}</div>
       </CardContent>
-      <CardFooter className="mt-auto min-h-10 justify-between gap-2 px-4 py-2 text-xs text-muted-foreground">
+      <CardFooter className="mt-auto min-h-10 justify-between gap-2 px-4 py-2 text-[13px] text-muted-foreground">
         {footer}
       </CardFooter>
     </Card>
@@ -321,7 +321,7 @@ export function OverviewMetrics({
         footer={
           <>
             <span>Entities per group</span>
-            <span className="tabular-nums">
+            <span className="shrink-0 whitespace-nowrap tabular-nums">
               {!communitiesLoading && !communitiesError && largest.length
                 ? `${largest.length} / ${number(summary.counts.clusters)}`
                 : "—"}

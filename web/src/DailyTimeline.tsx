@@ -52,8 +52,8 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const chartConfig = {
-  incoming: { label: "Incoming", color: "var(--chart-1)" },
-  outgoing: { label: "Outgoing", color: "var(--chart-2)" },
+  incoming: { label: "Incoming", color: "var(--flow-incoming)" },
+  outgoing: { label: "Outgoing", color: "var(--flow-outgoing)" },
 } satisfies ChartConfig;
 
 const DAY_MS = 86_400_000;

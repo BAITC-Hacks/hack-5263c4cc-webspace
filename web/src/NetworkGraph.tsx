@@ -1,3 +1,5 @@
+import type { Gid } from "@/api";
+import { compareGids } from "@/api";
 import {
   memo,
   useCallback,
@@ -67,9 +69,11 @@ import {
   roleLabel,
 } from "./api";
 
+import { graphColors, resolveColor } from "@/lib/visualization";
+
 interface Props {
   data: GraphData;
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
   colorBy?: "role" | "cluster";
 }
 type Account = GraphData["nodes"][number];
@@ -86,21 +90,14 @@ type TransferEdge = Edge<
   { transfer: GraphEdge; showLabel: boolean; returnLane: number },
   "transfer"
 >;
-const nodeWidth = 124;
+const nodeWidth = 176;
 const nodeHeight = 136;
 const glyphY = 36;
-const graphColors = {
-  ink: "#20251f",
-  incoming: "#098830",
-  outgoing: "#677b92",
-  related: "#c0c9bb",
-  surface: "#ffffff",
-};
 const fitOptions = { padding: 0.14, minZoom: 0.9, maxZoom: 1.08 };
 const edgeRank = (a: GraphEdge, b: GraphEdge) =>
   b.sum_kzt - a.sum_kzt ||
-  a.src - b.src ||
-  a.dst - b.dst ||
+  compareGids(a.src, b.src) ||
+  compareGids(a.dst, b.dst) ||
   a.id.localeCompare(b.id);
 const roleIcons = {
   consolidator: ArrowsMergeIcon,
@@ -123,7 +120,7 @@ const AccountGlyph = memo(function AccountGlyph({
       : roleLabel(account.role);
   const radius = root ? 34 : 27;
   return (
-    <div className="relative flex h-[136px] w-[124px] flex-col items-center text-foreground">
+    <div className="relative flex h-[136px] w-[176px] flex-col items-center text-foreground">
       {(["target", "source"] as const).flatMap((type) =>
         ([Position.Left, Position.Right] as const).map((position) => (
           <Handle
@@ -157,7 +154,7 @@ const AccountGlyph = memo(function AccountGlyph({
           height: radius * 2,
           marginTop: glyphY - radius,
           marginBottom: root ? 7 : 14,
-          backgroundColor: root ? graphColors.ink : "#fff",
+          backgroundColor: root ? graphColors.ink : graphColors.surface,
           borderColor: root ? graphColors.ink : color,
           color: root ? "#ffffff" : color,
           borderStyle: account.truncated_by_depth ? "dashed" : "solid",
@@ -172,13 +169,16 @@ const AccountGlyph = memo(function AccountGlyph({
           />
         )}
       </div>
-      <div className="max-w-[124px] bg-[#ffffff] px-1 text-center font-mono text-base font-semibold leading-5 tabular-nums break-all">
+      <div
+        className="max-w-[176px] bg-card px-1 text-center font-mono font-semibold leading-5 tabular-nums break-all"
+        style={{ fontSize: account.gid.length > 12 ? 14 : 16 }}
+      >
         {account.gid}
       </div>
-      <div className="max-w-[124px] bg-[#ffffff] px-1 text-center text-[13px] leading-[18px] text-muted-foreground">
+      <div className="max-w-[176px] bg-card px-1 text-center text-[13px] leading-[18px] text-muted-foreground">
         {label}
       </div>
-      <div className="mt-0.5 flex items-center gap-1 bg-[#ffffff] text-[11px] leading-4 text-muted-foreground">
+      <div className="mt-0.5 flex items-center gap-1 bg-card text-[13px] leading-4 text-muted-foreground">
         {root && <span className="font-medium text-foreground">Selected</span>}
         {account.truncated_by_depth && (
           <span>{root ? "· Boundary" : "Boundary"}</span>
@@ -238,7 +238,7 @@ const TransferLine = memo(function TransferLine(
             style={{
               transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
               backgroundColor: selected ? graphColors.ink : graphColors.surface,
-              color: selected ? "#ffffff" : "#535c4f",
+              color: selected ? "var(--card)" : "var(--muted-foreground)",
             }}
           >
             {money(data.transfer.sum_kzt)}
@@ -329,7 +329,7 @@ export default function NetworkGraph({
         );
       }
       for (const account of [...data.nodes].sort(
-        (a, b) => b.priority_score - a.priority_score || a.gid - b.gid,
+        (a, b) => b.priority_score - a.priority_score || compareGids(a.gid, b.gid),
       )) {
         if (visible.size >= 25) break;
         visible.add(String(account.id));
@@ -454,7 +454,7 @@ export default function NetworkGraph({
           type: MarkerType.ArrowClosed,
           width: 15,
           height: 15,
-          color,
+          color: resolveColor(color),
         },
         style: {
           stroke: color,
@@ -473,10 +473,11 @@ export default function NetworkGraph({
     (event?: MouseEvent<HTMLButtonElement>) => {
       void instance.current?.fitView({
         ...fitOptions,
+        minZoom: event || expanded ? 0.25 : 0.8,
         duration: motionDuration(event),
       });
     },
-    [motionDuration],
+    [motionDuration, expanded],
   );
   const focusAccount = useCallback(
     (event?: MouseEvent<HTMLButtonElement>) => {
@@ -503,7 +504,7 @@ export default function NetworkGraph({
     setExportError(null);
     try {
       const url = await toPng(capture.current, {
-        backgroundColor: graphColors.surface,
+        backgroundColor: resolveColor(graphColors.surface),
         pixelRatio: 2,
         cacheBust: true,
         filter: (element) =>
@@ -607,16 +608,16 @@ export default function NetworkGraph({
       <TabsContent value="flow" className="flex flex-col gap-3">
         <div
           ref={capture}
-          className="relative h-[410px] overflow-hidden rounded-xl border border-border/70 bg-[#ffffff] sm:h-[520px]"
+          className="relative h-[410px] overflow-hidden rounded-xl border border-border/70 bg-card sm:h-[520px]"
         >
-          <div className="pointer-events-none absolute inset-x-5 top-4 z-10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
+          <div className="pointer-events-none absolute inset-x-5 top-4 z-10 flex flex-wrap items-center justify-between gap-2 text-[13px] text-muted-foreground">
             <span className="flex items-center gap-2">
-              <span className="h-px w-5 bg-[#098830]" />
+              <span className="h-px w-5 bg-[var(--flow-incoming)]" />
               Incoming to selected
             </span>
             <span className="flex items-center gap-2">
               Outgoing from selected
-              <span className="h-px w-5 bg-[#677b92]" />
+              <span className="h-px w-5 bg-[var(--flow-outgoing)]" />
             </span>
           </div>
           <ReactFlow<AccountNode, TransferEdge>
@@ -656,7 +657,7 @@ export default function NetworkGraph({
             onPaneClick={() => setEdge(null)}
             fitView
             fitViewOptions={fitOptions}
-            minZoom={0.9}
+            minZoom={0.25}
             maxZoom={1.8}
             nodesDraggable={false}
             nodesConnectable={false}
@@ -676,7 +677,7 @@ export default function NetworkGraph({
               variant={BackgroundVariant.Dots}
               gap={28}
               size={0.65}
-              color="#e0e6dc"
+              color="var(--graph-grid)"
             />
           </ReactFlow>
           <div
@@ -710,7 +711,7 @@ export default function NetworkGraph({
             </p>
           )}
           {nodes.length === 1 && scene.transfers.length === 0 && (
-            <p className="absolute inset-x-5 bottom-20 mx-auto max-w-sm bg-[#ffffff] text-center text-xs leading-5 text-muted-foreground">
+            <p className="absolute inset-x-5 bottom-20 mx-auto max-w-sm bg-card text-center text-xs leading-5 text-muted-foreground">
               No recorded transfers for this account. The account remains part
               of the dataset.
             </p>
@@ -729,7 +730,7 @@ export default function NetworkGraph({
             Observation boundary
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-[#677b92]" />
+            <span className="size-2 rounded-full bg-[var(--flow-outgoing)]" />
             Seed account
           </span>
           {scene.transfers.length > 8 && (

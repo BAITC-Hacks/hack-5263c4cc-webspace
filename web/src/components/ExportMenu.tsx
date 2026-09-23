@@ -1,3 +1,4 @@
+import type { Gid } from "@/api";
 import {
   DownloadSimpleIcon,
   FileCsvIcon,
@@ -16,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function ExportMenu({ selected }: { selected: number | null }) {
+export function ExportMenu({ selected }: { selected: Gid | null }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="outline" />}>

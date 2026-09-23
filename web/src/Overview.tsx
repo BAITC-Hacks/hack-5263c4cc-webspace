@@ -1,3 +1,4 @@
+import type { Gid } from "@/api";
 import { useMemo } from "react";
 import {
   ArrowRightIcon,
@@ -74,7 +75,7 @@ interface Props {
   clustersLoading: boolean;
   clustersError: string;
   retry: () => void;
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
   onCommunity: (id: number) => void;
   onInvestigate: () => void;
 }
@@ -207,6 +208,153 @@ export default function Overview({
         communitiesLoading={clustersLoading}
         communitiesError={clustersError}
       />
+
+      <Card className="min-w-0 gap-3">
+        <CardHeader className="px-5">
+          <CardTitle>Review queue</CardTitle>
+          <CardDescription>
+            {summary.top_nodes.length
+              ? `${Math.min(5, summary.top_nodes.length)} highest-priority entities in the observed network`
+              : "Entities ordered by heuristic review priority"}
+          </CardDescription>
+          <CardAction className="flex flex-wrap gap-2 max-sm:col-start-1 max-sm:row-start-3 max-sm:justify-self-start">
+            <AskEvidenceAction
+              gid={summary.top_nodes[0]?.gid}
+              prompt="Explain why this account leads the review queue and which evidence should be checked next."
+              disabled={!summary.top_nodes.length}
+            >
+              Explain priority
+            </AskEvidenceAction>
+            <Button variant="outline" onClick={onInvestigate}>
+              Investigate
+              <ArrowRightIcon data-icon="inline-end" />
+            </Button>
+          </CardAction>
+        </CardHeader>
+        <CardContent className="px-0">
+          {summary.top_nodes.length ? (
+            <div
+              role="region"
+              aria-label="Priority review queue; scroll horizontally for all columns"
+              tabIndex={0}
+              className="overflow-auto focus-visible:outline-2 focus-visible:outline-ring"
+            >
+              <Table className="min-w-[660px]">
+                <TableHeader>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableHead className="pl-5 text-xs text-muted-foreground">
+                      Entity
+                    </TableHead>
+                    <TableHead className="text-xs text-muted-foreground">
+                      Role hypothesis
+                    </TableHead>
+                    <TableHead className="text-right text-xs text-muted-foreground">
+                      Priority
+                    </TableHead>
+                    <TableHead className="text-right text-xs text-muted-foreground">
+                      Inflow
+                    </TableHead>
+                    <TableHead className="text-right text-xs text-muted-foreground">
+                      Outflow
+                    </TableHead>
+                    <TableHead className="pr-5">
+                      <span className="sr-only">Inspect entity</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {summary.top_nodes.slice(0, 5).map((node) => (
+                    <TableRow key={node.gid}>
+                      <TableCell className="py-2 pl-5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="-ml-2.5 font-medium tabular-nums"
+                          onClick={() => onSelect(node.gid)}
+                          aria-label={`Inspect entity ${node.gid}`}
+                        >
+                          {node.gid}
+                        </Button>
+                        {node.is_seed && (
+                          <span className="ml-2 text-[13px] text-muted-foreground">
+                            Seed
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center gap-2 text-[13px]">
+                          <span
+                            className="size-1.5 rounded-full"
+                            style={{ backgroundColor: roleColor(node.role) }}
+                            aria-hidden="true"
+                          />
+                          {roleLabel(node.role)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        <span className="font-medium">
+                          {score(node.priority_score)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {" "}
+                          / 100
+                        </span>
+                      </TableCell>
+                      <TableCell
+                        className="text-right tabular-nums"
+                        title={exactMoney(node.in_kzt)}
+                      >
+                        <span aria-hidden="true">{money(node.in_kzt)}</span>
+                        <span className="sr-only">
+                          {exactMoney(node.in_kzt)}
+                        </span>
+                      </TableCell>
+                      <TableCell
+                        className="text-right tabular-nums"
+                        title={exactMoney(node.out_kzt)}
+                      >
+                        <span aria-hidden="true">{money(node.out_kzt)}</span>
+                        <span className="sr-only">
+                          {exactMoney(node.out_kzt)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="pr-5 text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={`Open evidence for entity ${node.gid}`}
+                          onClick={() => onSelect(node.gid)}
+                        >
+                          <CaretRightIcon />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No entities to review</EmptyTitle>
+                <EmptyDescription>
+                  Load a dataset with observed entities to build a review queue.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
+        </CardContent>
+        <CardFooter className="bg-transparent px-5 py-3">
+          <InfoIcon
+            className="mr-2 size-3.5 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <p className="text-xs leading-5 text-muted-foreground">
+            Priority is a heuristic for review, never a probability of financial
+            crime.
+          </p>
+        </CardFooter>
+      </Card>
 
       <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,1fr)]">
         <Card className="min-w-0 gap-2">
@@ -471,13 +619,13 @@ export default function Overview({
                     <span className="text-2xl font-semibold tracking-tight tabular-nums">
                       {compact(roleTotal)}
                     </span>
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-[13px] text-muted-foreground">
                       entities
                     </span>
                   </div>
                 </div>
                 <dl
-                  className="min-w-0 space-y-3 text-xs"
+                  className="min-w-0 space-y-3 text-[13px]"
                   aria-label="Exact role counts"
                 >
                   {roles.map((role) => (
@@ -521,153 +669,6 @@ export default function Overview({
           </CardFooter>
         </Card>
       </div>
-
-      <Card className="min-w-0 gap-3">
-        <CardHeader className="px-5">
-          <CardTitle>Review queue</CardTitle>
-          <CardDescription>
-            {summary.top_nodes.length
-              ? `${Math.min(5, summary.top_nodes.length)} highest-priority entities in the observed network`
-              : "Entities ordered by heuristic review priority"}
-          </CardDescription>
-          <CardAction className="flex flex-wrap gap-2 max-sm:col-start-1 max-sm:row-start-3 max-sm:justify-self-start">
-            <AskEvidenceAction
-              gid={summary.top_nodes[0]?.gid}
-              prompt="Explain why this account leads the review queue and which evidence should be checked next."
-              disabled={!summary.top_nodes.length}
-            >
-              Explain priority
-            </AskEvidenceAction>
-            <Button variant="outline" onClick={onInvestigate}>
-              Investigate
-              <ArrowRightIcon data-icon="inline-end" />
-            </Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent className="px-0">
-          {summary.top_nodes.length ? (
-            <div
-              role="region"
-              aria-label="Priority review queue; scroll horizontally for all columns"
-              tabIndex={0}
-              className="overflow-auto focus-visible:outline-2 focus-visible:outline-ring"
-            >
-              <Table className="min-w-[660px]">
-                <TableHeader>
-                  <TableRow className="bg-muted/40 hover:bg-muted/40">
-                    <TableHead className="pl-5 text-xs text-muted-foreground">
-                      Entity
-                    </TableHead>
-                    <TableHead className="text-xs text-muted-foreground">
-                      Role hypothesis
-                    </TableHead>
-                    <TableHead className="text-right text-xs text-muted-foreground">
-                      Priority
-                    </TableHead>
-                    <TableHead className="text-right text-xs text-muted-foreground">
-                      Inflow
-                    </TableHead>
-                    <TableHead className="text-right text-xs text-muted-foreground">
-                      Outflow
-                    </TableHead>
-                    <TableHead className="pr-5">
-                      <span className="sr-only">Inspect entity</span>
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {summary.top_nodes.slice(0, 5).map((node) => (
-                    <TableRow key={node.gid}>
-                      <TableCell className="py-2 pl-5">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="-ml-2.5 font-medium tabular-nums"
-                          onClick={() => onSelect(node.gid)}
-                          aria-label={`Inspect entity ${node.gid}`}
-                        >
-                          {node.gid}
-                        </Button>
-                        {node.is_seed && (
-                          <span className="ml-2 text-[11px] text-muted-foreground">
-                            Seed
-                          </span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center gap-2 text-xs">
-                          <span
-                            className="size-1.5 rounded-full"
-                            style={{ backgroundColor: roleColor(node.role) }}
-                            aria-hidden="true"
-                          />
-                          {roleLabel(node.role)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right tabular-nums">
-                        <span className="font-medium">
-                          {score(node.priority_score)}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {" "}
-                          / 100
-                        </span>
-                      </TableCell>
-                      <TableCell
-                        className="text-right tabular-nums"
-                        title={exactMoney(node.in_kzt)}
-                      >
-                        <span aria-hidden="true">{money(node.in_kzt)}</span>
-                        <span className="sr-only">
-                          {exactMoney(node.in_kzt)}
-                        </span>
-                      </TableCell>
-                      <TableCell
-                        className="text-right tabular-nums"
-                        title={exactMoney(node.out_kzt)}
-                      >
-                        <span aria-hidden="true">{money(node.out_kzt)}</span>
-                        <span className="sr-only">
-                          {exactMoney(node.out_kzt)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="pr-5 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          aria-label={`Open evidence for entity ${node.gid}`}
-                          onClick={() => onSelect(node.gid)}
-                        >
-                          <CaretRightIcon />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <Empty>
-              <EmptyHeader>
-                <EmptyTitle>No entities to review</EmptyTitle>
-                <EmptyDescription>
-                  Load a dataset with observed entities to build a review queue.
-                </EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          )}
-        </CardContent>
-        <CardFooter className="bg-transparent px-5 py-3">
-          <InfoIcon
-            className="mr-2 size-3.5 shrink-0 text-muted-foreground"
-            aria-hidden="true"
-          />
-          <p className="text-xs leading-5 text-muted-foreground">
-            Priority is a heuristic for review, never a probability of financial
-            crime.
-          </p>
-        </CardFooter>
-      </Card>
 
       <Card className="gap-3">
         <CardHeader className="px-5">

@@ -24,7 +24,7 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
+  scrollbar-color: #bac9bf transparent;
   scroll-padding-bottom: 1rem;
 }
 .asst-welcome {
@@ -322,7 +322,7 @@
   background: var(--card);
 }
 .asst-composer-input-group[data-slot="input-group"] {
-  border-radius: 1.25rem;
+  border-radius: 1rem;
   background: var(--muted);
 }
 .asst-composer-input[data-slot="input-group-control"] {
@@ -345,7 +345,7 @@
 .asst-input-help {
   max-width: 17rem;
   color: var(--muted-foreground);
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: 400;
   line-height: 1.5;
 }
@@ -356,7 +356,7 @@
   max-width: 38rem;
   margin: 0.625rem auto 0;
   color: var(--muted-foreground);
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   line-height: 1.5;
   text-align: center;
   text-wrap: pretty;

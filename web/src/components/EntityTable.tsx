@@ -1,3 +1,4 @@
+import type { Gid } from "@/api";
 import {
   CaretLeftIcon,
   CaretRightIcon,
@@ -40,7 +41,7 @@ import { Failure, NoResults, Pending } from "./AsyncState";
 interface Props {
   items: NodeSummary[];
   total: number;
-  selected: number | null;
+  selected: Gid | null;
   loading: boolean;
   error: string;
   query: string;
@@ -54,7 +55,7 @@ interface Props {
   setPage: (page: number) => void;
   pageSize: number;
   setPageSize: (size: number) => void;
-  onSelect: (gid: number) => void;
+  onSelect: (gid: Gid) => void;
   retry: () => void;
 }
 
@@ -65,8 +66,8 @@ export function EntityRows({
   extended = true,
 }: {
   items: NodeSummary[];
-  selected: number | null;
-  onSelect: (gid: number) => void;
+  selected: Gid | null;
+  onSelect: (gid: Gid) => void;
   extended?: boolean;
 }) {
   return (

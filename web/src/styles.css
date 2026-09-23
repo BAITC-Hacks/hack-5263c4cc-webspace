@@ -50,39 +50,60 @@
 }
 
 :root {
-  --background: #f1f3f0;
-  --foreground: #20231f;
+  --background: #f3f6f4;
+  --foreground: #202923;
   --card: #ffffff;
-  --card-foreground: #20231f;
+  --card-foreground: var(--foreground);
   --popover: #ffffff;
-  --popover-foreground: #20231f;
+  --popover-foreground: var(--foreground);
   --primary: #8ce85f;
   --primary-foreground: #14320d;
-  --secondary: #f0f3ee;
-  --secondary-foreground: #363e32;
-  --muted: #f2f4f1;
-  --muted-foreground: #626b5e;
-  --accent: #edf4e8;
-  --accent-foreground: #24321e;
+  --secondary: #edf2ee;
+  --secondary-foreground: #344b3d;
+  --muted: #f1f5f2;
+  --muted-foreground: #5c6b62;
+  --accent: #eaf3ed;
+  --accent-foreground: #244b32;
   --destructive: #b13d37;
-  --border: #e2e7df;
-  --input: #d9e0d5;
-  --ring: #238832;
-  --chart-1: #098830;
-  --chart-2: #1f6226;
-  --chart-3: #718d66;
-  --chart-4: #667787;
-  --chart-5: #b28b4d;
-  --radius: 1rem;
+  --border: #dde5df;
+  --input: #83958a;
+  --ring: #247344;
+  --brand: #247344;
+  --flow-incoming: #247344;
+  --flow-outgoing: #586e94;
+  --flow-related: #7b897e;
+  --graph-ink: #263b2d;
+  --graph-surface: #ffffff;
+  --graph-grid: #dce5df;
+  --chart-1: var(--flow-incoming);
+  --chart-2: var(--flow-outgoing);
+  --chart-3: #397d7f;
+  --chart-4: #7c6d96;
+  --chart-5: #946d36;
+  --role-consolidator: var(--flow-incoming);
+  --role-transit: var(--flow-outgoing);
+  --role-distributor: var(--chart-5);
+  --role-terminal: var(--chart-4);
+  --role-coordinator: var(--graph-ink);
+  --role-peripheral: #758470;
+  --role-boundary: #617f4c;
+  --community-1: var(--chart-1);
+  --community-2: var(--chart-2);
+  --community-3: var(--chart-4);
+  --community-4: var(--chart-3);
+  --community-5: var(--chart-5);
+  --community-6: #697e51;
+  --community-7: #967168;
+  --community-8: #4c6057;
+  --radius: 0.75rem;
   --sidebar: #ffffff;
-  --sidebar-foreground: #535c4f;
-  --sidebar-primary: #1d1f20;
+  --sidebar-foreground: #526259;
+  --sidebar-primary: #202923;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #20231f;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #e2e7df;
-  --sidebar-ring: #238832;
-  --brand: #098830;
+  --sidebar-accent: #edf3ef;
+  --sidebar-accent-foreground: #244b32;
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -147,7 +168,7 @@
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    scrollbar-color: #bac9bf transparent;
   }
 }
 
@@ -164,7 +185,7 @@
 
 /* One brief entrance establishes the workspace; data and graph updates stay immediate. */
 .workspace-enter {
-  animation: workspace-enter 240ms var(--ease-out) both;
+  animation: workspace-enter 180ms var(--ease-out) both;
 }
 @keyframes workspace-enter {
   from {
@@ -206,9 +227,6 @@
 .workspace-header {
   background: var(--card);
 }
-.workspace-enter {
-  animation-duration: 180ms;
-}
 .entity-metrics > div + div {
   border-left: 1px solid var(--border);
 }
@@ -227,6 +245,7 @@
 }
 [data-slot="card"] {
   --tw-ring-color: var(--border);
+  border-radius: 1rem;
 }
 .workspace-header [data-slot="button"] {
   border-radius: 999px;
@@ -260,5 +279,36 @@
 @media (pointer: coarse) {
   [data-slot="button"] {
     min-height: 2.75rem;
+  }
+}
+
+/* Keyboard navigation stays visible without shifting the workspace. */
+.workspace-skip-link:focus {
+  position: fixed;
+  z-index: 100;
+  top: 0.75rem;
+  left: 0.75rem;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--foreground);
+  color: var(--card);
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.workspace-header [data-slot="input-group"] {
+  background: var(--card);
+}
+[data-slot="input-group"]:has([data-slot="input-group-control"]:focus-visible) {
+  border-color: var(--ring);
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+@media (max-width: 767px) {
+  [data-mobile="true"] [data-slot="sidebar-menu-button"] {
+    min-height: 2.75rem;
+    padding-inline: 0.75rem;
+  }
+  [data-mobile="true"] [data-slot="sidebar-menu"] {
+    gap: 0.25rem;
   }
 }
