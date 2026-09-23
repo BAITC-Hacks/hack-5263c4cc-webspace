@@ -58,6 +58,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Failure, Pending } from "@/components/AsyncState";
 import { AskEvidenceAction } from "@/AssistantWorkspace";
+import { OverviewMetrics } from "@/components/OverviewMetrics";
 import {
   Table,
   TableBody,
@@ -180,29 +181,6 @@ export default function Overview({
 
   if (!summary) return <OverviewSkeleton />;
 
-  const metrics = [
-    {
-      label: "Entities",
-      value: number(summary.counts.nodes),
-      note: `${number(summary.counts.seeds)} seed accounts`,
-    },
-    {
-      label: "Transfers",
-      value: number(summary.counts.transactions),
-      note: `${number(summary.counts.edges)} relationships`,
-    },
-    {
-      label: "Turnover",
-      value: money(summary.total_kzt),
-      exact: exactMoney(summary.total_kzt),
-      note: "Recorded in KZT",
-    },
-    {
-      label: "Communities",
-      value: number(summary.counts.clusters),
-      note: `${number(summary.counts.components)} components`,
-    },
-  ];
   const coverage = [
     {
       label: "Seed accounts",
@@ -223,36 +201,18 @@ export default function Overview({
 
   return (
     <div className="flex min-w-0 flex-col gap-5">
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        {metrics.map((metric) => (
-          <Card key={metric.label} size="sm" className="gap-2 py-4">
-            <CardHeader className="px-4">
-              <CardTitle className="font-normal text-muted-foreground">
-                {metric.label}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1 px-4">
-              <p
-                className="text-[1.65rem] font-semibold leading-tight tracking-tight tabular-nums sm:text-[1.85rem]"
-                title={metric.exact}
-              >
-                {metric.value}
-              </p>
-              <p className="text-xs leading-5 text-muted-foreground">
-                {metric.note}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <OverviewMetrics
+        summary={summary}
+        communities={communities}
+        communitiesLoading={clustersLoading}
+        communitiesError={clustersError}
+      />
 
       <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,1fr)]">
         <Card className="min-w-0 gap-2">
           <CardHeader className="px-5">
             <CardTitle>Community distribution</CardTitle>
-            <CardDescription>
-              Entities per community
-            </CardDescription>
+            <CardDescription>Entities per community</CardDescription>
             <CardAction>
               <Badge variant="outline">
                 {number(summary.counts.clusters)} groups
@@ -756,14 +716,18 @@ function OverviewSkeleton() {
       <span className="sr-only">Loading dataset overview</span>
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         {[0, 1, 2, 3].map((key) => (
-          <Card key={key} size="sm">
+          <Card key={key}>
             <CardHeader>
               <Skeleton className="h-4 w-24" />
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               <Skeleton className="h-8 w-20" />
               <Skeleton className="h-3 w-28" />
+              <Skeleton className="mt-2 h-[76px] w-full" />
             </CardContent>
+            <CardFooter>
+              <Skeleton className="h-4 w-full" />
+            </CardFooter>
           </Card>
         ))}
       </div>

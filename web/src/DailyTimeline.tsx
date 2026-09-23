@@ -60,7 +60,7 @@ const DAY_MS = 86_400_000;
 const MAX_CALENDAR_DAYS = 3660;
 type Metric = "amount" | "count";
 type WindowDays = "full" | 14 | 7;
-type Period = { start: string; end: string };
+type Period = { start: string | null; end: string | null };
 type ChartDay = TimelineDay & {
   timestamp: number;
   recorded: boolean;
@@ -70,7 +70,7 @@ type ChartDay = TimelineDay & {
 const exactKzt = (value: number) =>
   `${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)} KZT`;
 
-function dayTimestamp(value: string | undefined): number | undefined {
+function dayTimestamp(value: string | null | undefined): number | undefined {
   if (
     typeof value !== "string" ||
     !/^\d{4}-\d{2}-\d{2}$/.test(value.slice(0, 10))

@@ -23,6 +23,12 @@ export interface NodeSummary {
   out_kzt: number;
   rank: number;
 }
+export interface SummaryActivity {
+  start: string;
+  end: string;
+  n_tx: number;
+  sum_kzt: number;
+}
 export interface Summary {
   dataset: {
     name: string;
@@ -39,8 +45,9 @@ export interface Summary {
     boundary_nodes: number;
     isolated_nodes: number;
   };
-  period: { start: string; end: string };
+  period: { start: string | null; end: string | null };
   total_kzt: number;
+  activity: SummaryActivity[];
   runtime_ms: number;
   role_counts: Record<string, number>;
   limitations: string[];
@@ -223,12 +230,14 @@ export const exactMoney = (value: number | undefined) =>
   `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value ?? 0)} KZT`;
 export const score = (value: number | undefined) =>
   Math.round(Math.max(0, Math.min(1, value ?? 0)) * 100);
-export const dateLabel = (date: string, year = false) =>
-  new Date(`${date.slice(0, 10)}T12:00:00`).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    ...(year ? { year: "numeric" } : {}),
-  });
+export const dateLabel = (date: string | null | undefined, year = false) =>
+  date
+    ? new Date(`${date.slice(0, 10)}T12:00:00`).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        ...(year ? { year: "numeric" } : {}),
+      })
+    : "—";
 
 export interface SignalReport {
   gid: number;
