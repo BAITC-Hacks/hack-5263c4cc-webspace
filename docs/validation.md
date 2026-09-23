@@ -4,7 +4,7 @@ Verified on 23 September 2026 against the local Freedom Finance implementation. 
 
 ## Backend and clean-process export
 
-The final backend run completed **35 tests successfully in 1.97 seconds** using `.venv/bin/python -m pytest -q`. The only warning was Starlette's deprecation notice for its current `httpx` TestClient transport; no test failed. `bash -n scripts/dev.sh scripts/check.sh` also passed, and both scripts are executable.
+The final backend run completed **38 tests successfully in 2.57 seconds** using `uv run --frozen pytest -q`. The only warning was Starlette's deprecation notice for its current `httpx` TestClient transport; no test failed. `bash -n scripts/dev.sh scripts/check.sh` also passed, and both scripts are executable.
 
 An independent process was launched from a fresh temporary working directory with AI disabled. It loaded the official Parquet files, computed the graph, wrote all three CSVs and the provenance receipt, and exited successfully in **0.9529 seconds**. Environment: Python 3.12.12, Linux x86_64, eight logical CPUs. Dependencies were already installed. This is a clean-process measurement, not a measurement of initial installation or proof that a clean machine has been provisioned. The result is well below the five-minute pipeline limit on this host. A separate earlier recorded run took 0.8332 seconds; ordinary run-to-run variation is expected.
 
@@ -97,6 +97,18 @@ The provenance receipt hashes canonical input rows, the deterministic `engine.py
 
 The GitHub Actions workflow is committed with pinned action revisions. The first remote run could not start a job because GitHub reported an account billing lock. No workflow step ran, so this is an infrastructure block rather than a backend or browser build result. Local checks remain the available verification evidence. [Run and annotations](https://github.com/BAITC-Hacks/hack-5263c4cc-webspace/actions/runs/35848438498).
 
+## Frontend and clean-checkout verification
+
+The final redesign was checked in Chromium at 1440 × 1000 and 390 × 844, then refreshed and visually checked in the user's running Zen browser at 1908 × 1028. Both overview and investigation captures retain the dataset label, real values and observation caveats. The independent finish review found no material layout failure in the four desktop/mobile first-viewport captures; its sole documentation-consistency fix was resolved. This is a design review, not measured user acceptance.
+
+Functional browser checks confirmed sidebar collapse and its persisted cookie, hiding the desktop evidence panel, explicit community IDs and a shared color mapping, expansion of a seven-account neighborhood, focus restoration to a bounded neighborhood, preservation of an isolated seed with zero edges, exact transfer-table amounts, and a downloaded 2588 × 1040 PNG of the current graph viewport. Entity pagination was checked through the third page, and a five-account collector query was exercised. No JavaScript errors were reported in the checked graph and mobile copilot sessions.
+
+The mobile assistant retained a typed question after closing and reopening its evidence Sheet, then completed an AI-assisted synthetic-evidence answer with references. Its composer remained inside the 390 × 844 viewport without horizontal document overflow. Earlier checks covered suggestion submission, copy, retry/cancel, trace expansion and tab switching. Desktop-to-mobile breakpoint changes still mount separate ephemeral assistant runtimes; cross-device persistence is not claimed.
+
+A clean temporary clone of application commit `4f1f8f7`, without `.env`, organizer data, `node_modules` or a virtual environment, ran `scripts/check.sh` successfully: frozen Python dependency installation, **38 tests in 3.65 seconds**, `npm ci` installing 603 packages, TypeScript compilation and Vite production build. Existing host package caches were available. This verifies a clean checkout on this host, not an independently provisioned fresh machine. The build retains a non-fatal warning for the 504.86 kB main JavaScript chunk (155.38 kB gzip); graph, chart and assistant modules are separately loaded.
+
+The installed Recharts version is 3.8.0; 3.10.1 is the researched latest release, not the shipped version. React Flow 12.11.6, Dagre 3.1.1, Base UI 1.8.0 and Phosphor 2.1.10 are pinned in the lockfile. Generated logo provenance is present both in the PNG metadata and its adjacent JSON file. No Lucide imports or direct Lucide dependency remain.
+
 ## Remaining verification boundary
 
-Frontend production-build results and live browser interaction checks are recorded separately by the integration owner; this backend review does not claim them. The final live five-minute judge demonstration and a genuinely fresh-machine dependency installation also remain external acceptance activities. Million-node performance, domain-expert usefulness, calibrated role confidence and production security have not been measured.
+The live five-minute judge demonstration and an independently provisioned fresh-machine installation remain external acceptance activities. Million-node performance, domain-expert usefulness, calibrated role confidence and production security have not been measured. The hosted CI billing block remains external to the passing local checks.

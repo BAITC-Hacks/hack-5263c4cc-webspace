@@ -1,4 +1,4 @@
-# EvidenceGraph — Freedom Finance Money Graph
+# Aqsha Lens — Freedom Finance Money Graph
 
 An evidence-first investigation workspace for the HackAlem AI Freedom Finance case. It turns the supplied transaction graph into explainable role hypotheses, network communities, a ranked review queue and reproducible CSV exports. The graph engine runs locally; an optional bounded AI copilot explains computed evidence.
 
@@ -35,6 +35,8 @@ Omit `--data` to export the synthetic fixture. The official data and generated e
 3. Read coverage limits before interpreting an apparent sink, seed flow ratio or daily transfer pattern.
 4. Inspect communities and export the three required CSVs from the header.
 5. Use the optional assistant for an evidence-backed explanation. Its references and tool trace are visible; its answer cannot change deterministic scores or exports.
+
+The complete dashboard uses the official shadcn Base Nova components on Base UI, Geist typography and Phosphor icons. Its collapsible navigation remembers the chosen state and separates Overview, Investigation, Entities, Communities, Signals and Resilience. The restrained warm-white and graphite Dashboard 4 composition adds useful metric cards, a compact community distribution chart, role composition, a visible review queue and coverage views. The full entity table supports server pagination and filters; the React Flow/Dagre map uses readable account glyphs, directional transfer labels, focused expansion, an exact transfer table and PNG export. On smaller screens, entity evidence opens in an accessible side sheet. The assistant-ui copilot supports in-memory questions, evidence citations, tool traces, retry, copy and cancel. Each question independently checks the selected scope; previous replies are not model memory.
 
 The Signals panel adds recurring routes, return cycles, daily spikes, same-day payers and depth-peer anomalies. Resilience simulates top-N removal. A cohort query finds shared downstream accounts for up to five selected IDs. Download a Markdown dossier with missing-evidence requests and a SHA-256 receipt. [Criterion coverage](docs/criteria-matrix.md) maps every required and optional brief feature to code and tests. [Architecture decisions](docs/architecture.md) explain the implementation boundary and scaling plan. [Acceptance plan](docs/acceptance.md) defines the demo and validation contract.
 
@@ -83,6 +85,9 @@ The app is a local hackathon prototype without multi-user authentication. Keep i
 
 - [Current ecosystem and ready-made solutions](docs/research/ecosystem-2026.md)
 - [Advanced agent architecture research](docs/research/advanced-agents-2026.md)
+- [Case agents, retrieval and memory improvements](docs/research/agent-improvements-2026.md)
+- [Readable graph and dashboard UX research](docs/research/visual-investigation-ux-2026.md)
+- [UI libraries, Square dashboard comparison and assistant-ui](docs/research/ui-ecosystem-2026.md)
 - [Live GitHub activity and license evidence](docs/research/github-metrics.json)
 - [Architecture diagram and decisions](docs/architecture.md)
 - [All required and optional criteria](docs/criteria-matrix.md)
@@ -92,3 +97,5 @@ The app is a local hackathon prototype without multi-user authentication. Keep i
 - [Official Finance brief](https://docs.google.com/document/d/1JPLU-G6R25Ge2hVaY2J9cqvrx7FGExj87XKwJPaMz3o/edit)
 
 This implementation was written for this case. Organizer material informs the input/output contract; datasets and supplied starter archives remain local. Third-party packages are reused as components, not passed off as a prebuilt finished solution.
+
+The latest visual direction and inspected Dribbble/product references are documented in [the redesign study](docs/research/redesign-reference-study.md).

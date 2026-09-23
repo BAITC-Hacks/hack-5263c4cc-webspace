@@ -20,3 +20,4 @@ artifacts/
 
 # Source event research and downloaded organizer materials stay local.
 exa-results/
+.impeccable/review/

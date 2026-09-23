@@ -168,7 +168,7 @@ Attachments, voice, cloud history, model selection and long-running sessions are
 
 React Flow is used here as a read-only evidence viewer: disable connection editing, node dragging and deletion. Its card composition and keyboard support serve account investigation, without implying that analysts can edit observed transfers. A separate agent-workflow editor remains unnecessary; a list of completed server tool calls is sufficient for the bounded agent run.
 
-For the 31-day flow timeline, accessible bars remain a reasonable baseline. The upgraded app fills calendar dates with no observed transfers for windows up to 366 days and discloses gaps for longer windows. Zero shown on an unobserved-activity date means zero in the supplied records, not proof of zero activity across the bank. The implementation uses Recharts 3 for incoming/outgoing comparison, exact-value tooltips, amount/transfer switching and 7-day/14-day/full-window ranges. Square's Recharts 2 manifest is not a latest-version recommendation. Always expose exact KZT values and dates in text/table form; a chart is not the sole evidence surface.
+For the 31-day flow timeline, accessible bars remain a reasonable baseline. The upgraded app fills calendar dates with no observed transfers for windows up to 3,660 days and discloses gaps for longer windows. Zero shown on an unobserved-activity date means zero in the supplied records, not proof of zero activity across the bank. The implementation uses Recharts 3 for incoming/outgoing comparison, exact-value tooltips, amount/transfer switching and 7-day/14-day/full-window ranges. Square's Recharts 2 manifest is not a latest-version recommendation. Always expose exact KZT values and dates in text/table form; a chart is not the sole evidence surface.
 
 TanStack Table becomes useful for sortable multi-column account tables and controlled row selection. At the current bounded queue size, it is not mandatory. TanStack Virtual is useful after actual list-rendering measurements justify it; it adds focus, row-height and screen-reader considerations. Avoid introducing both simply because their star counts are high.
 
@@ -190,3 +190,5 @@ Use semantic preset colors and the preset's actual component variants. **All app
 6. The frontend production build passes; browser verification checks the real app at desktop and narrow widths. Record any untested accessibility or performance limitation without claiming certification.
 
 This selection provides the requested modern libraries and ready-made interaction machinery while preserving Money Graph's defining feature: inspectable evidence and a reproducible local graph engine.
+
+The later [redesign study](redesign-reference-study.md) supersedes the initial neutral preset appearance: the final interface uses warm-white/graphite surfaces, restrained colors, compact distribution charts and circular account glyphs. Base UI and Phosphor remain the selected component/icon systems.
