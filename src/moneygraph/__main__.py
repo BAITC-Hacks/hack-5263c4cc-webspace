@@ -28,7 +28,7 @@ def main() -> None:
         import uvicorn
         if options.data:
             os.environ["MONEYGRAPH_DATA_DIR"] = options.data
-        uvicorn.run("moneygraph.api:app", host=options.host, port=options.port)
+        uvicorn.run("moneygraph.api:app", host=options.host, port=options.port, access_log=False)
     elif options.command == "demo-data":
         output = Path(options.out)
         output.mkdir(parents=True, exist_ok=True)
