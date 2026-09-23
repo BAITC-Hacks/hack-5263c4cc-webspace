@@ -116,10 +116,44 @@ export interface Cluster {
 export interface CopilotResponse {
   answer: string;
   mode: "offline" | "openai" | "fallback";
-  citations: { label?: string; gid?: number; text?: string }[];
+  citations: { label?: string; gid?: number; text?: string; kind?: string; evidence_version?: string; payload_sha256?: string }[];
   limitations: string[];
-  trace: { tool: string; status: string }[];
+  trace: { tool: string; status: string; elapsed_ms?: number }[];
   model?: string;
+  memory?: {
+    session_id: string;
+    turns: number;
+    expires_in_seconds: number;
+    persistence: "process" | "sqlite";
+  };
+  execution?: {
+    run_id: string;
+    status: "completed" | "offline" | "fallback";
+    model_rounds: number;
+    tool_calls: number;
+    input_tokens: number;
+    output_tokens: number;
+    elapsed_ms: number;
+    fallback_code?: string;
+    evidence_version?: string;
+  };
+}
+
+/** Safe message metadata: session IDs are private capabilities, never transcript data. */
+export type CopilotReply = Omit<CopilotResponse, "memory"> & {
+  memory?: Omit<NonNullable<CopilotResponse["memory"]>, "session_id">;
+};
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly retryAfterSeconds: number | null;
+
+  constructor(message: string, status: number, retryAfterSeconds: number | null = null) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
 }
 
 export async function fetchApi<T>(
@@ -130,12 +164,17 @@ export async function fetchApi<T>(
   if (!response.ok) {
     const body = await response.json().catch(() => null);
     const detail = body?.detail;
-    throw new Error(
-      typeof detail === "string"
-        ? detail
-        : `Request failed (${response.status}). Try again.`,
-    );
+    const retryAfter = response.headers.get("Retry-After");
+    const retryDelay = retryAfter === null ? NaN : /^\d+$/.test(retryAfter.trim())
+      ? Number(retryAfter)
+      : (Date.parse(retryAfter) - Date.now()) / 1000;
+    const retryAfterSeconds = Number.isFinite(retryDelay) ? Math.max(1, Math.ceil(retryDelay)) : null;
+    const message = response.status === 429
+      ? `Too many requests. ${retryAfterSeconds === null ? "Wait a moment" : `Wait ${retryAfterSeconds} seconds`} before trying again.`
+      : typeof detail === "string" ? detail : `Request failed (${response.status}). Try again.`;
+    throw new ApiError(message, response.status, retryAfterSeconds);
   }
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 

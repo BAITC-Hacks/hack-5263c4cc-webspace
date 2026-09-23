@@ -85,7 +85,10 @@ def test_untrusted_tool_cannot_execute():
 
 
 def test_loop_has_finite_budget():
-    client = FakeClient([tool_response()] * 3)
+    responses = [tool_response() for _ in range(3)]
+    for index, response in enumerate(responses):
+        response.output[0].call_id = f"call{index}"
+    client = FakeClient(responses)
     result = investigate(Engine(), CopilotRequest(gid=7, question="Continue forever"), client)
     assert result["mode"] == "fallback"
     assert len(client.requests) == 3

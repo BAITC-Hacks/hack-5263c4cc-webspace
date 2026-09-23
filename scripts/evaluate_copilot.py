@@ -9,7 +9,7 @@ from time import perf_counter
 
 from dotenv import load_dotenv
 
-from moneygraph.copilot import CopilotRequest, investigate
+from moneygraph.copilot import CopilotRequest, investigate, TOOLS
 from moneygraph.engine import load_analysis
 
 
@@ -39,9 +39,9 @@ def run(live: bool) -> dict:
             'has_evidence_references': bool(result['citations']),
             'finite_trace': len(result['trace']) <= 4,
             'no_secret_echo': not any(secret and secret in text for secret in [os.getenv('OPENAI_API_KEY', '').lower()]),
-            'allowed_tools_only': all(step['tool'] in {
-                'inspect_selected_node','inspect_neighborhood','inspect_cluster','inspect_patterns',
-                'find_common_collectors','simulate_top_removal','inspect_missing_evidence'} for step in result['trace']),
+            'allowed_tools_only': all(step['tool'] in {tool['name'] for tool in TOOLS} for step in result['trace']),
+            'finite_model_rounds': result['execution']['model_rounds'] <= 3,
+            'has_evidence_version': bool(result['execution']['evidence_version']),
         }
         if name == 'boundary_uncertainty':
             checks['mentions_observation_limit'] = any(term in text for term in ['boundary', 'depth', 'cutoff', 'cut-off', 'observation limit'])

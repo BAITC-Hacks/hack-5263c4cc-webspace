@@ -88,3 +88,14 @@ def test_local_host_boundary_and_private_response_headers():
         foreign = local.options('/api/copilot', headers={'Origin':'https://untrusted.example',
                          'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'})
         assert 'access-control-allow-origin' not in foreign.headers
+
+
+def test_application_shutdown_closes_optional_conversation_memory():
+    from unittest.mock import Mock
+
+    application = make_app(load_analysis())
+    memory = Mock()
+    with TestClient(application):
+        application.state.conversation_memory = memory
+    memory.close.assert_called_once_with()
+    assert application.state.conversation_memory is None

@@ -1,21 +1,25 @@
 """Read-only HTTP interface for deterministic graph evidence."""
 
 from contextlib import asynccontextmanager
+from collections.abc import Callable
 import csv
 from io import StringIO
 import os
 from pathlib import Path
+import time
 from typing import Literal
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .engine import Analysis, ROLES, load_analysis
 from .signals import SignalAnalysis
+from .security import LocalSecurityMiddleware, RequestLimiter, SecurityConfig
 
 load_dotenv(override=False)
 _analysis: Analysis | None = None
@@ -28,29 +32,40 @@ def get_engine() -> Analysis:
     return _analysis
 
 
-def make_app(analysis: Analysis | None = None) -> FastAPI:
+def make_app(analysis: Analysis | None = None, *, security_config: SecurityConfig | None = None,
+             clock: Callable[[], float] = time.monotonic) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI):
         if application.state.analysis is None:
             application.state.analysis = get_engine()
-        yield
+        try:
+            yield
+        finally:
+            memory = getattr(application.state, "conversation_memory", None)
+            if memory is not None:
+                memory.close()
+                application.state.conversation_memory = None
 
     application = FastAPI(title="Money Graph", version="0.1.0", lifespan=lifespan)
     application.state.analysis = analysis
+    security = security_config or SecurityConfig.from_env()
+    application.state.request_limiter = RequestLimiter(security, clock)
     application.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]", "testserver"])
-
-    @application.middleware("http")
-    async def browser_security_headers(request: Request, call_next):
-        response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["Referrer-Policy"] = "no-referrer"
-        response.headers["X-Frame-Options"] = "DENY"
-        if request.url.path.startswith("/api/"):
-            response.headers["Cache-Control"] = "no-store"
-        return response
+    application.add_middleware(LocalSecurityMiddleware, config=security,
+                               limiter=application.state.request_limiter)
     application.state.signals = None
-    application.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-                               allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
+    # CORS wraps request rejection too, so the allowed development UI can read a
+    # 429 and Retry-After instead of receiving an opaque browser network failure.
+    application.add_middleware(CORSMiddleware, allow_origins=list(security.allowed_origins),
+                               allow_methods=["GET", "POST", "DELETE"], allow_headers=["Content-Type"],
+                               expose_headers=["Retry-After"])
+
+    @application.exception_handler(RequestValidationError)
+    async def private_validation_error(request: Request, error: RequestValidationError):
+        # Pydantic's input/ctx and even locations can contain conversation text,
+        # submitted secret values or arbitrary object keys. Never reflect them.
+        return JSONResponse({"detail": "Invalid request. Check field values and supported parameters."},
+                            status_code=422)
 
     def engine(request: Request) -> Analysis:
         return request.app.state.analysis or get_engine()
